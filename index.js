@@ -37,23 +37,21 @@ const axios = require("axios")
 
 class StoryblokManagementApi {
   constructor({ spaceId, token }) {
+    this.maxRetries = 5
+    this.defaultPerPage = 25
+    this.maxPerPage = 1000
     this.axiosInst = axios.create({
       baseURL: "https://api.storyblok.com/v1/spaces",
       headers: { Authorization: token }
     })
-    this.maxRetries = 5
-    this.defaultPerPage = 25
-    this.maxPerPage = 1000
     this.spaceId = spaceId
   }
 
   getSpace() {
-    return () => {
-      return this.axiosInst
-        .get(`/${this.spaceId}`)
-        .then(res => res.data.space)
-        .catch(error => Promise.reject(error))
-    }
+    return this.axiosInst
+      .get(`/${this.spaceId}`)
+      .then(res => res.data.space)
+      .catch(error => Promise.reject(error))
   }
 }
 
