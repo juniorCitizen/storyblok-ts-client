@@ -48,23 +48,18 @@ class StoryblokManagementApi {
   }
 
   getSpace() {
-    return this.axiosInst
-      .get(`/${this.spaceId}`)
-      .then(res => res.data.space)
-      .catch(error => Promise.reject(error))
+    return getSpace(this.spaceId, this.axiosInst)
   }
 }
 
 module.exports = StoryblokManagementApi
 
-// function getSpace(spaceId, axiosInst) {
-//   return () => {
-//     return axiosInst
-//       .get(`/${spaceId}`)
-//       .then(res => res.data.space)
-//       .catch(error => Promise.reject(error))
-//   }
-// }
+function getSpace(spaceId, axiosInst) {
+  return axiosInst
+    .get(`/${spaceId}`)
+    .then(res => res.data.space)
+    .catch(error => Promise.reject(error))
+}
 
 // function getAssetCount(spaceId, axiosInst) {
 //   return getSpace(spaceId, axiosInst)
