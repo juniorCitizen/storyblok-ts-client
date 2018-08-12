@@ -22,7 +22,10 @@
   },
   "homepage": "https://github.com/chiayutsaipersonal/storyblok-management-api-wrapper#readme",
   "dependencies": {
+    "axios": "^0.18.0",
+    "axios-retry": "^3.1.1",
     "bluebird": "^3.5.1",
-    "fs-extra": "^7.0.0"
+    "fs-extra": "^7.0.0",
+    "promise-request-retry": "^1.0.1"
   }
 }
