@@ -1,5 +1,5 @@
 const axios = require("axios")
-// const Promise = require("bluebird")
+const Promise = require("bluebird")
 // const axiosRetry = require("axios-retry")
 // const { pathExists, writeJson } = require("fs-extra")
 // const path = require("path")
@@ -38,7 +38,7 @@ const axios = require("axios")
 class StoryblokManagementApi {
   constructor({ spaceId, token }) {
     this.maxRetries = 5
-    this.defaultPerPage = 25
+    this.defaultPerPage = 100
     this.maxPerPage = 1000
     this.axiosInst = axios.create({
       baseURL: "https://api.storyblok.com/v1/spaces",
@@ -47,17 +47,90 @@ class StoryblokManagementApi {
     this.spaceId = spaceId
   }
 
+  deleteStory({ storyId }) {
+    return deleteStory({
+      axiosInst: this.axiosInst,
+      spaceId: this.spaceId,
+      storyId
+    })
+  }
+
   getSpace() {
-    return getSpace(this.spaceId, this.axiosInst)
+    return getSpace({ axiosInst: this.axiosInst, spaceId: this.spaceId })
+  }
+
+  getStories() {
+    return getStories({
+      axiosInst: this.axiosInst,
+      spaceId: this.spaceId,
+      perPage: this.defaultPerPage
+    })
   }
 }
 
 module.exports = StoryblokManagementApi
 
-function getSpace(spaceId, axiosInst) {
+function deleteStory({ axioInst, spaceId, storyId }) {
+  return axiosInst
+    .delete(`/${spaceId}/stories/${storyId}`)
+    .catch(error => Promise.reject(error))
+}
+
+function getSpace({ axiosInst, spaceId }) {
   return axiosInst
     .get(`/${spaceId}`)
     .then(res => res.data.space)
+    .catch(error => Promise.reject(error))
+}
+
+function getStoryCount({ axiosInst, spaceId }) {
+  // Storyblok API's space information does not
+  // account folders as stories.  Following does not work
+  // ========================================
+  // return getSpace({ spaceId })
+  //   .then(space => space.stories_count)
+  //   .catch(error => Promise.reject(error))
+  // ========================================
+  // stories must be manually counted if folders are to be counted as stories
+  return axiosInst
+    .get(`/${spaceId}/stories`)
+    .then(res => res.headers.total)
+    .catch(error => Promise.reject(error))
+}
+
+function getStoryPaginationPageCount({ axiosInst, spaceId, perPage }) {
+  return getStoryCount({ spaceId, axiosInst })
+    .then(total => Math.ceil(total / perPage))
+    .catch(error => Promise.reject(error))
+}
+
+function getStoriesByPaginationPage({ axiosInst, spaceId, perPage, page }) {
+  let per_page = perPage
+  let paramsOpt = { params: { per_page, page } }
+  return axiosInst
+    .get(`${spaceId}/stories`, paramsOpt)
+    .then(res => res.data.stories)
+    .catch(error => Promise.reject(error))
+}
+
+function getStories({ axiosInst, spaceId, perPage }) {
+  let stories = []
+  return getStoryPaginationPageCount({ axioInst, spaceId, perPage })
+    .then(pageCount => {
+      let requestList = []
+      for (let x = 1; x <= pageCount; x++) {
+        requestList.push(getStoriesByPaginationPage)
+      }
+      return Promise.each(requestList, (request, index) => {
+        return request({ axiosInst, spaceId, perPage, page: index + 1 })
+          .then(res => {
+            stories = stories.concat(res)
+            return
+          })
+          .catch(error => Promise.reject(error))
+      })
+    })
+    .then(() => stories)
     .catch(error => Promise.reject(error))
 }
 
@@ -73,8 +146,8 @@ function getSpace(spaceId, axiosInst) {
 //     .catch(error => Promise.reject(error))
 // }
 
-// function getAssetsAtPaginationPage(spaceId, per_page, page, axiosInst) {
-//   let paramsOpt = { params: { per_page, page } }
+// function getAssetsAtPaginationPage(spaceId, perPage, page, axiosInst) {
+//   let paramsOpt = { params: { per_page: perPage, page } }
 //   return axiosInst
 //     .get(`${spaceId}/assets`, paramsOpt)
 //     .then(res => res.data.assets)
@@ -362,44 +435,6 @@ function getSpace(spaceId, axiosInst) {
 //     .catch(error => Promise.reject(error))
 // }
 
-// function getStories(
-//   { spaceId = defaultSpaceId } = { spaceId: defaultSpaceId }
-// ) {
-//   let per_page = 100
-//   let stories = []
-//   return getStoryPaginationPageCount({ spaceId, per_page })
-//     .then(pageCount => {
-//       let requestList = []
-//       for (let x = 1; x <= pageCount; x++) {
-//         requestList.push(getStoriesByPaginationPage)
-//       }
-//       return Promise.each(requestList, (request, index) => {
-//         return request({ spaceId, per_page, page: index + 1 })
-//           .then(res => {
-//             stories = stories.concat(res)
-//             return Promise.resolve()
-//           })
-//           .catch(error => Promise.reject(error))
-//       })
-//     })
-//     .then(() => Promise.resolve(stories))
-//     .catch(error => Promise.reject(error))
-// }
-
-// function getStoriesByPaginationPage(
-//   {
-//     spaceId = defaultSpaceId,
-//     per_page = defaultValues.perPage,
-//     page = missingParameter("page")
-//   } = missingObjectParameter()
-// ) {
-//   let paramsOpt = { params: { per_page, page } }
-//   return axiosInst
-//     .get(`${spaceId}/stories`, paramsOpt)
-//     .then(res => Promise.resolve(res.data.stories))
-//     .catch(error => Promise.reject(error))
-// }
-
 // function getStory(
 //   {
 //     spaceId = defaultSpaceId,
@@ -409,31 +444,6 @@ function getSpace(spaceId, axiosInst) {
 //   return axiosInst
 //     .get(`/${spaceId}/stories/${storyId}`)
 //     .then(res => Promise.resolve(res.data.story))
-//     .catch(error => Promise.reject(error))
-// }
-
-// function getStoryCount(
-//   { spaceId = defaultSpaceId } = { spaceId: defaultSpaceId }
-// ) {
-//   // // GetSpace() does not count folders as stories, WARNING !!!
-//   // return getSpace({ spaceId })
-//   //   .then(space => Promise.resolve(space.stories_count))
-//   //   .catch(error => Promise.reject(error))
-//   // // above does not work
-//   return axiosInst
-//     .get(`/${spaceId}/stories`)
-//     .then(res => res.headers.total)
-//     .catch(error => Promise.reject(error))
-// }
-
-// function getStoryPaginationPageCount(
-//   { spaceId = defaultSpaceId, per_page = defaultValues.perPage } = {
-//     spaceId: defaultSpaceId,
-//     per_page: defaultValues.perPage
-//   }
-// ) {
-//   return getStoryCount({ spaceId })
-//     .then(total => Promise.resolve(Math.ceil(total / per_page)))
 //     .catch(error => Promise.reject(error))
 // }
 
@@ -480,17 +490,6 @@ function getSpace(spaceId, axiosInst) {
 // ) {
 //   return axiosInst
 //     .get(`/${spaceId}/stories/${storyId}/publish`)
-//     .catch(error => Promise.reject(error))
-// }
-
-// function deleteStory(
-//   {
-//     storyId = missingParameter("storyId"),
-//     spaceId = spaceId
-//   } = missingObjectParameter()
-// ) {
-//   return axiosInst
-//     .delete(`/${spaceId}/stories/${storyId}`)
 //     .catch(error => Promise.reject(error))
 // }
 
