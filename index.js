@@ -1,6 +1,6 @@
 const axios = require("axios")
+const axiosRetry = require("axios-retry")
 const Promise = require("bluebird")
-// const axiosRetry = require("axios-retry")
 // const { pathExists, writeJson } = require("fs-extra")
 // const path = require("path")
 // const requestWithRetries = require("promise-request-retry")
@@ -35,16 +35,62 @@ const Promise = require("bluebird")
 // deleteStories
 // }
 
+const defaults = {
+  maxRetries: 5,
+  perPage: 100,
+  maxPerPage: 1000,
+  concurrency: 10
+}
+
 class StoryblokManagementApi {
   constructor({ spaceId, token }) {
-    this.maxRetries = 5
-    this.defaultPerPage = 100
-    this.maxPerPage = 1000
+    this.maxRetries = defaults.maxRetries
+    this.defaultPerPage = defaults.perPage
+    this.maxPerPage = defaults.maxPerPage
     this.axiosInst = axios.create({
       baseURL: "https://api.storyblok.com/v1/spaces",
       headers: { Authorization: token }
     })
     this.spaceId = spaceId
+  }
+
+  deleteAsset({ assetId }) {
+    return deleteAsset({
+      axiosInst: this.axiosInst,
+      spaceId: this.spaceId,
+      assetId,
+      retries: this.maxRetries
+    })
+  }
+
+  deleteComponent({ componentId }) {
+    return deleteComponent({
+      axiosInst: this.axiosInst,
+      spaceId: this.spaceId,
+      componentId
+    })
+  }
+
+  deleteExistingAssets() {
+    return deleteExistingAssets({
+      axiosInst: this.axiosInst,
+      spaceId: this.spaceId,
+      retries: this.maxRetries
+    })
+  }
+
+  deleteExistingComponents() {
+    return deleteExistingComponents({
+      axiosInst: this.axiosInst,
+      spaceId: this.spaceId
+    })
+  }
+
+  deleteExistingStories() {
+    return deleteExistingStories({
+      axiosInst: this.axiosInst,
+      spaceId: this.spaceId
+    })
   }
 
   deleteStory({ storyId }) {
@@ -55,6 +101,26 @@ class StoryblokManagementApi {
     })
   }
 
+  getAssets() {
+    return getAssets({
+      axiosInst: this.axiosInst,
+      spaceId: this.spaceId,
+      perPage: this.maxPerPage
+    })
+  }
+
+  getComponent({ componentId }) {
+    return getComponent({
+      axiosInst: this.axiosInst,
+      spaceId: this.spaceId,
+      componentId
+    })
+  }
+
+  getComponents() {
+    return getComponents({ axiosInst: this.axiosInst, spaceId: this.spaceId })
+  }
+
   getSpace() {
     return getSpace({ axiosInst: this.axiosInst, spaceId: this.spaceId })
   }
@@ -63,16 +129,110 @@ class StoryblokManagementApi {
     return getStories({
       axiosInst: this.axiosInst,
       spaceId: this.spaceId,
-      perPage: this.defaultPerPage
+      perPage: this.maxPerPage
     })
   }
 }
 
 module.exports = StoryblokManagementApi
 
-function deleteStory({ axioInst, spaceId, storyId }) {
+function deleteAsset({
+  axiosInst,
+  spaceId,
+  assetId,
+  retries = defaults.maxRetries
+}) {
+  axiosRetry(axiosInst, {
+    retries,
+    retryDelay: axiosRetry.exponentialDelay
+  })
+  return axiosInst
+    .delete(`/${spaceId}/assets/${assetId}`)
+    .then(() => assetId) // id of asset that was deleted
+    .catch(error => {
+      return error.response.status !== 404
+        ? Promise.reject(error)
+        : Promise.resolve(assetId) // allow continuation if not found
+    })
+}
+
+function deleteComponent({ axiosInst, spaceId, componentId }) {
+  return axiosInst
+    .delete(`/${spaceId}/components/${componentId}`)
+    .then(() => componentId) // id of component that was deleted
+    .catch(error => Promise.reject(error))
+}
+
+function deleteExistingAssets({
+  axiosInst,
+  spaceId,
+  retries = defaults.maxRetries
+}) {
+  return getAssets({ axiosInst, spaceId }).then(existingAssets => {
+    return Promise.map(
+      existingAssets,
+      asset => deleteAsset({ axiosInst, spaceId, assetId: asset.id, retries }),
+      { concurrency: defaults.concurrency }
+    )
+  })
+}
+
+function deleteExistingComponents({ axiosInst, spaceId }) {
+  return getComponents({ axiosInst, spaceId })
+    .then(components => {
+      return Promise.each(components, component => {
+        let componentId = component.id
+        return deleteComponent({ axiosInst, spaceId, componentId })
+      })
+    })
+    .catch(error => Promise.reject(error))
+}
+
+function deleteExistingStories({ axiosInst, spaceId }) {
+  return getStories({ axiosInst, spaceId })
+    .then(stories => {
+      // get root folders
+      let rootFolders = stories.filter(story => {
+        let isAtRoot = story.parent_id === 0
+        let isFolder = story.is_folder === true
+        return isAtRoot && isFolder
+      })
+      // delete root folders
+      return Promise.map(rootFolders, rootFolder => {
+        let storyId = rootFolder.id
+        return deleteStory({ axiosInst, spaceId, storyId })
+      })
+        .then(() => getStories({ axiosInst, spaceId }))
+        .then(stories => {
+          // delete all stories left at root level
+          return Promise.map(stories, story => {
+            let storyId = story.id
+            return deleteStory({ axiosInst, spaceId, storyId })
+          })
+        })
+        .catch(error => Promise.reject(error))
+    })
+    .catch(error => Promise.reject(error))
+}
+
+function deleteStory({ axiosInst, spaceId, storyId }) {
   return axiosInst
     .delete(`/${spaceId}/stories/${storyId}`)
+    .then(() => storyId) // id of story that was deleted
+    .catch(error => Promise.reject(error))
+}
+
+function getComponent({ axiosInst, spaceId, componentId }) {
+  return axiosInst
+    .get(`/${spaceId}/components/${componentId}`)
+    .then(res => res.data.component)
+    .catch(error => Promise.reject(error))
+}
+
+function getComponents({ axiosInst, spaceId }) {
+  return axiosInst
+    .get(`/${spaceId}/components`)
+    .then(res => res.data.components)
     .catch(error => Promise.reject(error))
 }
 
@@ -99,12 +259,12 @@ function getStoryCount({ axiosInst, spaceId }) {
 }
 
 function getStoryPaginationPageCount({ axiosInst, spaceId, perPage }) {
-  return getStoryCount({ spaceId, axiosInst })
-    .then(total => Math.ceil(total / perPage))
+  return getStoryCount({ axiosInst, spaceId })
+    .then(storyCount => Math.ceil(storyCount / perPage))
     .catch(error => Promise.reject(error))
 }
 
-function getStoriesByPaginationPage({ axiosInst, spaceId, perPage, page }) {
+function getStoriesAtPaginationPage({ axiosInst, spaceId, perPage, page }) {
   let per_page = perPage
   let paramsOpt = { params: { per_page, page } }
   return axiosInst
@@ -113,16 +273,17 @@ function getStoriesByPaginationPage({ axiosInst, spaceId, perPage, page }) {
     .catch(error => Promise.reject(error))
 }
 
-function getStories({ axiosInst, spaceId, perPage }) {
+function getStories({ axiosInst, spaceId, perPage = defaults.maxPerPage }) {
   let stories = []
-  return getStoryPaginationPageCount({ axioInst, spaceId, perPage })
+  return getStoryPaginationPageCount({ axiosInst, spaceId, perPage })
     .then(pageCount => {
       let requestList = []
       for (let x = 1; x <= pageCount; x++) {
-        requestList.push(getStoriesByPaginationPage)
+        requestList.push(getStoriesAtPaginationPage)
       }
       return Promise.each(requestList, (request, index) => {
-        return request({ axiosInst, spaceId, perPage, page: index + 1 })
+        let page = index + 1
+        return request({ axiosInst, spaceId, perPage, page })
           .then(res => {
             stories = stories.concat(res)
             return
@@ -134,62 +295,48 @@ function getStories({ axiosInst, spaceId, perPage }) {
     .catch(error => Promise.reject(error))
 }
 
-// function getAssetCount(spaceId, axiosInst) {
-//   return getSpace(spaceId, axiosInst)
-//     .then(spaceData => spaceData.assets_count)
-//     .catch(error => Promise.reject(error))
-// }
+function getAssetCount({ axiosInst, spaceId }) {
+  return getSpace({ axiosInst, spaceId })
+    .then(spaceData => spaceData.assets_count)
+    .catch(error => Promise.reject(error))
+}
 
-// function getAssetPaginationPageCount(spaceId, perPage, axiosInst) {
-//   return getAssetCount(spceId, axiosInst)
-//     .then(assetCount => Math.ceil(assetCount / perPage))
-//     .catch(error => Promise.reject(error))
-// }
+function getAssetPaginationPageCount({ axiosInst, spaceId, perPage }) {
+  return getAssetCount({ axiosInst, spaceId })
+    .then(assetCount => Math.ceil(assetCount / perPage))
+    .catch(error => Promise.reject(error))
+}
 
-// function getAssetsAtPaginationPage(spaceId, perPage, page, axiosInst) {
-//   let paramsOpt = { params: { per_page: perPage, page } }
-//   return axiosInst
-//     .get(`${spaceId}/assets`, paramsOpt)
-//     .then(res => res.data.assets)
-//     .catch(error => Promise.reject(error))
-// }
+function getAssetsAtPaginationPage({ axiosInst, spaceId, perPage, page }) {
+  let per_page = perPage
+  let paramsOpt = { params: { per_page, page } }
+  return axiosInst
+    .get(`${spaceId}/assets`, paramsOpt)
+    .then(res => res.data.assets)
+    .catch(error => Promise.reject(error))
+}
 
-// function getAssets(spaceId, axiosInst) {
-//   return ({ perPage: per_page, page }) => {
-//     const getPageCountFn = getAssetPaginationPageCount(
-//       spaceId,
-//       perPage,
-//       axiosInst
-//     )
-//     const getAssetsFn = getAssetsAtPaginationPage(
-//       spaceId,
-//       perPage,
-//       page,
-//       axiosInst
-//     )
-//     const defaultMaxPerPage = defaultValues.maxPerPage
-//     return getPageCountFn({ spaceId, perPage: defaultMaxPerPage })
-//       .then(pageCount => {
-//         let requestList = []
-//         for (let x = 1; x <= pageCount; x++) {
-//           requestList.push(getAssetsFn)
-//         }
-//         let assets = []
-//         return Promise.each(requestList, (request, index) => {
-//           let page = index + 1
-//           return request({ spaceId, perPage, page })
-//             .then(res => {
-//               assets = assets.concat(res)
-//               return
-//             })
-//             .catch(error => Promise.reject(error))
-//         })
-//           .then(() => assets)
-//           .catch(error => Promise.reject(error))
-//       })
-//       .catch(error => Promise.reject(error))
-//   }
-// }
+function getAssets({ axiosInst, spaceId, perPage }) {
+  let assets = []
+  return getAssetPaginationPageCount({ axiosInst, spaceId, perPage })
+    .then(pageCount => {
+      let requestList = []
+      for (let x = 1; x <= pageCount; x++) {
+        requestList.push(getAssetsAtPaginationPage)
+      }
+      return Promise.each(requestList, (request, index) => {
+        let page = index + 1
+        return request({ axiosInst, spaceId, perPage, page })
+          .then(res => {
+            assets = assets.concat(res)
+            return
+          })
+          .catch(error => Promise.reject(error))
+      })
+    })
+    .then(() => assets)
+    .catch(error => Promise.reject(error))
+}
 
 // register an Storyblok asset
 // actual asset still requires to be upload with uploadAsset
@@ -266,64 +413,6 @@ function getStories({ axiosInst, spaceId, perPage }) {
 //     .catch(error => Promise.reject(error))
 // }
 
-// function deleteAsset(
-//   {
-//     spaceId = defaultSpaceId,
-//     assetId = missingParameter("assetId")
-//   } = missingObjectParameter()
-// ) {
-//   axiosRetry(axiosInst, {
-//     retries: defaultValues.retries,
-//     retryDelay: axiosRetry.exponentialDelay
-//   })
-//   return axiosInst
-//     .delete(`/${spaceId}/assets/${assetId}`)
-//     .then(() => console.log(`asset removed (id: ${assetId})`))
-//     .catch(error => {
-//       if (error.response.status !== 404) {
-//         return Promise.reject(error)
-//       } else {
-//         console.log(`asset (id: ${assetId}) not found, removal is skipped`)
-//       }
-//     })
-// }
-
-// function deleteAssets(
-//   { spaceId = defaultSpaceId } = { spaceId: defaultSpaceId }
-// ) {
-//   return getAssets({ spaceId })
-//     .then(existingAssets => {
-//       return Promise.map(
-//         existingAssets,
-//         asset => deleteAsset({ spaceId, assetId: asset.id }),
-//         { concurrency: 10 }
-//       )
-//     })
-//     .then(() => Promise.resolve())
-//     .catch(error => Promise.reject(error))
-// }
-
-// function getComponent(
-//   {
-//     spaceId = defaultSpaceId,
-//     componentId = missingParameter("componentId")
-//   } = missingObjectParameter()
-// ) {
-//   return axiosInst
-//     .get(`/${spaceId}/components/${componentId}`)
-//     .then(res => Promise.resolve(res.data.component))
-//     .catch(error => Promise.reject(error))
-// }
-
-// function getComponents(
-//   { spaceId = defaultSpaceId } = { spaceId: defaultSpaceId }
-// ) {
-//   return axiosInst
-//     .get(`/${spaceId}/components`)
-//     .then(res => Promise.resolve(res.data.components))
-//     .catch(error => Promise.reject(error))
-// }
-
 // function createComponent(
 //   {
 //     spaceId = defaultSpaceId,
@@ -348,17 +437,6 @@ function getStories({ axiosInst, spaceId, perPage }) {
 //   return axiosInst
 //     .put(`/${spaceId}/components/${componentId}`, data)
 //     .then(res => Promise.resolve(res.data.component))
-//     .catch(error => Promise.reject(error))
-// }
-
-// function deleteComponent(
-//   {
-//     spaceId = defaultSpaceId,
-//     componentId = missingParameter("componentId")
-//   } = missingObjectParameter()
-// ) {
-//   return axiosInst
-//     .delete(`/${spaceId}/components/${componentId}`)
 //     .catch(error => Promise.reject(error))
 // }
 
@@ -420,19 +498,6 @@ function getStories({ axiosInst, spaceId, perPage }) {
 //       return item === searchTarget
 //     }) !== -1
 //   )
-// }
-
-// function deleteComponents(
-//   { spaceId = defaultSpaceId } = { spaceId: defaultSpaceId }
-// ) {
-//   return getComponents({ spaceId })
-//     .then(existingComponents => {
-//       return Promise.each(existingComponents, existingComponent => {
-//         let componentId = existingComponent.id
-//         return deleteComponent({ spaceId, componentId })
-//       })
-//     })
-//     .catch(error => Promise.reject(error))
 // }
 
 // function getStory(
