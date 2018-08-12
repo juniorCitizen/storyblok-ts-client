@@ -20,5 +20,9 @@
   "bugs": {
     "url": "https://github.com/chiayutsaipersonal/storyblok-management-api-wrapper/issues"
   },
-  "homepage": "https://github.com/chiayutsaipersonal/storyblok-management-api-wrapper#readme"
+  "homepage": "https://github.com/chiayutsaipersonal/storyblok-management-api-wrapper#readme",
+  "dependencies": {
+    "bluebird": "^3.5.1",
+    "fs-extra": "^7.0.0"
+  }
 }
