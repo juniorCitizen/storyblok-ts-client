@@ -5,58 +5,68 @@ const axios = require("axios")
 // const path = require("path")
 // const requestWithRetries = require("promise-request-retry")
 
-const {
-  apiUrl,
-  retries: defaultRetries,
-  perPage: defaultPerPage,
-  maxPerPage: defaultMaxPerPage
-} = require("./config")
+// const methods = {
+//   getSpace: getSpace(spaceId, axiosInst)
+// getAssetCount: getAssetCount(spaceId, axiosInst),
+// getAssets: getAssets(spaceId, axiosInst),
+// createAsset,
+// signAsset,
+// uploadAsset,
+// deleteAsset,
+// deleteAssets,
+// getComponent,
+// getComponents,
+// createComponent,
+// updateComponent,
+// deleteComponent,
+// backupComponents,
+// restoreComponents,
+// deleteComponents,
+// getStories,
+// getStoriesByPaginationPage,
+// getStory,
+// getStoryCount,
+// getStoryPaginationPageCount,
+// getUnpublishedStories,
+// createStory,
+// updateStory,
+// publishStory,
+// deleteStory,
+// deleteStories
+// }
 
-module.exports = ({ spaceId, token }) => {
-  const axiosInst = axios.create({
-    baseURL: `${apiUrl}/spaces`,
-    headers: { Authorization: token }
-  })
-  return {
-    getSpace: getSpace(spaceId, axiosInst)
-    // getAssetCount: getAssetCount(spaceId, axiosInst),
-    // getAssets: getAssets(spaceId, axiosInst),
-    // createAsset,
-    // signAsset,
-    // uploadAsset,
-    // deleteAsset,
-    // deleteAssets,
-    // getComponent,
-    // getComponents,
-    // createComponent,
-    // updateComponent,
-    // deleteComponent,
-    // backupComponents,
-    // restoreComponents,
-    // deleteComponents,
-    // getStories,
-    // getStoriesByPaginationPage,
-    // getStory,
-    // getStoryCount,
-    // getStoryPaginationPageCount,
-    // getUnpublishedStories,
-    // createStory,
-    // updateStory,
-    // publishStory,
-    // deleteStory,
-    // deleteStories
+class StoryblokManagementApi {
+  constructor({ spaceId, token }) {
+    this.axiosInst = axios.create({
+      baseURL: "https://api.storyblok.com/v1/spaces",
+      headers: { Authorization: token }
+    })
+    this.maxRetries = 5
+    this.defaultPerPage = 25
+    this.maxPerPage = 1000
+    this.spaceId = spaceId
+  }
+
+  getSpace() {
+    return () => {
+      return this.axiosInst
+        .get(`/${this.spaceId}`)
+        .then(res => res.data.space)
+        .catch(error => Promise.reject(error))
+    }
   }
 }
 
-async function getSpace(spaceId, axiosInst) {
-  return () => {
-    return await axiosInst.get(`/${spaceId}`).data.space
-    // return axiosInst
-    //   .get(`/${spaceId}`)
-    //   .then(res => res.data.space)
-    //   .catch(error => Promise.reject(error))
-  }
-}
+module.exports = StoryblokManagementApi
+
+// function getSpace(spaceId, axiosInst) {
+//   return () => {
+//     return axiosInst
+//       .get(`/${spaceId}`)
+//       .then(res => res.data.space)
+//       .catch(error => Promise.reject(error))
+//   }
+// }
 
 // function getAssetCount(spaceId, axiosInst) {
 //   return getSpace(spaceId, axiosInst)
