@@ -1,21 +1,16 @@
 const axios = require("axios")
-const Promise = require("bluebird")
-const axiosRetry = require("axios-retry")
-const { pathExists, writeJson } = require("fs-extra")
-const path = require("path")
-const requestWithRetries = require("promise-request-retry")
+// const Promise = require("bluebird")
+// const axiosRetry = require("axios-retry")
+// const { pathExists, writeJson } = require("fs-extra")
+// const path = require("path")
+// const requestWithRetries = require("promise-request-retry")
 
-const apiUrl = "https://api.storyblok.com/v1"
-const defaultValues = {
-  retries: 5,
-  perPage: 25,
-  maxPerPage: 500
-}
-
-const defaultSpaceId = parseInt(process.env.STORYBLOK_SPACE_ID)
-const token = process.env.STORYBLOK_MANAGEMENT_API_TOKEN
-
-const defaultBackupPath = path.resolve("./data/backup")
+const {
+  apiUrl,
+  retries: defaultRetries,
+  perPage: defaultPerPage,
+  maxPerPage: defaultMaxPerPage
+} = require("./config")
 
 module.exports = ({ spaceId, token }) => {
   const axiosInst = axios.create({
@@ -53,12 +48,13 @@ module.exports = ({ spaceId, token }) => {
   }
 }
 
-function getSpace(spaceId, axiosInst) {
+async function getSpace(spaceId, axiosInst) {
   return () => {
-    return axiosInst
-      .get(`/${spaceId}`)
-      .then(res => res.data.space)
-      .catch(error => Promise.reject(error))
+    return await axiosInst.get(`/${spaceId}`).data.space
+    // return axiosInst
+    //   .get(`/${spaceId}`)
+    //   .then(res => res.data.space)
+    //   .catch(error => Promise.reject(error))
   }
 }
 
