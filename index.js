@@ -1,5 +1,3 @@
-require("dotenv-safe").config()
-
 const axios = require("axios")
 const Promise = require("bluebird")
 const axiosRetry = require("axios-retry")
