@@ -54,10 +54,12 @@ module.exports = ({ spaceId, token }) => {
 }
 
 function getSpace(spaceId, axiosInst) {
-  return axiosInst
-    .get(`/${spaceId}`)
-    .then(res => res.data.space)
-    .catch(error => Promise.reject(error))
+  return () => {
+    return axiosInst
+      .get(`/${spaceId}`)
+      .then(res => res.data.space)
+      .catch(error => Promise.reject(error))
+  }
 }
 
 // function getAssetCount(spaceId, axiosInst) {
