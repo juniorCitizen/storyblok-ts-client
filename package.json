@@ -1,0 +1,24 @@
+{
+  "name": "storyblok-management-api-wrapper",
+  "version": "0.0.1",
+  "description": "library for working with Storyblok management API",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chiayutsaipersonal/storyblok-management-api-wrapper.git"
+  },
+  "keywords": [
+    "Storyblok",
+    "javascript",
+    "node.js"
+  ],
+  "author": "Chia-Yu Tsai <chiayu.tsai.personal@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/chiayutsaipersonal/storyblok-management-api-wrapper/issues"
+  },
+  "homepage": "https://github.com/chiayutsaipersonal/storyblok-management-api-wrapper#readme"
+}
