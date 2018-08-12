@@ -16,7 +16,7 @@
     "node.js"
   ],
   "author": "Chia-Yu Tsai <chiayu.tsai.personal@gmail.com>",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/chiayutsaipersonal/storyblok-management-api-wrapper/issues"
   },
