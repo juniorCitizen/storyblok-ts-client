@@ -1,39 +1,7 @@
 const axios = require("axios")
 const axiosRetry = require("axios-retry")
 const Promise = require("bluebird")
-// const { pathExists, writeJson } = require("fs-extra")
-// const path = require("path")
-// const requestWithRetries = require("promise-request-retry")
-
-// const methods = {
-//   getSpace: getSpace(spaceId, axiosInst)
-// getAssetCount: getAssetCount(spaceId, axiosInst),
-// getAssets: getAssets(spaceId, axiosInst),
-// createAsset,
-// signAsset,
-// uploadAsset,
-// deleteAsset,
-// deleteAssets,
-// getComponent,
-// getComponents,
-// createComponent,
-// updateComponent,
-// deleteComponent,
-// backupComponents,
-// restoreComponents,
-// deleteComponents,
-// getStories,
-// getStoriesByPaginationPage,
-// getStory,
-// getStoryCount,
-// getStoryPaginationPageCount,
-// getUnpublishedStories,
-// createStory,
-// updateStory,
-// publishStory,
-// deleteStory,
-// deleteStories
-// }
+const requestWithRetries = require("promise-request-retry")
 
 const defaults = {
   maxRetries: 5,
@@ -52,6 +20,22 @@ class StoryblokManagementApi {
       headers: { Authorization: token }
     })
     this.spaceId = spaceId
+  }
+
+  createComponent({ componentDefinition }) {
+    return createComponent({
+      axiosInst: this.axiosInst,
+      spaceId: this.spaceId,
+      componentDefinition
+    })
+  }
+
+  createStory({ storyData }) {
+    return createStory({
+      axiosInst: this.axiosInst,
+      spaceId: this.spaceId,
+      storyData
+    })
   }
 
   deleteAsset({ assetId }) {
@@ -125,6 +109,14 @@ class StoryblokManagementApi {
     return getSpace({ axiosInst: this.axiosInst, spaceId: this.spaceId })
   }
 
+  getStory({ storyId }) {
+    return getStory({
+      axiosInst: this.axiosInst,
+      spaceId: this.spaceId,
+      storyId
+    })
+  }
+
   getStories() {
     return getStories({
       axiosInst: this.axiosInst,
@@ -132,9 +124,83 @@ class StoryblokManagementApi {
       perPage: this.maxPerPage
     })
   }
+
+  publishStory({ storyId }) {
+    return publishStory({
+      axiosInst: this.axiosInst,
+      spaceId: this.spaceId,
+      storyId
+    })
+  }
+
+  publishExistingStories() {
+    return publishExistingStories({
+      axiosInst: this.axiosInst,
+      spaceId: this.spaceId
+    })
+  }
+
+  restoreComponents({ componentDefinitions }) {
+    return restoreComponents({
+      axiosInst: this.axiosInst,
+      spaceId: this.spaceId,
+      componentDefinitions
+    })
+  }
+
+  signAsset({ fileName }) {
+    return signAsset({
+      axiosInst: this.axiosInst,
+      spaceId: this.spaceId,
+      fileName
+    })
+  }
+
+  updateComponent({ componentId, componentDefinition }) {
+    return updateComponent({
+      axiosInst: this.axiosInst,
+      spaceId: this.spaceId,
+      componentId,
+      componentDefinition
+    })
+  }
+
+  updateStory({ storyId, storyData }) {
+    return updateStory({
+      axiosInst: this.axiosInst,
+      spaceId: this.spaceId,
+      storyId,
+      storyData
+    })
+  }
+
+  uploadAsset({ buffer, signedRequest }) {
+    return uploadAsset({
+      axiosInst: this.axiosInst,
+      spaceId: this.spaceId,
+      buffer,
+      signedRequest
+    })
+  }
 }
 
 module.exports = StoryblokManagementApi
+
+function createComponent({ axiosInst, spaceId, componentDefinition }) {
+  let data = { component: componentDefinition }
+  return axiosInst
+    .post(`/${spaceId}/components`, data)
+    .then(res => res.data.component)
+    .catch(error => Promise.reject(error))
+}
+
+function createStory({ axiosInst, spaceId, storyData }) {
+  let data = { story: storyData }
+  return axiosInst
+    .post(`/${spaceId}/stories`, data)
+    .then(res => res.data.story)
+    .catch(error => Promise.reject(error))
+}
 
 function deleteAsset({
   axiosInst,
@@ -222,6 +288,49 @@ function deleteStory({ axiosInst, spaceId, storyId }) {
     .catch(error => Promise.reject(error))
 }
 
+function getAssetCount({ axiosInst, spaceId }) {
+  return getSpace({ axiosInst, spaceId })
+    .then(spaceData => spaceData.assets_count)
+    .catch(error => Promise.reject(error))
+}
+
+function getAssetPaginationPageCount({ axiosInst, spaceId, perPage }) {
+  return getAssetCount({ axiosInst, spaceId })
+    .then(assetCount => Math.ceil(assetCount / perPage))
+    .catch(error => Promise.reject(error))
+}
+
+function getAssets({ axiosInst, spaceId, perPage }) {
+  let assets = []
+  return getAssetPaginationPageCount({ axiosInst, spaceId, perPage })
+    .then(pageCount => {
+      let requestList = []
+      for (let x = 1; x <= pageCount; x++) {
+        requestList.push(getAssetsAtPaginationPage)
+      }
+      return Promise.each(requestList, (request, index) => {
+        let page = index + 1
+        return request({ axiosInst, spaceId, perPage, page })
+          .then(res => {
+            assets = assets.concat(res)
+            return
+          })
+          .catch(error => Promise.reject(error))
+      })
+    })
+    .then(() => assets)
+    .catch(error => Promise.reject(error))
+}
+
+function getAssetsAtPaginationPage({ axiosInst, spaceId, perPage, page }) {
+  let per_page = perPage
+  let paramsOpt = { params: { per_page, page } }
+  return axiosInst
+    .get(`${spaceId}/assets`, paramsOpt)
+    .then(res => res.data.assets)
+    .catch(error => Promise.reject(error))
+}
+
 function getComponent({ axiosInst, spaceId, componentId }) {
   return axiosInst
     .get(`/${spaceId}/components/${componentId}`)
@@ -295,278 +404,106 @@ function getStories({ axiosInst, spaceId, perPage = defaults.maxPerPage }) {
     .catch(error => Promise.reject(error))
 }
 
-function getAssetCount({ axiosInst, spaceId }) {
-  return getSpace({ axiosInst, spaceId })
-    .then(spaceData => spaceData.assets_count)
-    .catch(error => Promise.reject(error))
-}
-
-function getAssetPaginationPageCount({ axiosInst, spaceId, perPage }) {
-  return getAssetCount({ axiosInst, spaceId })
-    .then(assetCount => Math.ceil(assetCount / perPage))
-    .catch(error => Promise.reject(error))
-}
-
-function getAssetsAtPaginationPage({ axiosInst, spaceId, perPage, page }) {
-  let per_page = perPage
-  let paramsOpt = { params: { per_page, page } }
+function getStory({ axiosInst, spaceId, storyId }) {
   return axiosInst
-    .get(`${spaceId}/assets`, paramsOpt)
-    .then(res => res.data.assets)
+    .get(`/${spaceId}/stories/${storyId}`)
+    .then(res => res.data.story)
     .catch(error => Promise.reject(error))
 }
 
-function getAssets({ axiosInst, spaceId, perPage }) {
-  let assets = []
-  return getAssetPaginationPageCount({ axiosInst, spaceId, perPage })
-    .then(pageCount => {
-      let requestList = []
-      for (let x = 1; x <= pageCount; x++) {
-        requestList.push(getAssetsAtPaginationPage)
-      }
-      return Promise.each(requestList, (request, index) => {
-        let page = index + 1
-        return request({ axiosInst, spaceId, perPage, page })
-          .then(res => {
-            assets = assets.concat(res)
-            return
-          })
-          .catch(error => Promise.reject(error))
+function getUnpublishedStories({ axiosInst, spaceId }) {
+  return getStories({ axiosInst, spaceId })
+    .then(stories => stories.filter(story => !story.published))
+    .catch(error => Promise.reject(error))
+}
+
+function publishExistingStories({ axiosInst, spaceId }) {
+  return getUnpublishedStories({ axiosInst, spaceId })
+    .then(stories => {
+      return stories
+        .filter(story => story.is_folder === false)
+        .map(story => story.id)
+    })
+    .then(storyIds => {
+      return Promise.map(storyIds, storyId => {
+        return publishStory({ axiosInst, spaceId, storyId })
       })
     })
-    .then(() => assets)
+    .catch(error => Promise.reject(error))
+}
+
+function publishStory({ axiosInst, spaceId, storyId }) {
+  return axiosInst
+    .get(`/${spaceId}/stories/${storyId}/publish`)
+    .then(() => storyId) // storyId of story that's been published
+    .catch(error => Promise.reject(error))
+}
+
+function restoreComponents({ axiosInst, spaceId, componentDefinitions }) {
+  return getComponents({ axiosInst, spaceId })
+    .then(components => {
+      return Promise.map(componentDefinitions, componentDefinition => {
+        let componentName = componentDefinition.name
+        let findComponentByName = (name, components) => {
+          return components.find(component => component.name === name)
+        }
+        let existed = findComponentByName(componentName, components)
+        return !existed
+          ? createComponent({ axiosInst, spaceId, componentDefinition })
+          : updateComponent({
+              axiosInst,
+              spaceId,
+              componentId: existed.id,
+              componentDefinition
+            })
+      })
+    })
     .catch(error => Promise.reject(error))
 }
 
 // register an Storyblok asset
 // actual asset still requires to be upload with uploadAsset
-// function signAsset(
-//   {
-//     spaceId = defaultSpaceId,
-//     fileName = missingParameter("fileName")
-//   } = missingObjectParameter()
-// ) {
-//   return axiosInst
-//     .post(`${spaceId}/assets`, { filename: fileName })
-//     .then(res => res.data)
-//     .catch(error => Promise.reject(error))
-// }
+function signAsset({ axiosInst, spaceId, fileName }) {
+  let filename = fileName
+  return axiosInst
+    .post(`${spaceId}/assets`, { filename })
+    .then(res => res.data)
+    .catch(error => Promise.reject(error))
+}
 
-// function uploadAsset({
-//   // spaceId = defaultSpaceId, // upload to S3 bucket, not storyblok
-//   buffer = missingParameter("buffer"),
-//   // request result from signAsset() (for S3 upload authorization)
-//   signedRequest = missingParameter("signedRequest")
-// }) {
-//   let formData = signedRequest.fields
-//   formData.file = {
-//     value: buffer,
-//     options: {
-//       filename: signedRequest.public_url.split("/").pop(),
-//       contentType: signedRequest.fields["Content-Type"]
-//     }
-//   }
-//   return requestWithRetries({
-//     method: "post",
-//     url: signedRequest.post_url,
-//     formData,
-//     retry: defaultValues.retries
-//   })
-//     .then(() => Promise.resolve())
-//     .catch(error => Promise.reject(error))
-// }
+function updateComponent({
+  axiosInst,
+  spaceId,
+  componentId,
+  componentDefinition
+}) {
+  let data = { component: componentDefinition }
+  return axiosInst
+    .put(`/${spaceId}/components/${componentId}`, data)
+    .then(res => res.data.component)
+    .catch(error => Promise.reject(error))
+}
 
-// function createAsset(
-//   {
-//     spaceId = defaultSpaceId,
-//     filePath = missingParameter("filePath"),
-//     buffer = missingParameter("buffer")
-//   } = missingObjectParameter()
-// ) {
-//   let filename = filePath.split("\\").pop()
-//   return pathExists(filePath)
-//     .then(exists => {
-//       let error = new Error(`image: '${filePath}' does not exist`)
-//       return !exists ? Promise.reject(error) : Promise.resolve()
-//     })
-//     .then(() => axiosInst.post(`${spaceId}/assets`, { filename }))
-//     .then(res => {
-//       let signedRequest = res.data
-//       let formData = signedRequest.fields
-//       formData.file = {
-//         value: buffer,
-//         options: {
-//           filename,
-//           contentType: signedRequest.fields["Content-Type"]
-//         }
-//       }
-//       return requestWithRetries({
-//         method: "post",
-//         url: signedRequest.post_url,
-//         formData,
-//         retry: defaultValues.retries
-//       })
-//         .then(() => signedRequest.pretty_url)
-//         .catch(error => Promise.reject(error))
-//     })
-//     .then(prettyUrl => prettyUrl)
-//     .catch(error => Promise.reject(error))
-// }
+function updateStory({ axiosInst, spaceId, storyId, storyData }) {
+  let data = { story: storyData }
+  return axiosInst
+    .put(`/${spaceId}/stories/${storyId}`, data)
+    .then(res => res.data.story)
+    .catch(error => Promise.reject(error))
+}
 
-// function createComponent(
-//   {
-//     spaceId = defaultSpaceId,
-//     componentDefinition = missingParameter("componentDefinition")
-//   } = missingObjectParameter()
-// ) {
-//   let data = { component: componentDefinition }
-//   return axiosInst
-//     .post(`/${spaceId}/components`, data)
-//     .then(res => Promise.resolve(res.data.component))
-//     .catch(error => Promise.reject(error))
-// }
-
-// function updateComponent(
-//   {
-//     spaceId = defaultSpaceId,
-//     componentId = missingParameter("componentId"),
-//     componentDefinition = missingParameter("componentDefinition")
-//   } = missingObjectParameter()
-// ) {
-//   let data = { component: componentDefinition }
-//   return axiosInst
-//     .put(`/${spaceId}/components/${componentId}`, data)
-//     .then(res => Promise.resolve(res.data.component))
-//     .catch(error => Promise.reject(error))
-// }
-
-// function backupComponents(
-//   {
-//     spaceId = defaultSpaceId,
-//     backupFilePath = path.join(defaultBackupPath, "components.backup.json")
-//   } = {
-//     spaceId: defaultSpaceId,
-//     backupFilePath: path.join(defaultBackupPath, "components.backup.json")
-//   }
-// ) {
-//   return getComponents({ spaceId })
-//     .then(components => components.map(component => component.id))
-//     .then(componentIdList => {
-//       let components = []
-//       return Promise.each(componentIdList, componentId => {
-//         return getComponent({ spaceId, componentId })
-//           .then(component => {
-//             components.push({
-//               name: component.name,
-//               schema: component.schema,
-//               is_root: component.is_root,
-//               is_nestable: component.is_nestable
-//             })
-//             return Promise.resolve()
-//           })
-//           .catch(error => Promise.reject(error))
-//       })
-//         .then(() => writeJson(backupFilePath, components))
-//         .catch(error => Promise.reject(error))
-//     })
-//     .catch(error => Promise.reject(error))
-// }
-
-// function restoreComponents(
-//   {
-//     spaceId = defaultSpaceId,
-//     componentDefinitions = missingParameter("componentDefinitions")
-//   } = missingObjectParameter()
-// ) {
-//   return getComponents({ spaceId })
-//     .then(components => components.map(component => component.name))
-//     .then(componentNames => {
-//       return Promise.each(componentDefinitions, componentDefinition => {
-//         if (!existsInArray(componentDefinition.name, componentNames)) {
-//           return createComponent({ spaceId, componentDefinition })
-//         } else {
-//           return Promise.resolve()
-//         }
-//       }).catch(error => Promise.reject(error))
-//     })
-//     .catch(error => Promise.reject(error))
-// }
-
-// function existsInArray(searchTarget, array) {
-//   return (
-//     array.findIndex(item => {
-//       return item === searchTarget
-//     }) !== -1
-//   )
-// }
-
-// function getStory(
-//   {
-//     spaceId = defaultSpaceId,
-//     storyId = missingParameter("storyId")
-//   } = missingObjectParameter()
-// ) {
-//   return axiosInst
-//     .get(`/${spaceId}/stories/${storyId}`)
-//     .then(res => Promise.resolve(res.data.story))
-//     .catch(error => Promise.reject(error))
-// }
-
-// function getUnpublishedStories(
-//   { spaceId = defaultSpaceId } = { spaceId: defaultSpaceId }
-// ) {
-//   return getStories({ spaceId })
-//     .then(stories => stories.filter(story => !story.published))
-//     .catch(error => Promise.reject(error))
-// }
-
-// function createStory(
-//   {
-//     spaceId = spaceId,
-//     storyData = missingParameter("storyData")
-//   } = missingObjectParameter()
-// ) {
-//   let data = { story: storyData }
-//   return axiosInst
-//     .post(`/${spaceId}/stories`, data)
-//     .then(res => res.data.story)
-//     .catch(error => Promise.reject(error))
-// }
-
-// function updateStory(
-//   {
-//     storyData = missingParameter("storyData"),
-//     storyId = missingParameter("storyId"),
-//     spaceId = spaceId
-//   } = missingObjectParameter()
-// ) {
-//   let data = { story: storyData }
-//   return axiosInst
-//     .put(`/${spaceId}/stories/${storyId}`, data)
-//     .then(res => Promise.resolve(res.data.story))
-//     .catch(error => Promise.reject(error))
-// }
-
-// function publishStory(
-//   {
-//     spaceId = spaceId,
-//     storyId = missingParameter("storyId")
-//   } = missingObjectParameter()
-// ) {
-//   return axiosInst
-//     .get(`/${spaceId}/stories/${storyId}/publish`)
-//     .catch(error => Promise.reject(error))
-// }
-
-// function deleteStories(
-//   { spaceId = defaultSpaceId } = { spaceId: defaultSpaceId }
-// ) {
-//   return getStories({ spaceId })
-//     .then(existingStories => {
-//       return Promise.each(existingStories, existingStory => {
-//         let storyId = existingStory.id
-//         return deleteStory({ spaceId, storyId })
-//       })
-//     })
-//     .catch(error => Promise.reject(error))
-// }
+function uploadAsset({ buffer, signedRequest, retries = defaults.maxRetries }) {
+  let filename = signedRequest.public_url.split("/").pop()
+  let contentType = signedRequest.fields["Content-Type"]
+  let formData = signedRequest.fields
+  formData.file = {
+    value: buffer,
+    options: { filename, contentType }
+  }
+  return requestWithRetries({
+    method: "post",
+    url: signedRequest.post_url,
+    formData,
+    retry: retries
+  })
+}
