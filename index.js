@@ -10,8 +10,13 @@ const defaults = {
   concurrency: 10
 }
 
+// const essentialProperties = {
+//   folder: ['name', 'parent_id', 'tag_list', 'id', 'uuid', 'is_folder', 'slug', 'path', 'default_root', 'is_startpage'],
+//   story: ['name', 'id', 'uuid', 'content', 'slug', 'tag_list', 'is_startpage', 'parent_id']
+// }
+
 class StoryblokManagementApi {
-  constructor({ spaceId, token }) {
+  constructor(spaceId, token) {
     this.maxRetries = defaults.maxRetries
     this.defaultPerPage = defaults.perPage
     this.maxPerPage = defaults.maxPerPage
@@ -22,7 +27,7 @@ class StoryblokManagementApi {
     this.spaceId = spaceId
   }
 
-  createComponent({ componentDefinition }) {
+  createComponent(componentDefinition) {
     return createComponent({
       axiosInst: this.axiosInst,
       spaceId: this.spaceId,
@@ -30,7 +35,7 @@ class StoryblokManagementApi {
     })
   }
 
-  createStory({ storyData }) {
+  createStory(storyData) {
     return createStory({
       axiosInst: this.axiosInst,
       spaceId: this.spaceId,
@@ -38,7 +43,7 @@ class StoryblokManagementApi {
     })
   }
 
-  deleteAsset({ assetId }) {
+  deleteAsset(assetId) {
     return deleteAsset({
       axiosInst: this.axiosInst,
       spaceId: this.spaceId,
@@ -47,7 +52,7 @@ class StoryblokManagementApi {
     })
   }
 
-  deleteComponent({ componentId }) {
+  deleteComponent(componentId) {
     return deleteComponent({
       axiosInst: this.axiosInst,
       spaceId: this.spaceId,
@@ -77,7 +82,7 @@ class StoryblokManagementApi {
     })
   }
 
-  deleteStory({ storyId }) {
+  deleteStory(storyId) {
     return deleteStory({
       axiosInst: this.axiosInst,
       spaceId: this.spaceId,
@@ -93,7 +98,7 @@ class StoryblokManagementApi {
     })
   }
 
-  getComponent({ componentId }) {
+  getComponent(componentId) {
     return getComponent({
       axiosInst: this.axiosInst,
       spaceId: this.spaceId,
@@ -109,7 +114,7 @@ class StoryblokManagementApi {
     return getSpace({ axiosInst: this.axiosInst, spaceId: this.spaceId })
   }
 
-  getStory({ storyId }) {
+  getStory(storyId) {
     return getStory({
       axiosInst: this.axiosInst,
       spaceId: this.spaceId,
@@ -125,7 +130,7 @@ class StoryblokManagementApi {
     })
   }
 
-  publishStory({ storyId }) {
+  publishStory(storyId) {
     return publishStory({
       axiosInst: this.axiosInst,
       spaceId: this.spaceId,
@@ -140,7 +145,7 @@ class StoryblokManagementApi {
     })
   }
 
-  restoreComponents({ componentDefinitions }) {
+  restoreComponents(componentDefinitions) {
     return restoreComponents({
       axiosInst: this.axiosInst,
       spaceId: this.spaceId,
@@ -148,7 +153,7 @@ class StoryblokManagementApi {
     })
   }
 
-  signAsset({ fileName }) {
+  signAsset(fileName) {
     return signAsset({
       axiosInst: this.axiosInst,
       spaceId: this.spaceId,
@@ -156,7 +161,7 @@ class StoryblokManagementApi {
     })
   }
 
-  updateComponent({ componentId, componentDefinition }) {
+  updateComponent(componentId, componentDefinition) {
     return updateComponent({
       axiosInst: this.axiosInst,
       spaceId: this.spaceId,
@@ -165,7 +170,7 @@ class StoryblokManagementApi {
     })
   }
 
-  updateStory({ storyId, storyData }) {
+  updateStory(storyId, storyData) {
     return updateStory({
       axiosInst: this.axiosInst,
       spaceId: this.spaceId,
@@ -174,7 +179,7 @@ class StoryblokManagementApi {
     })
   }
 
-  uploadAsset({ buffer, signedRequest }) {
+  uploadAsset(buffer, signedRequest) {
     return uploadAsset({
       axiosInst: this.axiosInst,
       spaceId: this.spaceId,
@@ -451,11 +456,11 @@ function restoreComponents({ axiosInst, spaceId, componentDefinitions }) {
         return !existed
           ? createComponent({ axiosInst, spaceId, componentDefinition })
           : updateComponent({
-              axiosInst,
-              spaceId,
-              componentId: existed.id,
-              componentDefinition
-            })
+            axiosInst,
+            spaceId,
+            componentId: existed.id,
+            componentDefinition
+          })
       })
     })
     .catch(error => Promise.reject(error))
