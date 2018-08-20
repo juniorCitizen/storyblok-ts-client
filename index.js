@@ -305,7 +305,7 @@ function getAssetPaginationPageCount({ axiosInst, spaceId, perPage }) {
     .catch(error => Promise.reject(error))
 }
 
-function getAssets({ axiosInst, spaceId, perPage }) {
+function getAssets({ axiosInst, spaceId, perPage = defaults.maxPerPage }) {
   let assets = []
   return getAssetPaginationPageCount({ axiosInst, spaceId, perPage })
     .then(pageCount => {
@@ -456,11 +456,11 @@ function restoreComponents({ axiosInst, spaceId, componentDefinitions }) {
         return !existed
           ? createComponent({ axiosInst, spaceId, componentDefinition })
           : updateComponent({
-            axiosInst,
-            spaceId,
-            componentId: existed.id,
-            componentDefinition
-          })
+              axiosInst,
+              spaceId,
+              componentId: existed.id,
+              componentDefinition
+            })
       })
     })
     .catch(error => Promise.reject(error))
