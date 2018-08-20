@@ -3,13 +3,13 @@ const axiosRetry = require("axios-retry")
 const Promise = require("bluebird")
 const retryingRequest = require("promise-request-retry")
 
-let axiosInst = null
 const defaults = {
   maxRetries: 5,
   perPage: 100,
   maxPerPage: 1000,
   concurrency: 10
 }
+let axiosInst = null
 let spaceId = null
 let token = null
 
