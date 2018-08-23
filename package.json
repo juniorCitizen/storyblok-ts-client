@@ -15,6 +15,10 @@
     "javascript",
     "node.js"
   ],
+  "engines": {
+    "node": ">=8.11.1",
+    "npm": ">=5.6.0"
+  },
   "author": "juniorcitizen <chiayu.tsai.personal@gmail.com>",
   "license": "MIT",
   "bugs": {
