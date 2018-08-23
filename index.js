@@ -1,14 +1,14 @@
-const axios = require("axios")
-const axiosRetry = require("axios-retry")
-const Promise = require("bluebird")
-const retryingRequest = require("promise-request-retry")
-const sharp = require("sharp")
+const axios = require('axios')
+const axiosRetry = require('axios-retry')
+const Promise = require('bluebird')
+const retryingRequest = require('promise-request-retry')
+const sharp = require('sharp')
 
 const defaults = {
   maxRetries: 5,
   perPage: 100,
   maxPerPage: 1000,
-  concurrency: 10
+  concurrency: 10,
 }
 let axiosInst = null
 let spaceId = null
@@ -41,17 +41,18 @@ let token = null
  */
 
 /**
- * Storyblok management API wrapper module
- * @param {number} _spaceId - working space id
- * @param {string} _token - Storyblok account management API token
- * @returns {ApiMethods} Storyblok API methods
+ * Storyblok management API wrapper module.
+ *
+ * @param {number} _spaceId - Working space id.
+ * @param {string} _token - Storyblok account management API token.
+ * @returns {ApiMethods} Storyblok API methods.
  */
 module.exports = (_spaceId, _token) => {
   spaceId = _spaceId
   token = _token
   axiosInst = axios.create({
-    baseURL: "https://api.storyblok.com/v1/spaces",
-    headers: { Authorization: token }
+    baseURL: 'https://api.storyblok.com/v1/spaces',
+    headers: {Authorization: token},
   })
   return {
     createComponent,
@@ -75,21 +76,20 @@ module.exports = (_spaceId, _token) => {
     signAsset,
     updateComponent,
     updateStory,
-    uploadAsset
+    uploadAsset,
   }
 }
 
 /**
- * using 'sharp' library to read an image into buffer
- * @async
- * @function bufferImage
- * @param {string} imageFilePath - absolute path to image file
- * @throws error on failure
- * @returns {Promise<Buffer>} buffered image data
+ * Using 'sharp' library to read an image into buffer.
+ *
+ * @param {string} imageFilePath - Absolute path to image file.
+ * @throws Error on failure.
+ * @returns {Promise<Buffer>} Buffered image data.
  */
 async function bufferImage(imageFilePath) {
   try {
-    return await sharp(imageFilePath, { failOnError: true })
+    return await sharp(imageFilePath, {failOnError: true})
       .rotate()
       .toBuffer()
   } catch (error) {
@@ -98,12 +98,13 @@ async function bufferImage(imageFilePath) {
 }
 
 /**
- * create a component on server
- * @param {Object} definition - Storyblok component definition object
- * @returns {Object|Promise} details of component that was created or error on failure
+ * Create a component on server.
+ *
+ * @param {Object} definition - Storyblok component definition object.
+ * @returns {Object|Promise} Details of component that was created or error on failure.
  */
 function createComponent(definition) {
-  let data = { component: definition }
+  let data = {component: definition}
   return axiosInst
     .post(`/${spaceId}/components`, data)
     .then(res => res.data.component)
@@ -111,14 +112,13 @@ function createComponent(definition) {
 }
 
 /**
- * register an image as a Storyblok asset and upload to server
- * @async
- * @function createImageAsset
- * @param {string} imageFilePath - absolute file path to image
- * @returns {string} public url to access the asset
+ * Register an image as a Storyblok asset and upload to server.
+ *
+ * @param {string} imageFilePath - Absolute file path to image.
+ * @returns {string} Public url to access the asset.
  */
 async function createImageAsset(imageFilePath) {
-  let imageFileName = filePath.split("\\").pop()
+  let imageFileName = imageFilePath.split('\\').pop()
   try {
     let buffer = await bufferImage(imageFilePath)
     let signedRequest = await signAsset(imageFileName)
@@ -129,12 +129,13 @@ async function createImageAsset(imageFilePath) {
 }
 
 /**
- * create a story
- * @param {Object} storyData - Storyblok story data object
- * @returns {Object|Promise} details of story that was created or error on failure
+ * Create a story.
+ *
+ * @param {Object} storyData - Storyblok story data object.
+ * @returns {Object|Promise} Details of story that was created or error on failure.
  */
 function createStory(storyData) {
-  let data = { story: storyData }
+  let data = {story: storyData}
   return axiosInst
     .post(`/${spaceId}/stories`, data)
     .then(res => res.data.story)
@@ -142,29 +143,29 @@ function createStory(storyData) {
 }
 
 /**
- * delete an asset by its id
- * @param {number} assetId - id of asset to be deleted
- * @param {number} retries - numbers of retries with defaults
- * @returns {number|Promise} assetId is returned on successful delete request or error on failure
+ * Delete an asset by its id.
+ *
+ * @param {number} assetId - Id of asset to be deleted.
+ * @param {number} retries - Numbers of retries with defaults.
+ * @returns {number|Promise} AssetId is returned on successful delete request or error on failure.
  */
 function deleteAsset(assetId, retries = defaults.maxRetries) {
   let retryDelay = axiosRetry.exponentialDelay
-  axiosRetry(axiosInst, { retries, retryDelay })
+  axiosRetry(axiosInst, {retries, retryDelay})
   return axiosInst
     .delete(`/${spaceId}/assets/${assetId}`)
     .then(() => assetId)
     .catch(error => {
       // allow continuation if the error is 'not found (404)'
-      return error.response.status !== 404
-        ? Promise.reject(error)
-        : Promise.resolve(assetId)
+      return error.response.status !== 404 ? Promise.reject(error) : Promise.resolve(assetId)
     })
 }
 
 /**
- * delete a component by its id
- * @param {number} componentId - id of component to be deleted
- * @returns {number|Promise} componentId is returned on successful delete request or error on failure
+ * Delete a component by its id.
+ *
+ * @param {number} componentId - Id of component to be deleted.
+ * @returns {number|Promise} ComponentId is returned on successful delete request or error on failure.
  */
 function deleteComponent(componentId) {
   return axiosInst
@@ -174,11 +175,12 @@ function deleteComponent(componentId) {
 }
 
 /**
- * delete all existing assets
- * @returns {number[]|Promise} array of asset id that was removed or error on failure
+ * Delete all existing assets.
+ *
+ * @returns {number[]|Promise} Array of asset id that was removed or error on failure.
  */
 function deleteExistingAssets() {
-  let concurrency = { concurrency: defaults.concurrency }
+  let concurrency = {concurrency: defaults.concurrency}
   return getAssets().then(existingAssets => {
     let deleteFn = asset => deleteAsset(asset.id)
     return Promise.map(existingAssets, deleteFn, concurrency)
@@ -188,11 +190,12 @@ function deleteExistingAssets() {
 }
 
 /**
- * delete all existing components
- * @returns {number[]|Promise} array of component id that was removed or error on failure
+ * Delete all existing components.
+ *
+ * @returns {number[]|Promise} Array of component id that was removed or error on failure.
  */
 function deleteExistingComponents() {
-  let concurrency = { concurrency: defaults.concurrency }
+  let concurrency = {concurrency: defaults.concurrency}
   return getComponents().then(existingComponents => {
     let deleteFn = component => deleteComponent(component.id)
     return Promise.each(existingComponents, deleteFn, concurrency)
@@ -202,8 +205,9 @@ function deleteExistingComponents() {
 }
 
 /**
- * delete all existing stories from server
- * @returns {Promise} pending status of operation
+ * Delete all existing stories from server.
+ *
+ * @returns {Promise} Pending status of operation.
  */
 function deleteExistingStories() {
   return getStories().then(stories => {
@@ -223,9 +227,10 @@ function deleteExistingStories() {
 }
 
 /**
- * delete a story from server
- * @param {number} storyId - id of story to be deleted
- * @returns {number|Promise} id of story that was removed or error on failure
+ * Delete a story from server.
+ *
+ * @param {number} storyId - Id of story to be deleted.
+ * @returns {number|Promise} Id of story that was removed or error on failure.
  */
 function deleteStory(storyId) {
   return axiosInst
@@ -235,8 +240,9 @@ function deleteStory(storyId) {
 }
 
 /**
- * get total number of assets existing on server
- * @returns {number|Promise} count of existing assets or error on failure
+ * Get total number of assets existing on server.
+ *
+ * @returns {number|Promise} Count of existing assets or error on failure.
  */
 function getAssetCount() {
   return getSpace()
@@ -245,9 +251,10 @@ function getAssetCount() {
 }
 
 /**
- * count number of pagination pages on assets
- * @param {number} perPage - how many assets per page (defaults to server max limit of 1000)
- * @returns {number|Promise} count of pagination pages or error on failure
+ * Count number of pagination pages on assets.
+ *
+ * @param {number} perPage - How many assets per page (defaults to server max limit of 1000).
+ * @returns {number|Promise} Count of pagination pages or error on failure.
  */
 function getAssetPaginationPageCount(perPage = defaults.maxPerPage) {
   return getAssetCount()
@@ -256,9 +263,10 @@ function getAssetPaginationPageCount(perPage = defaults.maxPerPage) {
 }
 
 /**
- * get a full listing of assets from server
- * @param {number} perPage - how many assets per page (defaults to server max limit of 1000)
- * @returns {Object[]|Promise} full list of existing assets or error on failure
+ * Get a full listing of assets from server.
+ *
+ * @param {number} perPage - How many assets per page (defaults to server max limit of 1000).
+ * @returns {Object[]|Promise} Full list of existing assets or error on failure.
  */
 function getAssets(perPage = defaults.maxPerPage) {
   let assets = []
@@ -285,14 +293,15 @@ function getAssets(perPage = defaults.maxPerPage) {
 }
 
 /**
- * get assets from server from a particular pagination page
- * @param {number} perPage - how many assets per page (defaults to server max limit of 1000)
- * @param {number} page - page intended
- * @returns {Object[]|Promise} list of assets or error on failure
+ * Get assets from server from a particular pagination page.
+ *
+ * @param {number} perPage - How many assets per page (defaults to server max limit of 1000).
+ * @param {number} page - Page intended.
+ * @returns {Object[]|Promise} List of assets or error on failure.
  */
 function getAssetsAtPaginationPage(perPage = defaults.maxPerPage, page) {
   let per_page = perPage
-  let paramsOpt = { params: { per_page, page } }
+  let paramsOpt = {params: {per_page, page}}
   return axiosInst
     .get(`${spaceId}/assets`, paramsOpt)
     .then(res => res.data.assets)
@@ -300,9 +309,10 @@ function getAssetsAtPaginationPage(perPage = defaults.maxPerPage, page) {
 }
 
 /**
- * get component definition by its id
- * @param {number} componentId - id of component
- * @returns {Object|Promise} component definition or error on failure
+ * Get component definition by its id.
+ *
+ * @param {number} componentId - Id of component.
+ * @returns {Object|Promise} Component definition or error on failure.
  */
 function getComponent(componentId) {
   return axiosInst
@@ -312,8 +322,9 @@ function getComponent(componentId) {
 }
 
 /**
- * list existing components from server
- * @returns {Object[]|Promise} list of component definitions or error on failure
+ * List existing components from server.
+ *
+ * @returns {Object[]|Promise} List of component definitions or error on failure.
  */
 function getComponents() {
   return axiosInst
@@ -323,8 +334,9 @@ function getComponents() {
 }
 
 /**
- * get information on working space
- * @returns {Object|Promise} space info object or error on failure
+ * Get information on working space.
+ *
+ * @returns {Object|Promise} Space info object or error on failure.
  */
 function getSpace() {
   return axiosInst
@@ -334,14 +346,9 @@ function getSpace() {
 }
 
 /**
- * get number of stories existed on server
- * Storyblok API's space info does not account 'folders' as stories,
- * so the following does not work for the purpose of this function
+ * Get number of stories existed on server.  Storyblok API's space info does not account 'folders' as stories, so "return getSpace({ spaceId }).then(space => space.stories_count)" does not work for the purpose of this function.  Stories are therefore manually counted.
  *
- * return getSpace({ spaceId }).then(space => space.stories_count)
- *
- * stories is therefore manually counted
- * @returns {number|Promise} number of stories existing on server or error on failure
+ * @returns {number|Promise} Number of stories existing on server or error on failure.
  */
 function getStoryCount() {
   return axiosInst
@@ -351,9 +358,10 @@ function getStoryCount() {
 }
 
 /**
- * count numnber of pagination pages of existing stories
- * @param {number} perPage - how many stories per page (defaults to server max limit of 1000)
- * @returns {number|Promise} count of pagination pages or error on failure
+ * Count numnber of pagination pages of existing stories.
+ *
+ * @param {number} perPage - How many stories per page (defaults to server max limit of 1000).
+ * @returns {number|Promise} Count of pagination pages or error on failure.
  */
 function getStoryPaginationPageCount(perPage = defaults.maxPerPage) {
   return getStoryCount()
@@ -362,14 +370,15 @@ function getStoryPaginationPageCount(perPage = defaults.maxPerPage) {
 }
 
 /**
- * get stories from server from a particular pagination page
- * @param {number} perPage - how many stories per page (defaults to server max limit of 1000)
- * @param {number} page - page intended
- * @returns {Object[]|Promise} list of stories or error on failure
+ * Get stories from server from a particular pagination page.
+ *
+ * @param {number} perPage - How many stories per page (defaults to server max limit of 1000).
+ * @param {number} page - Page intended.
+ * @returns {Object[]|Promise} List of stories or error on failure.
  */
 function getStoriesAtPaginationPage(perPage = defaults.maxPerPage, page) {
   let per_page = perPage
-  let paramsOpt = { params: { per_page, page } }
+  let paramsOpt = {params: {per_page, page}}
   return axiosInst
     .get(`${spaceId}/stories`, paramsOpt)
     .then(res => res.data.stories)
@@ -377,9 +386,10 @@ function getStoriesAtPaginationPage(perPage = defaults.maxPerPage, page) {
 }
 
 /**
- * get a full listing of stories from server
- * @param {number} perPage - how many stories per page (defaults to server max limit of 1000)
- * @returns {Object[]|Promise} full list of existing stories or error on failure
+ * Get a full listing of stories from server.
+ *
+ * @param {number} perPage - How many stories per page (defaults to server max limit of 1000).
+ * @returns {Object[]|Promise} Full list of existing stories or error on failure.
  */
 function getStories(perPage = defaults.maxPerPage) {
   let stories = []
@@ -406,9 +416,10 @@ function getStories(perPage = defaults.maxPerPage) {
 }
 
 /**
- * get details of a story by its id
- * @param {number} storyId
- * @returns {Object|Promise} details of story or error on failure
+ * Get details of a story by its id.
+ *
+ * @param {number} storyId - Id of Story.
+ * @returns {Object|Promise} Details of story or error on failure.
  */
 function getStory(storyId) {
   return axiosInst
@@ -418,8 +429,9 @@ function getStory(storyId) {
 }
 
 /**
- * get a list of id's on unpublished stories
- * @returns {number[]|Promise} list id's of unpublished stories or error on failure
+ * Get a list of id's on unpublished stories.
+ *
+ * @returns {number[]|Promise} List id's of unpublished stories or error on failure.
  */
 function getUnpublishedStorieIds() {
   // exclude published stories and folders
@@ -431,12 +443,13 @@ function getUnpublishedStorieIds() {
 }
 
 /**
- * publish all existing but unpublished stories
- * @returns {number[]|Promise} list of id's on stories that were published by execution of this function or error on failure
+ * Publish all existing but unpublished stories.
+ *
+ * @returns {number[]|Promise} List of id's on stories that were published by execution of this function or error on failure.
  */
 function publishExistingStories() {
   let publishFn = storyId => publishStory(storyId)
-  let concurrency = { concurrency: defaults.concurrency }
+  let concurrency = {concurrency: defaults.concurrency}
   return getUnpublishedStorieIds().then(unpublishedStoryIds => {
     return Promise.map(unpublishedStoryIds, publishFn, concurrency)
       .then(() => unpublishedStoryIds)
@@ -445,9 +458,10 @@ function publishExistingStories() {
 }
 
 /**
- * publish a story by its id
- * @param {number} storyId - id of story to be published
- * @returns {number|Promise} id of the story that was published or error on failure
+ * Publish a story by its id.
+ *
+ * @param {number} storyId - Id of story to be published.
+ * @returns {number|Promise} Id of the story that was published or error on failure.
  */
 function publishStory(storyId) {
   return axiosInst
@@ -457,9 +471,10 @@ function publishStory(storyId) {
 }
 
 /**
- * create or update components on server from a list of component definitions
- * @param {Object[]} componentDefinitions
- * @returns {number[]|Promise} id of components created/modified or error on failure
+ * Create or update components on server from a list of component definitions.
+ *
+ * @param {Object[]} componentDefinitions - Definition of a component.
+ * @returns {number[]|Promise} Id of components created/modified or error on failure.
  */
 function restoreComponents(componentDefinitions) {
   // get existing components from server work space
@@ -471,9 +486,7 @@ function restoreComponents(componentDefinitions) {
       }
       let existed = findFn(componentDefinition.name, components)
       // create if not exist, else update
-      return !existed
-        ? createComponent(componentDefinition)
-        : updateComponent(existed.id, componentDefinition)
+      return !existed ? createComponent(componentDefinition) : updateComponent(existed.id, componentDefinition)
     })
 
       .then(() => getComponents()) // get components again
@@ -486,27 +499,29 @@ function restoreComponents(componentDefinitions) {
 }
 
 /**
- * register a file as a Storyblok asset
- * the asset still requires to be physically uploaded with 'uploadAsset()'
- * @param {string} fileName - name of file to be registered as an asset
- * @returns {Object|Promise} object with information to enable the physical asset upload operation or error on failure
+ * Register a file as a Storyblok asset
+ * the asset still requires to be physically uploaded with 'uploadAsset()'.
+ *
+ * @param {string} fileName - Name of file to be registered as an asset.
+ * @returns {Object|Promise} Object with information to enable the physical asset upload operation or error on failure.
  */
 function signAsset(fileName) {
   let filename = fileName
   return axiosInst
-    .post(`${spaceId}/assets`, { filename })
+    .post(`${spaceId}/assets`, {filename})
     .then(res => res.data)
     .catch(error => Promise.reject(error))
 }
 
 /**
- * update a component by id
- * @param {number} componentId
- * @param {Object} componentDefinition
- * @returns {Object|Promise} updated information of the component or error on failure
+ * Update a component by id.
+ *
+ * @param {number} componentId - id of component.
+ * @param {Object} componentDefinition - Defintion of component.
+ * @returns {Object|Promise} Updated information of the component or error on failure.
  */
 function updateComponent(componentId, componentDefinition) {
-  let data = { component: componentDefinition }
+  let data = {component: componentDefinition}
   return axiosInst
     .put(`/${spaceId}/components/${componentId}`, data)
     .then(res => res.data.component)
@@ -514,13 +529,14 @@ function updateComponent(componentId, componentDefinition) {
 }
 
 /**
- * update a story by id
- * @param {number} storyId
- * @param {Object} storyData
- * @returns {Object|Promise} updated information of the story or error on failure
+ * Update a story by id.
+ *
+ * @param {number} storyId - id of a story
+ * @param {Object} storyData - data to update a story with
+ * @returns {Object|Promise} Updated information of the story or error on failure.
  */
 function updateStory(storyId, storyData) {
-  let data = { story: storyData }
+  let data = {story: storyData}
   return axiosInst
     .put(`/${spaceId}/stories/${storyId}`, data)
     .then(res => res.data.story)
@@ -528,25 +544,26 @@ function updateStory(storyId, storyData) {
 }
 
 /**
- * physically uploading an asset after it is registered with 'signAsset()' function
- * @param {Buffer} buffer - buffered asset
- * @param {Object} signedRequest - the returned object from 'signAsset()' function, containing info to enable the actual physical file upload
- * @param {number} retries - numbers of retries (defaults to 5)
- * @returns {string|Promise} url to access the asset or error on failure
+ * Physically uploading an asset after it is registered with 'signAsset()' function.
+ *
+ * @param {Buffer} buffer - Buffered asset.
+ * @param {Object} signedRequest - The returned object from 'signAsset()' function, containing info to enable the actual physical file upload.
+ * @param {number} retries - Numbers of retries (defaults to 5).
+ * @returns {string|Promise} Url to access the asset or error on failure.
  */
 function uploadAsset(buffer, signedRequest, retries = defaults.maxRetries) {
-  let filename = signedRequest.public_url.split("/").pop()
-  let contentType = signedRequest.fields["Content-Type"]
+  let filename = signedRequest.public_url.split('/').pop()
+  let contentType = signedRequest.fields['Content-Type']
   let formData = signedRequest.fields
   formData.file = {
     value: buffer,
-    options: { filename, contentType }
+    options: {filename, contentType},
   }
   return retryingRequest({
-    method: "post",
+    method: 'post',
     url: signedRequest.post_url,
     formData,
-    retry: retries
+    retry: retries,
   })
     .then(() => signedRequest.pretty_url)
     .catch(error => Promise.reject(error))
