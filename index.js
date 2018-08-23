@@ -14,10 +14,35 @@ let spaceId = null
 let token = null
 
 /**
+ * @typedef {Object} ApiMethods
+ * @property {Function} createComponent - create a component on server
+ * @property {Function} createStory - create a story on server
+ * @property {Function} deleteAsset - delete an asset by its id
+ * @property {Function} deleteComponent - delete a component by its id
+ * @property {Function} deleteExistingAssets - delete all existing assets
+ * @property {Function} deleteExistingComponents - delete all existing components
+ * @property {Function} deleteExistingStories - delete all existing stories from server
+ * @property {Function} deleteStory - delete a story from server by its id
+ * @property {Function} getAssets - get a full listing of assets from server
+ * @property {Function} getComponent - get component definition by its id
+ * @property {Function} getComponents - list existing components from server
+ * @property {Function} getSpace - get information on working space
+ * @property {Function} getStories - get a full listing of stories from server
+ * @property {Function} getStory - get details of a story by its id
+ * @property {Function} publishExistingStories - publish all existing but unpublished stories
+ * @property {Function} publishStory - publish a story by its id
+ * @property {Function} restoreComponents - create or update components on server from a list of component definitions
+ * @property {Function} signAsset - register a file as a Storyblok asset
+ * @property {Function} updateComponent - update a component by its id
+ * @property {Function} updateStory - update a story by id
+ * @property {Function} uploadAsset - physically uploading an asset after it is registered with 'signAsset()' function
+ */
+
+/**
  * Storyblok management API wrapper module
  * @param {number} _spaceId - working space id
  * @param {string} _token - Storyblok account management API token
- * @returns {Object} Storyblok API operations wrapped in an object
+ * @returns {ApiMethods} Storyblok API methods
  */
 module.exports = (_spaceId, _token) => {
   spaceId = _spaceId
