@@ -2,6 +2,7 @@ const axios = require("axios")
 const axiosRetry = require("axios-retry")
 const Promise = require("bluebird")
 const retryingRequest = require("promise-request-retry")
+const sharp = require("sharp")
 
 const defaults = {
   maxRetries: 5,
@@ -16,6 +17,7 @@ let token = null
 /**
  * @typedef {Object} ApiMethods
  * @property {Function} createComponent - create a component on server
+ * @property {Function} createImageAsset - register an image as a Storyblok asset and upload to server
  * @property {Function} createStory - create a story on server
  * @property {Function} deleteAsset - delete an asset by its id
  * @property {Function} deleteComponent - delete a component by its id
@@ -53,6 +55,7 @@ module.exports = (_spaceId, _token) => {
   })
   return {
     createComponent,
+    createImageAsset,
     createStory,
     deleteAsset,
     deleteComponent,
@@ -77,6 +80,24 @@ module.exports = (_spaceId, _token) => {
 }
 
 /**
+ * using 'sharp' library to read an image into buffer
+ * @async
+ * @function bufferImage
+ * @param {string} imageFilePath - absolute path to image file
+ * @throws error on failure
+ * @returns {Promise<Buffer>} buffered image data
+ */
+async function bufferImage(imageFilePath) {
+  try {
+    return await sharp(imageFilePath, { failOnError: true })
+      .rotate()
+      .toBuffer()
+  } catch (error) {
+    throw error
+  }
+}
+
+/**
  * create a component on server
  * @param {Object} definition - Storyblok component definition object
  * @returns {Object|Promise} details of component that was created or error on failure
@@ -87,6 +108,24 @@ function createComponent(definition) {
     .post(`/${spaceId}/components`, data)
     .then(res => res.data.component)
     .catch(error => Promise.reject(error))
+}
+
+/**
+ * register an image as a Storyblok asset and upload to server
+ * @async
+ * @function createImageAsset
+ * @param {string} imageFilePath - absolute file path to image
+ * @returns {string} public url to access the asset
+ */
+async function createImageAsset(imageFilePath) {
+  let imageFileName = filePath.split("\\").pop()
+  try {
+    let buffer = await bufferImage(imageFilePath)
+    let signedRequest = await signAsset(imageFileName)
+    return await uploadAsset(buffer, signedRequest)
+  } catch (error) {
+    throw error
+  }
 }
 
 /**
