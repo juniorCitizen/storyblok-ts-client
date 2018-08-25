@@ -2,6 +2,6 @@
   "compilerOptions": {
     "target": "es6"
   },
-  "include": ["src/*"],
+  "include": ["."],
   "exclude": ["node_modules"]
 }
