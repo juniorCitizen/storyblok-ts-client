@@ -157,7 +157,9 @@ function deleteAsset(assetId, retries = defaults.maxRetries) {
     .then(() => assetId)
     .catch(error => {
       // allow continuation if the error is 'not found (404)'
-      return error.response.status !== 404 ? Promise.reject(error) : Promise.resolve(assetId)
+      return error.response.status !== 404
+        ? Promise.reject(error)
+        : Promise.resolve(assetId)
     })
 }
 
@@ -486,7 +488,9 @@ function restoreComponents(componentDefinitions) {
       }
       let existed = findFn(componentDefinition.name, components)
       // create if not exist, else update
-      return !existed ? createComponent(componentDefinition) : updateComponent(existed.id, componentDefinition)
+      return !existed
+        ? createComponent(componentDefinition)
+        : updateComponent(existed.id, componentDefinition)
     })
 
       .then(() => getComponents()) // get components again
