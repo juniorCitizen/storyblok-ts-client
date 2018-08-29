@@ -275,7 +275,7 @@ function deleteStory(storyId) {
  */
 function getAssetCount() {
   return getSpace()
-    .then(spaceData => spaceData.asset_count)
+    .then(spaceData => spaceData.assets_count)
     .catch(error => Promise.reject(error))
 }
 
