@@ -424,7 +424,7 @@ function getStoryPaginationPageCount(perPage = defaults.maxPerPage) {
 function getStoriesAtPaginationPage(perPage = defaults.maxPerPage, page) {
   const per_page = perPage
   const paramsOpt = { params: { per_page, page } }
-  return requestPromise(retry => {
+  return promiseRetry(retry => {
     return axiosInst
       .get(`${spaceId}/stories`, paramsOpt)
       .then(res => res.data.stories)
