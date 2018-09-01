@@ -150,7 +150,6 @@ function createComponent(definition) {
  * @returns {string} Public url to access the asset.
  */
 function createImageAsset(imageFilePath) {
-  console.log(imageFilePath)
   const imageFileName = imageFilePath.split('\\').pop()
   return Promise.all([bufferImage(imageFilePath), signAsset(imageFileName)])
     .then(([buffer, signedRequest]) => uploadAsset(buffer, signedRequest))
