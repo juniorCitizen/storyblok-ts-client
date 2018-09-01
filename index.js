@@ -9,6 +9,12 @@ const defaults = {
   maxPerPage: 1000,
   concurrency: 10,
 }
+const retryOptions = {
+  retries: 10,
+  minTimeout: 200,
+  maxTimeout: 500,
+  randomize: true,
+}
 let axiosInst = null
 let spaceId = null
 let token = null
@@ -80,24 +86,27 @@ module.exports = (_spaceId, _token) => {
 }
 
 function axiosErrorHandler(error, functionName) {
+  console.error(`axios error occured at function ${functionName}`)
   if (error.response) {
-    // The request was made and the server responded with a status code
-    // that falls out of the range of 2xx
-    console.log(error.response.data)
-    console.log(error.response.status)
-    console.log(error.response.headers)
-  } else if (error.request) {
-    // The request was made but no response was received
-    // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
-    // http.ClientRequest in node.js
-    console.log(error.request)
+    // console.log(error.response.data)
+    console.log('http error code:', error.response.status)
+    // console.log(error.response.headers)
   } else {
-    // Something happened in setting up the request that triggered an Error
-    console.log('Error', error.message)
+    console.log('Error:', error.message)
   }
-  console.log(error.config)
-  const handledError = new Error(`axios error from function ${functionName}`)
-  throw handledError
+  throw error
+}
+
+function axiosErrorParser(error, functionName) {
+  console.warn(`error intercepted in function: ${functionName}`)
+  if (error.response) {
+    // console.log(error.response.data)
+    console.log('http error code:', error.response.status)
+    // console.log(error.response.headers)
+  } else {
+    console.log('Error:', error.message)
+  }
+  return error
 }
 
 /**
@@ -123,11 +132,14 @@ function bufferImage(imageFilePath) {
  */
 function createComponent(definition) {
   const data = { component: definition }
-  return promiseRetry(retry => {
+  return promiseRetry(retryOptions, (retry, attempCount) => {
     return axiosInst
       .post(`/${spaceId}/components`, data)
       .then(res => res.data.component)
-      .catch(retry)
+      .catch(error => {
+        console.warn('attemp no:', attempCount)
+        retry(axiosErrorParser(error, 'createComponent'))
+      })
   }).catch(error => axiosErrorHandler(error, 'createComponent'))
 }
 
@@ -138,6 +150,7 @@ function createComponent(definition) {
  * @returns {string} Public url to access the asset.
  */
 function createImageAsset(imageFilePath) {
+  console.log(imageFilePath)
   const imageFileName = imageFilePath.split('\\').pop()
   return Promise.all([bufferImage(imageFilePath), signAsset(imageFileName)])
     .then(([buffer, signedRequest]) => uploadAsset(buffer, signedRequest))
@@ -152,11 +165,14 @@ function createImageAsset(imageFilePath) {
  */
 function createStory(storyData) {
   const data = { story: storyData }
-  return promiseRetry(retry => {
+  return promiseRetry(retryOptions, (retry, attempCount) => {
     return axiosInst
       .post(`/${spaceId}/stories`, data)
       .then(res => res.data.story)
-      .catch(retry)
+      .catch(error => {
+        console.warn('attemp no:', attempCount)
+        retry(axiosErrorParser(error, 'createStory'))
+      })
   }).catch(error => axiosErrorHandler(error, 'createStory'))
 }
 
@@ -167,16 +183,20 @@ function createStory(storyData) {
  * @returns {number} AssetId is returned on successful delete request
  */
 function deleteAsset(assetId) {
-  return promiseRetry(retry => {
+  return promiseRetry(retryOptions, (retry, attempCount) => {
     return axiosInst
       .delete(`/${spaceId}/assets/${assetId}`)
       .then(() => assetId)
-      .catch(retry)
-  }).catch(error => {
-    // allow continuation if the error is 'not found (404)'
-    if (error.response.status !== 404) axiosErrorHandler(error, 'deleteAsset')
-    else return assetId
-  })
+      .catch(error => {
+        // allow continuation if the error is 'not found (404)'
+        if (error.response.status === 404) {
+          return assetId
+        } else {
+          console.warn('attemp no:', attempCount)
+          retry(axiosErrorParser(error, 'deleteAsset'))
+        }
+      })
+  }).catch(error => axiosErrorHandler(error, 'deleteAsset'))
 }
 
 /**
@@ -186,11 +206,14 @@ function deleteAsset(assetId) {
  * @returns {number} ComponentId is returned on successful delete request
  */
 function deleteComponent(componentId) {
-  return promiseRetry(retry => {
+  return promiseRetry(retryOptions, (retry, attempCount) => {
     return axiosInst
       .delete(`/${spaceId}/components/${componentId}`)
       .then(() => componentId)
-      .catch(retry)
+      .catch(error => {
+        console.warn('attemp no:', attempCount)
+        retry(axiosErrorParser(error, 'deleteComponent'))
+      })
   }).catch(error => axiosErrorHandler(error, 'deleteComponent'))
 }
 
@@ -260,11 +283,14 @@ async function deleteExistingStories(concurrency = defaults.concurrency) {
  * @returns {number} Id of story that was removed
  */
 function deleteStory(storyId) {
-  return promiseRetry(retry => {
+  return promiseRetry(retryOptions, (retry, attempCount) => {
     return axiosInst
       .delete(`/${spaceId}/stories/${storyId}`)
       .then(() => storyId)
-      .catch(retry)
+      .catch(error => {
+        console.warn('attemp no:', attempCount)
+        retry(axiosErrorParser(error, 'deleteStory'))
+      })
   }).catch(error => axiosErrorHandler(error, 'deleteStory'))
 }
 
@@ -337,11 +363,14 @@ async function getAssets(perPage = defaults.maxPerPage) {
 function getAssetsAtPaginationPage(perPage = defaults.maxPerPage, page) {
   const per_page = perPage
   const paramsOpt = { params: { per_page, page } }
-  return promiseRetry(retry => {
+  return promiseRetry(retryOptions, (retry, attempCount) => {
     return axiosInst
       .get(`${spaceId}/assets`, paramsOpt)
       .then(res => res.data.assets)
-      .catch(retry)
+      .catch(error => {
+        console.warn('attemp no:', attempCount)
+        retry(axiosErrorParser(error, 'getAssetsAtPaginationPage'))
+      })
   }).catch(error => axiosErrorHandler(error, 'getAssetsAtPaginationPage'))
 }
 
@@ -352,11 +381,14 @@ function getAssetsAtPaginationPage(perPage = defaults.maxPerPage, page) {
  * @returns {Object} Component definition
  */
 function getComponent(componentId) {
-  return promiseRetry(retry => {
+  return promiseRetry(retryOptions, (retry, attempCount) => {
     return axiosInst
       .get(`/${spaceId}/components/${componentId}`)
       .then(res => res.data.component)
-      .catch(retry)
+      .catch(error => {
+        console.warn('attemp no:', attempCount)
+        retry(axiosErrorParser(error, 'getComponent'))
+      })
   }).catch(error => axiosErrorHandler(error, 'getComponent'))
 }
 
@@ -366,11 +398,14 @@ function getComponent(componentId) {
  * @returns {Object[]} List of component definitions
  */
 function getComponents() {
-  return promiseRetry(retry => {
+  return promiseRetry(retryOptions, (retry, attempCount) => {
     return axiosInst
       .get(`/${spaceId}/components`)
       .then(res => res.data.components)
-      .catch(retry)
+      .catch(error => {
+        console.warn('attemp no:', attempCount)
+        retry(axiosErrorParser(error, 'getComponents'))
+      })
   }).catch(error => axiosErrorHandler(error, 'getComponents'))
 }
 
@@ -380,11 +415,14 @@ function getComponents() {
  * @returns {Object} Space info object
  */
 function getSpace() {
-  return promiseRetry(retry => {
+  return promiseRetry(retryOptions, (retry, attempCount) => {
     return axiosInst
       .get(`/${spaceId}`)
       .then(res => res.data.space)
-      .catch(retry)
+      .catch(error => {
+        console.warn('attemp no:', attempCount)
+        retry(axiosErrorParser(error, 'getSpace'))
+      })
   }).catch(error => axiosErrorHandler(error, 'getSpace'))
 }
 
@@ -394,11 +432,14 @@ function getSpace() {
  * @returns {number} Number of stories existing on server
  */
 function getStoryCount() {
-  return promiseRetry(retry => {
+  return promiseRetry(retryOptions, (retry, attempCount) => {
     return axiosInst
       .get(`/${spaceId}/stories`)
       .then(res => res.headers.total)
-      .catch(retry)
+      .catch(error => {
+        console.warn('attemp no:', attempCount)
+        retry(axiosErrorParser(error, 'getStoryCount'))
+      })
   }).catch(error => axiosErrorHandler(error, 'getStoryCount'))
 }
 
@@ -424,11 +465,14 @@ function getStoryPaginationPageCount(perPage = defaults.maxPerPage) {
 function getStoriesAtPaginationPage(perPage = defaults.maxPerPage, page) {
   const per_page = perPage
   const paramsOpt = { params: { per_page, page } }
-  return promiseRetry(retry => {
+  return promiseRetry(retryOptions, (retry, attempCount) => {
     return axiosInst
       .get(`${spaceId}/stories`, paramsOpt)
       .then(res => res.data.stories)
-      .catch(retry)
+      .catch(error => {
+        console.warn('attemp no:', attempCount)
+        retry(axiosErrorParser(error, 'getStoriesAtPaginationPage'))
+      })
   }).catch(error => axiosErrorHandler(error, 'getStoriesAtPaginationPage'))
 }
 
@@ -475,11 +519,14 @@ async function getStories(perPage = defaults.maxPerPage) {
  * @returns {Object} Details of story
  */
 function getStory(storyId) {
-  return promiseRetry(retry => {
+  return promiseRetry(retryOptions, (retry, attempCount) => {
     return axiosInst
       .get(`/${spaceId}/stories/${storyId}`)
       .then(res => res.data.story)
-      .catch(retry)
+      .catch(error => {
+        console.warn('attemp no:', attempCount)
+        retry(axiosErrorParser(error, 'getStory'))
+      })
   }).catch(error => axiosErrorHandler(error, 'getStory'))
 }
 
@@ -521,12 +568,15 @@ function publishExistingStories(concurrency = defaults.concurrency) {
  * @returns {number} Id of the story that was published
  */
 function publishStory(storyId) {
-  return promiseRetry(retry => {
+  return promiseRetry(retryOptions, (retry, attempCount) => {
     return axiosInst
       .get(`/${spaceId}/stories/${storyId}/publish`)
       .then(() => storyId)
-      .catch(retry)
-  }).catch(error => axiosErrorHandler(error, 'getStory'))
+      .catch(error => {
+        console.warn('attemp no:', attempCount)
+        retry(axiosErrorParser(error, 'publishStory'))
+      })
+  }).catch(error => axiosErrorHandler(error, 'publishStory'))
 }
 
 /**
@@ -569,11 +619,14 @@ async function restoreComponents(componentDefinitions) {
  * @returns {Object} Object with information to enable the physical asset upload operation
  */
 function signAsset(fileName) {
-  return promiseRetry(retry => {
+  return promiseRetry(retryOptions, (retry, attempCount) => {
     return axiosInst
       .post(`${spaceId}/assets`, { filename: fileName })
       .then(res => res.data)
-      .catch(retry)
+      .catch(error => {
+        console.warn('attemp no:', attempCount)
+        retry(axiosErrorParser(error, 'signAsset'))
+      })
   }).catch(error => axiosErrorHandler(error, 'signAsset'))
 }
 
@@ -586,11 +639,14 @@ function signAsset(fileName) {
  */
 function updateComponent(componentId, componentDefinition) {
   const data = { component: componentDefinition }
-  return promiseRetry(retry => {
+  return promiseRetry(retryOptions, (retry, attempCount) => {
     return axiosInst
       .put(`/${spaceId}/components/${componentId}`, data)
       .then(res => res.data.component)
-      .catch(retry)
+      .catch(error => {
+        console.warn('attemp no:', attempCount)
+        retry(axiosErrorParser(error, 'updateComponent'))
+      })
   }).catch(error => axiosErrorHandler(error, 'updateComponent'))
 }
 
@@ -603,11 +659,14 @@ function updateComponent(componentId, componentDefinition) {
  */
 function updateStory(storyId, storyData) {
   const data = { story: storyData }
-  return promiseRetry(retry => {
+  return promiseRetry(retryOptions, (retry, attempCount) => {
     return axiosInst
       .put(`/${spaceId}/stories/${storyId}`, data)
       .then(res => res.data.story)
-      .catch(retry)
+      .catch(error => {
+        console.warn('attemp no:', attempCount)
+        retry(axiosErrorParser(error, 'updateStory'))
+      })
   }).catch(error => axiosErrorHandler(error, 'updateStory'))
 }
 
@@ -631,9 +690,12 @@ function uploadAsset(buffer, signedRequest) {
     url: signedRequest.post_url,
     formData,
   }
-  return promiseRetry(retry => {
+  return promiseRetry(retryOptions, (retry, attempCount) => {
     return requestPromise(options)
       .then(() => signedRequest.pretty_url)
-      .catch(retry)
+      .catch(error => {
+        console.warn('attemp no:', attempCount)
+        retry(axiosErrorParser(error, 'uploadAsset'))
+      })
   }).catch(error => Promise.reject(error))
 }
