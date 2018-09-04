@@ -3,6 +3,7 @@ const Promise = require('bluebird')
 const promiseRetry = require('promise-retry')
 const requestPromise = require('request-promise')
 const sharp = require('sharp')
+// const { parseString: parseXml } = require('xml2js')
 
 const defaults = {
   perPage: 100,
@@ -693,8 +694,12 @@ function uploadAsset(buffer, signedRequest) {
     return requestPromise(options)
       .then(() => signedRequest.pretty_url)
       .catch(error => {
+        console.log(JSON.stringify(error))
         console.warn('attemp no:', attempCount)
-        retry(axiosErrorParser(error, 'uploadAsset'))
+        retry(error)
       })
-  }).catch(error => Promise.reject(error))
+  }).catch(error => {
+    console.log(JSON.stringify(error))
+    return Promise.reject(error)
+  })
 }
