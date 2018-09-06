@@ -1,5 +1,8 @@
 const axios = require('axios')
 const Promise = require('bluebird')
+const imagemin = require('imagemin')
+const imageminMozjpeg = require('imagemin-mozjpeg')
+const imageminPngquant = require('imagemin-pngquant')
 const promiseRetry = require('promise-retry')
 const requestPromise = require('request-promise')
 const sharp = require('sharp')
@@ -113,15 +116,36 @@ function axiosErrorParser(error, functionName) {
 /**
  * Using 'sharp' library to read an image into buffer.
  *
- * @param {string} imageFilePath - Absolute path to image file.
+ * @param {string} imageFilePath - Absolute path to image file
+ * @param {boolean} compression - to compress the buffer before returning data or not
  * @returns {Buffer} Buffered image data.
  */
-function bufferImage(imageFilePath) {
+function bufferImage(imageFilePath, compression = false) {
   const options = { failOnError: true }
   return sharp(imageFilePath, options)
     .rotate()
     .toBuffer()
-    .then(buffer => buffer)
+    .then(buffer => {
+      return compression ? compressBufferedImage(buffer) : buffer
+    })
+    .catch(error => Promise.reject(error))
+}
+
+/**
+ * compress buffered image data
+ *
+ * @param {Buffer} buffer - image data
+ * @returns {Buffer} compressed buffer
+ */
+function compressBufferedImage(buffer) {
+  return imagemin
+    .buffer(buffer, {
+      plugins: [
+        imageminMozjpeg({ quality: 70 }),
+        imageminPngquant({ quality: '65-80' }),
+      ],
+    })
+    .then(compressedBuffer => compressedBuffer)
     .catch(error => Promise.reject(error))
 }
 
@@ -145,14 +169,22 @@ function createComponent(definition) {
 }
 
 /**
- * Register an image as a Storyblok asset and upload to server.
+ * Register an image as a Storyblok asset and upload to server
  *
- * @param {string} imageFilePath - Absolute file path to image.
+ * @param {string} imageFilePath - Absolute file path to image
+ * @param {Object} option - options
+ * @param {boolean} option.compression - to compress the buffer before returning data or not
  * @returns {string} Public url to access the asset.
  */
-function createImageAsset(imageFilePath) {
+function createImageAsset(
+  imageFilePath,
+  { compression = false } = { compression: false }
+) {
   const imageFileName = imageFilePath.split('\\').pop()
-  return Promise.all([bufferImage(imageFilePath), signAsset(imageFileName)])
+  return Promise.all([
+    bufferImage(imageFilePath, compression),
+    signAsset(imageFileName),
+  ])
     .then(([buffer, signedRequest]) => uploadAsset(buffer, signedRequest))
     .catch(error => Promise.reject(error))
 }
