@@ -1,11 +1,6 @@
 const axios = require('axios')
 const Promise = require('bluebird')
-// const imagemin = require('imagemin')
-// const imageminMozjpeg = require('imagemin-mozjpeg')
-// const imageminPngquant = require('imagemin-pngquant')
-const imageType = require('image-type')
 const promiseRetry = require('promise-retry')
-const readChunk = require('read-chunk')
 const requestPromise = require('request-promise')
 const sharp = require('sharp')
 // const { parseString: parseXml } = require('xml2js')
@@ -14,6 +9,9 @@ const defaults = {
   perPage: 100,
   maxPerPage: 1000,
   concurrency: 10,
+  imageDimLimit: null,
+  jpegQuality: { quality: 70 },
+  pngCompressionLevel: { compressionLevel: 7 },
 }
 const retryOptions = {
   retries: 10,
@@ -116,68 +114,71 @@ function axiosErrorParser(error, functionName) {
 }
 
 /**
- * Using 'sharp' library to read an image an apply compression accordingly
+ * takes a sharp.js image object and resize as specified
  *
- * @param {string} imageFilePath - Absolute path to image file
- * @param {boolean} compression - to compress the buffer before returning data or not
- * @returns {Buffer} Buffered image data
+ * @param {Object} image - sharp.js image object
+ * @param {number} dimLimit - value to limit image dimension
+ * @returns {Object} resized(or untouched) sharp.js image object
  */
-function bufferImage(imageFilePath, compression = false) {
-  const options = { failOnError: true }
-  return detectImageType(imageFilePath)
-    .then(imageType => {
-      const image = sharp(imageFilePath, options).rotate()
-      if (!compression) {
-        return image.toBuffer()
-      } else if (!imageType) {
-        throw new Error('cannot perform compression on unsupported file type')
-      } else if (imageType === 'jpeg') {
-        return image.jpeg({ quality: 70 }).toBuffer()
-      } else if (imageType === 'png') {
-        return image.png({ compressionLevel: 6 }).toBuffer()
+function resizeImage(image, dimLimit) {
+  if (!dimLimit) return image
+  return image
+    .metadata()
+    .then(({ height, width }) => {
+      const isSquare = height === width
+      const isWider = height < width
+      const resizedImage = isSquare
+        ? image.resize(dimLimit, dimLimit)
+        : isWider
+          ? image.resize(dimLimit, null)
+          : image.resize(null, dimLimit)
+      return resizedImage
+    })
+    .catch(error => Promise.reject(error))
+}
+
+/**
+ * takes a sharp.js image object and resize as specified
+ *
+ * @param {Object} image - sharp.js image object
+ * @param {boolean} compression - whether to compress or not
+ * @returns {Object} compressed(or untouched) sharp.js image object
+ */
+function compressImage(image, compression) {
+  if (!compression) return image
+  return image
+    .metadata()
+    .then(({ format }) => {
+      if (format === 'jpeg') {
+        return image.jpeg(defaults.jpegQuality)
+      } else if (format === 'png') {
+        return image.png(defaults.pngCompressionLevel)
       } else {
-        return image.toBuffer()
+        return image
       }
     })
     .catch(error => Promise.reject(error))
 }
 
 /**
- * get information of an image at 'imageFilePath', only intend to support .jpeg and .png
+ * Using 'sharp' library to read an image an apply compression accordingly
  *
- * @param {string} imageFilePath - absolute file path to image
- * @returns {string} type info, either 'jpeg' or 'png' or null if the file is not an supported image type
+ * @param {string} imageFilePath - Absolute path to image file
+ * @param {boolean} compression - to compress the buffer before returning data or not
+ * @param {number} dimLimit - resizing dimension limit value
  */
-function detectImageType(imageFilePath) {
-  return readChunk(imageFilePath, 0, 12)
-    .then(buffer => imageType(buffer))
-    .then(({ ext, mime }) => {
-      return ext === 'jpg' && mime === 'image/jpeg'
-        ? 'jpeg'
-        : ext === 'png' && mime === 'image/png'
-          ? 'png'
-          : null
-    })
+function bufferImage(
+  imageFilePath,
+  compression = false,
+  dimLimit = defaults.imageDimLimit
+) {
+  const options = { failOnError: true }
+  const image = sharp(imageFilePath, options).rotate()
+  return resizeImage(image, dimLimit)
+    .then(image => compressImage(image, compression))
+    .then(image => image.toBuffer())
     .catch(error => Promise.reject(error))
 }
-
-/**
- * compress buffered image data
- *
- * @param {Buffer} buffer - image data
- * @returns {Buffer} compressed buffer
- */
-// function compressBufferedImage(buffer) {
-//   return imagemin
-//     .buffer(buffer, {
-//       plugins: [
-//         imageminMozjpeg({ quality: 70 }),
-//         imageminPngquant({ quality: '65-80' }),
-//       ],
-//     })
-//     .then(compressedBuffer => compressedBuffer)
-//     .catch(error => Promise.reject(error))
-// }
 
 /**
  * Create a component on server.
@@ -202,17 +203,18 @@ function createComponent(definition) {
  * Register an image as a Storyblok asset and upload to server
  *
  * @param {string} imageFilePath - Absolute file path to image
- * @param {Object} option - options
- * @param {boolean} option.compression - to compress the buffer before returning data or not
+ * @param {boolean} compression - to compress the buffer before returning data or not
+ * @param {number} dimLimit - resize dimension limit value
  * @returns {string} Public url to access the asset.
  */
 function createImageAsset(
   imageFilePath,
-  { compression = false } = { compression: false }
+  compression = false,
+  dimLimit = defaults.imageDimLimit
 ) {
   const imageFileName = imageFilePath.split('\\').pop()
   return Promise.all([
-    bufferImage(imageFilePath, compression),
+    bufferImage(imageFilePath, compression, dimLimit),
     signAsset(imageFileName),
   ])
     .then(([buffer, signedRequest]) => uploadAsset(buffer, signedRequest))
