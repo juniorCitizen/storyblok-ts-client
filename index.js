@@ -162,7 +162,7 @@ function createComponent(definition) {
       .post(`/${spaceId}/components`, data)
       .then(res => res.data.component)
       .catch(error => {
-        console.warn('attemp no:', attempCount)
+        console.warn('attemp no:', attempCount, '/', retryOptions.retries)
         retry(axiosErrorParser(error, 'createComponent'))
       })
   }).catch(error => axiosErrorHandler(error, 'createComponent'))
@@ -202,7 +202,7 @@ function createStory(storyData) {
       .post(`/${spaceId}/stories`, data)
       .then(res => res.data.story)
       .catch(error => {
-        console.warn('attemp no:', attempCount)
+        console.warn('attemp no:', attempCount, '/', retryOptions.retries)
         retry(axiosErrorParser(error, 'createStory'))
       })
   }).catch(error => axiosErrorHandler(error, 'createStory'))
@@ -224,7 +224,7 @@ function deleteAsset(assetId) {
         if (error.response.status === 404) {
           return assetId
         } else {
-          console.warn('attemp no:', attempCount)
+          console.warn('attemp no:', attempCount, '/', retryOptions.retries)
           retry(axiosErrorParser(error, 'deleteAsset'))
         }
       })
@@ -243,7 +243,7 @@ function deleteComponent(componentId) {
       .delete(`/${spaceId}/components/${componentId}`)
       .then(() => componentId)
       .catch(error => {
-        console.warn('attemp no:', attempCount)
+        console.warn('attemp no:', attempCount, '/', retryOptions.retries)
         retry(axiosErrorParser(error, 'deleteComponent'))
       })
   }).catch(error => axiosErrorHandler(error, 'deleteComponent'))
@@ -320,7 +320,7 @@ function deleteStory(storyId) {
       .delete(`/${spaceId}/stories/${storyId}`)
       .then(() => storyId)
       .catch(error => {
-        console.warn('attemp no:', attempCount)
+        console.warn('attemp no:', attempCount, '/', retryOptions.retries)
         retry(axiosErrorParser(error, 'deleteStory'))
       })
   }).catch(error => axiosErrorHandler(error, 'deleteStory'))
@@ -400,7 +400,7 @@ function getAssetsAtPaginationPage(perPage = defaults.maxPerPage, page) {
       .get(`${spaceId}/assets`, paramsOpt)
       .then(res => res.data.assets)
       .catch(error => {
-        console.warn('attemp no:', attempCount)
+        console.warn('attemp no:', attempCount, '/', retryOptions.retries)
         retry(axiosErrorParser(error, 'getAssetsAtPaginationPage'))
       })
   }).catch(error => axiosErrorHandler(error, 'getAssetsAtPaginationPage'))
@@ -418,7 +418,7 @@ function getComponent(componentId) {
       .get(`/${spaceId}/components/${componentId}`)
       .then(res => res.data.component)
       .catch(error => {
-        console.warn('attemp no:', attempCount)
+        console.warn('attemp no:', attempCount, '/', retryOptions.retries)
         retry(axiosErrorParser(error, 'getComponent'))
       })
   }).catch(error => axiosErrorHandler(error, 'getComponent'))
@@ -435,7 +435,7 @@ function getComponents() {
       .get(`/${spaceId}/components`)
       .then(res => res.data.components)
       .catch(error => {
-        console.warn('attemp no:', attempCount)
+        console.warn('attemp no:', attempCount, '/', retryOptions.retries)
         retry(axiosErrorParser(error, 'getComponents'))
       })
   }).catch(error => axiosErrorHandler(error, 'getComponents'))
@@ -452,7 +452,7 @@ function getSpace() {
       .get(`/${spaceId}`)
       .then(res => res.data.space)
       .catch(error => {
-        console.warn('attemp no:', attempCount)
+        console.warn('attemp no:', attempCount, '/', retryOptions.retries)
         retry(axiosErrorParser(error, 'getSpace'))
       })
   }).catch(error => axiosErrorHandler(error, 'getSpace'))
@@ -469,7 +469,7 @@ function getStoryCount() {
       .get(`/${spaceId}/stories`)
       .then(res => res.headers.total)
       .catch(error => {
-        console.warn('attemp no:', attempCount)
+        console.warn('attemp no:', attempCount, '/', retryOptions.retries)
         retry(axiosErrorParser(error, 'getStoryCount'))
       })
   }).catch(error => axiosErrorHandler(error, 'getStoryCount'))
@@ -502,7 +502,7 @@ function getStoriesAtPaginationPage(perPage = defaults.maxPerPage, page) {
       .get(`${spaceId}/stories`, paramsOpt)
       .then(res => res.data.stories)
       .catch(error => {
-        console.warn('attemp no:', attempCount)
+        console.warn('attemp no:', attempCount, '/', retryOptions.retries)
         retry(axiosErrorParser(error, 'getStoriesAtPaginationPage'))
       })
   }).catch(error => axiosErrorHandler(error, 'getStoriesAtPaginationPage'))
@@ -556,7 +556,7 @@ function getStory(storyId) {
       .get(`/${spaceId}/stories/${storyId}`)
       .then(res => res.data.story)
       .catch(error => {
-        console.warn('attemp no:', attempCount)
+        console.warn('attemp no:', attempCount, '/', retryOptions.retries)
         retry(axiosErrorParser(error, 'getStory'))
       })
   }).catch(error => axiosErrorHandler(error, 'getStory'))
@@ -605,7 +605,7 @@ function publishStory(storyId) {
       .get(`/${spaceId}/stories/${storyId}/publish`)
       .then(() => storyId)
       .catch(error => {
-        console.warn('attemp no:', attempCount)
+        console.warn('attemp no:', attempCount, '/', retryOptions.retries)
         retry(axiosErrorParser(error, 'publishStory'))
       })
   }).catch(error => axiosErrorHandler(error, 'publishStory'))
@@ -656,7 +656,7 @@ function signAsset(fileName) {
       .post(`${spaceId}/assets`, { filename: fileName })
       .then(res => res.data)
       .catch(error => {
-        console.warn('attemp no:', attempCount)
+        console.warn('attemp no:', attempCount, '/', retryOptions.retries)
         retry(axiosErrorParser(error, 'signAsset'))
       })
   }).catch(error => axiosErrorHandler(error, 'signAsset'))
@@ -676,7 +676,7 @@ function updateComponent(componentId, componentDefinition) {
       .put(`/${spaceId}/components/${componentId}`, data)
       .then(res => res.data.component)
       .catch(error => {
-        console.warn('attemp no:', attempCount)
+        console.warn('attemp no:', attempCount, '/', retryOptions.retries)
         retry(axiosErrorParser(error, 'updateComponent'))
       })
   }).catch(error => axiosErrorHandler(error, 'updateComponent'))
@@ -696,7 +696,7 @@ function updateStory(storyId, storyData) {
       .put(`/${spaceId}/stories/${storyId}`, data)
       .then(res => res.data.story)
       .catch(error => {
-        console.warn('attemp no:', attempCount)
+        console.warn('attemp no:', attempCount, '/', retryOptions.retries)
         retry(axiosErrorParser(error, 'updateStory'))
       })
   }).catch(error => axiosErrorHandler(error, 'updateStory'))
@@ -726,12 +726,8 @@ function uploadAsset(buffer, signedRequest) {
     return requestPromise(options)
       .then(() => signedRequest.pretty_url)
       .catch(error => {
-        console.log(JSON.stringify(error))
-        console.warn('attemp no:', attempCount)
+        console.warn('attemp no:', attempCount, '/', retryOptions.retries)
         retry(error)
       })
-  }).catch(error => {
-    console.log(JSON.stringify(error))
-    return Promise.reject(error)
-  })
+  }).catch(error => Promise.reject(error))
 }
