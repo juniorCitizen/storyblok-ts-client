@@ -121,7 +121,7 @@ function axiosErrorParser(error, functionName) {
  * @returns {Object} resized(or untouched) sharp.js image object
  */
 function resizeImage(image, dimLimit) {
-  if (!dimLimit) return image
+  if (!dimLimit) return Promise.resolve(image)
   return image
     .metadata()
     .then(({ height, width }) => {
@@ -145,7 +145,7 @@ function resizeImage(image, dimLimit) {
  * @returns {Object} compressed(or untouched) sharp.js image object
  */
 function compressImage(image, compression) {
-  if (!compression) return image
+  if (!compression) return Promise.resolve(image)
   return image
     .metadata()
     .then(({ format }) => {
