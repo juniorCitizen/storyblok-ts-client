@@ -132,9 +132,9 @@ function bufferImage(imageFilePath, compression = false) {
       } else if (!imageType) {
         throw new Error('cannot perform compression on unsupported file type')
       } else if (imageType === 'jpeg') {
-        return image.jpeg().toBuffer()
+        return image.jpeg({ quality: 70 }).toBuffer()
       } else if (imageType === 'png') {
-        return image.png().toBuffer()
+        return image.png({ compressionLevel: 6 }).toBuffer()
       } else {
         return image.toBuffer()
       }
