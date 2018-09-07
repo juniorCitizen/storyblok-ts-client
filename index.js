@@ -1,9 +1,11 @@
 const axios = require('axios')
 const Promise = require('bluebird')
-const imagemin = require('imagemin')
-const imageminMozjpeg = require('imagemin-mozjpeg')
-const imageminPngquant = require('imagemin-pngquant')
+// const imagemin = require('imagemin')
+// const imageminMozjpeg = require('imagemin-mozjpeg')
+// const imageminPngquant = require('imagemin-pngquant')
+const imageType = require('image-type')
 const promiseRetry = require('promise-retry')
+const readChunk = require('read-chunk')
 const requestPromise = require('request-promise')
 const sharp = require('sharp')
 // const { parseString: parseXml } = require('xml2js')
@@ -114,19 +116,47 @@ function axiosErrorParser(error, functionName) {
 }
 
 /**
- * Using 'sharp' library to read an image into buffer.
+ * Using 'sharp' library to read an image an apply compression accordingly
  *
  * @param {string} imageFilePath - Absolute path to image file
  * @param {boolean} compression - to compress the buffer before returning data or not
- * @returns {Buffer} Buffered image data.
+ * @returns {Buffer} Buffered image data
  */
 function bufferImage(imageFilePath, compression = false) {
   const options = { failOnError: true }
-  return sharp(imageFilePath, options)
-    .rotate()
-    .toBuffer()
-    .then(buffer => {
-      return compression ? compressBufferedImage(buffer) : buffer
+  return detectImageType(imageFilePath)
+    .then(imageType => {
+      const image = sharp(imageFilePath, options).rotate()
+      if (!compression) {
+        return image.toBuffer()
+      } else if (!imageType) {
+        throw new Error('cannot perform compression on unsupported file type')
+      } else if (imageType === 'jpeg') {
+        return image.jpeg().toBuffer()
+      } else if (imageType === 'png') {
+        return image.png().toBuffer()
+      } else {
+        return image.toBuffer()
+      }
+    })
+    .catch(error => Promise.reject(error))
+}
+
+/**
+ * get information of an image at 'imageFilePath', only intend to support .jpeg and .png
+ *
+ * @param {string} imageFilePath - absolute file path to image
+ * @returns {string} type info, either 'jpeg' or 'png' or null if the file is not an supported image type
+ */
+function detectImageType(imageFilePath) {
+  return readChunk(imageFilePath, 0, 12)
+    .then(buffer => imageType(buffer))
+    .then(({ ext, mime }) => {
+      return ext === 'jpg' && mime === 'image/jpeg'
+        ? 'jpeg'
+        : ext === 'png' && mime === 'image/png'
+          ? 'png'
+          : null
     })
     .catch(error => Promise.reject(error))
 }
@@ -137,17 +167,17 @@ function bufferImage(imageFilePath, compression = false) {
  * @param {Buffer} buffer - image data
  * @returns {Buffer} compressed buffer
  */
-function compressBufferedImage(buffer) {
-  return imagemin
-    .buffer(buffer, {
-      plugins: [
-        imageminMozjpeg({ quality: 70 }),
-        imageminPngquant({ quality: '65-80' }),
-      ],
-    })
-    .then(compressedBuffer => compressedBuffer)
-    .catch(error => Promise.reject(error))
-}
+// function compressBufferedImage(buffer) {
+//   return imagemin
+//     .buffer(buffer, {
+//       plugins: [
+//         imageminMozjpeg({ quality: 70 }),
+//         imageminPngquant({ quality: '65-80' }),
+//       ],
+//     })
+//     .then(compressedBuffer => compressedBuffer)
+//     .catch(error => Promise.reject(error))
+// }
 
 /**
  * Create a component on server.
