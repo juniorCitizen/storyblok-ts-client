@@ -624,7 +624,6 @@ function moveStory(storyId, afterId) {
       .put(`/${spaceId}/stories/${storyId}/move`, queryString)
       .then(() => Promise.resolve())
       .catch(error => {
-        console.log(error)
         console.warn('attemp no:', attempCount, '/', retryOptions.retries)
         retry(axiosErrorParser(error, 'moveStory'))
       })
