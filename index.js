@@ -1,7 +1,6 @@
 const axios = require('axios')
 const Promise = require('bluebird')
 const promiseRetry = require('promise-retry')
-const { stringify: qsStringify } = require('querystring')
 const requestPromise = require('request-promise')
 const sharp = require('sharp')
 
@@ -618,10 +617,8 @@ function getUnpublishedStorieIds() {
  */
 function moveStory(storyId, afterId) {
   return promiseRetry(retryOptions, (retry, attempCount) => {
-    // https://github.com/axios/axios#using-applicationx-www-form-urlencoded-format
-    const queryString = qsStringify({ after_id: afterId })
     return axiosInst
-      .put(`/${spaceId}/stories/${storyId}/move`, queryString)
+      .put(`/${spaceId}/stories/${storyId}/move?after_id=${afterId}`)
       .then(() => Promise.resolve())
       .catch(error => {
         console.warn('attemp no:', attempCount, '/', retryOptions.retries)
