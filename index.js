@@ -39,6 +39,7 @@ let token = null
  * @property {Function} getSpace - get information on working space
  * @property {Function} getStories - get a full listing of stories from server
  * @property {Function} getStory - get details of a story by its id
+ * @property {Function} moveStory - move a story's sequential order
  * @property {Function} publishExistingStories - publish all existing but unpublished stories
  * @property {Function} publishStory - publish a story by its id
  * @property {Function} restoreComponents - create or update components on server from a list of component definitions
@@ -609,17 +610,17 @@ function getUnpublishedStorieIds() {
 }
 
 /**
- * move a story
+ * move a story's sequential order
  *
  * @param {string} storyId - id of the story to be moved
  * @param {string} afterId - to be positioned after this story of this id
  */
 function moveStory(storyId, afterId) {
+  const after_id = afterId
+  const paramsOpt = { params: { after_id } }
   return promiseRetry(retryOptions, (retry, attempCount) => {
     return axiosInst
-      .put(`/${spaceId}/stories/${storyId}/move`, {
-        after_id: afterId,
-      })
+      .put(`/${spaceId}/stories/${storyId}/move`, paramsOpt)
       .then(() => Promise.resolve())
       .catch(error => {
         console.warn('attemp no:', attempCount, '/', retryOptions.retries)
