@@ -3,7 +3,6 @@ const Promise = require('bluebird')
 const promiseRetry = require('promise-retry')
 const requestPromise = require('request-promise')
 const sharp = require('sharp')
-// const { parseString: parseXml } = require('xml2js')
 
 const defaults = {
   perPage: 100,
