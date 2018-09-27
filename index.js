@@ -78,6 +78,7 @@ module.exports = (_spaceId, _token) => {
     getSpace,
     getStories,
     getStory,
+    moveStory,
     publishExistingStories,
     publishStory,
     restoreComponents,
@@ -605,6 +606,26 @@ function getUnpublishedStorieIds() {
       return existingStories.filter(filterFn).map(story => story.id)
     })
     .catch(error => Promise.reject(error))
+}
+
+/**
+ * move a story
+ *
+ * @param {string} storyId - id of the story to be moved
+ * @param {string} afterId - to be positioned after this story of this id
+ */
+function moveStory(storyId, afterId) {
+  return promiseRetry(retryOptions, (retry, attempCount) => {
+    return axiosInst
+      .put(`/${spaceId}/stories/${storyId}/move`, {
+        after_id: afterId,
+      })
+      .then(() => Promise.resolve())
+      .catch(error => {
+        console.warn('attemp no:', attempCount, '/', retryOptions.retries)
+        retry(axiosErrorParser(error, 'moveStory'))
+      })
+  }).catch(error => axiosErrorHandler(error, 'moveStory'))
 }
 
 /**
