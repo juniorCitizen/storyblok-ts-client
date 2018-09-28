@@ -200,8 +200,8 @@ function bufferImage(
 function createComponent(definition) {
   const data = { component: definition }
   return promiseRetry(retryOptions, (retry, attempCount) => {
-    return limiter
-      .wrap(axiosInst.post(`/${spaceId}/components`, data))
+    const rateLimitedRequest = limiter.wrap(axiosInst.post)
+    return rateLimitedRequest(`/${spaceId}/components`, data)
       .then(res => res.data.component)
       .catch(error => {
         console.warn('attemp no:', attempCount, '/', retryOptions.retries)
