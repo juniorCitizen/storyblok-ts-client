@@ -1,5 +1,6 @@
 const axios = require('axios')
 const Promise = require('bluebird')
+const Bottleneck = require('bottleneck')
 const promiseRetry = require('promise-retry')
 const requestPromise = require('request-promise')
 const sharp = require('sharp')
@@ -7,17 +8,25 @@ const sharp = require('sharp')
 const defaults = {
   perPage: 100,
   maxPerPage: 1000,
-  concurrency: 10,
+  maxReqPerSec: 3,
+  concurrency: 1,
   imageDimLimit: null,
   jpegQuality: { quality: 70 },
   pngCompressionLevel: { compressionLevel: 7 },
 }
+
 const retryOptions = {
   retries: 10,
   minTimeout: 200,
   maxTimeout: 500,
   randomize: true,
 }
+
+const limiter = new Bottleneck({
+  minTime: Math.round((1 / defaults.maxReqPerSec) * 1000),
+  maxConcurrent: defaults.concurrency,
+})
+
 let axiosInst = null
 let spaceId = null
 let token = null
@@ -330,12 +339,14 @@ async function deleteExistingStories(concurrency = defaults.concurrency) {
       let isFolder = story.is_folder === true
       return isAtRoot && isFolder
     })
-    const deleteFn = story => deleteStory(story.id)
-    await Promise.map(rootFolders, deleteFn, { concurrency }) // delete root level folders
+    const mapFn = limiter.wrap(folder => deleteStory(folder.id))
+    // delete root level folders
+    await Promise.map(rootFolders, mapFn, { concurrency })
     // get stories from Storyblok server again
     // at this point, only stories at root should be left
     const rootStories = await getStories()
-    await Promise.map(rootStories, deleteFn, { concurrency }) // delete root level stories
+    // delete root level stories
+    await Promise.map(rootStories, mapFn, { concurrency })
   } catch (error) {
     throw error
   }
