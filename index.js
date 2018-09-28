@@ -309,16 +309,15 @@ function deleteExistingAssets(concurrency = defaults.concurrency) {
 }
 
 /**
- * Delete all existing components.
+ * Delete all existing components (requests are rate limited)
  *
- * @param {number} concurrency - Promise.map concurrency option value
  * @returns {number[]} Array of component id that was removed
  */
-function deleteExistingComponents(concurrency = defaults.concurrency) {
+function deleteExistingComponents() {
   return getComponents()
     .then(existingComponents => {
-      const deleteFn = component => deleteComponent(component.id)
-      return Promise.map(existingComponents, deleteFn, { concurrency })
+      const deleteFn = limiter.wrap(component => deleteComponent(component.id))
+      return Promise.map(existingComponents, deleteFn)
         .then(() => existingComponents.map(component => component.id))
         .catch(error => Promise.reject(error))
     })
@@ -326,11 +325,9 @@ function deleteExistingComponents(concurrency = defaults.concurrency) {
 }
 
 /**
- * Delete all existing stories from server.
- *
- * @param {number} concurrency - Promise.map concurrency option value
+ * Delete all existing stories from server (requests are rate limited)
  */
-async function deleteExistingStories(concurrency = defaults.concurrency) {
+async function deleteExistingStories() {
   try {
     const existingStories = await getStories()
     // filter for a list of root folders
@@ -341,12 +338,12 @@ async function deleteExistingStories(concurrency = defaults.concurrency) {
     })
     const mapFn = limiter.wrap(folder => deleteStory(folder.id))
     // delete root level folders
-    await Promise.map(rootFolders, mapFn, { concurrency })
+    await Promise.map(rootFolders, mapFn)
     // get stories from Storyblok server again
     // at this point, only stories at root should be left
     const rootStories = await getStories()
     // delete root level stories
-    await Promise.map(rootStories, mapFn, { concurrency })
+    await Promise.map(rootStories, mapFn)
   } catch (error) {
     throw error
   }
