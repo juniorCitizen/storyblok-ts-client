@@ -17,8 +17,8 @@ const defaults = {
 
 const retryOptions = {
   retries: 10,
-  minTimeout: 200,
-  maxTimeout: 500,
+  minTimeout: 1000,
+  maxTimeout: 5000,
   randomize: true,
 }
 
@@ -28,6 +28,12 @@ const limiter = new Bottleneck({
 })
 
 let axiosInst = null
+const apiCall = {
+  delete: null,
+  get: null,
+  post: null,
+  put: null,
+}
 let spaceId = null
 let token = null
 
@@ -72,6 +78,14 @@ module.exports = (_spaceId, _token) => {
     baseURL: 'https://api.storyblok.com/v1/spaces',
     headers: { Authorization: token },
   })
+  // post rate limit to api calls
+  // 3 calls/sec for free Storyblok account
+  // 6 calls/sec for paid account
+  apiCall.delete = limiter.wrap(axiosInst.delete)
+  apiCall.get = limiter.wrap(axiosInst.get)
+  apiCall.post = limiter.wrap(axiosInst.post)
+  apiCall.put = limiter.wrap(axiosInst.put)
+
   return {
     createComponent,
     createImageAsset,
@@ -127,21 +141,21 @@ function axiosErrorParser(error, functionName) {
  * takes a sharp.js image object and resize as specified
  *
  * @param {Object} image - sharp.js image object
- * @param {number} dimLimit - value to limit image dimension
+ * @param {number} dimensionLimit - value to limit image dimension
  * @returns {Object} resized(or untouched) sharp.js image object
  */
-function resizeImage(image, dimLimit) {
-  if (!dimLimit) return Promise.resolve(image)
+function resizeImage(image, dimensionLimit) {
+  if (!dimensionLimit) return Promise.resolve(image)
   return image
     .metadata()
     .then(({ height, width }) => {
       const isSquare = height === width
       const isWider = height < width
       const resizedImage = isSquare
-        ? image.resize(dimLimit, dimLimit)
+        ? image.resize(dimensionLimit, dimensionLimit)
         : isWider
-          ? image.resize(dimLimit, null)
-          : image.resize(null, dimLimit)
+          ? image.resize(dimensionLimit, null)
+          : image.resize(null, dimensionLimit)
       return resizedImage
     })
     .catch(error => Promise.reject(error))
@@ -200,8 +214,8 @@ function bufferImage(
 function createComponent(definition) {
   const data = { component: definition }
   return promiseRetry(retryOptions, (retry, attempCount) => {
-    const rateLimitedRequest = limiter.wrap(axiosInst.post)
-    return rateLimitedRequest(`/${spaceId}/components`, data)
+    return apiCall
+      .post(`/${spaceId}/components`, data)
       .then(res => res.data.component)
       .catch(error => {
         console.warn('attemp no:', attempCount, '/', retryOptions.retries)
@@ -241,7 +255,7 @@ function createImageAsset(
 function createStory(storyData) {
   const data = { story: storyData }
   return promiseRetry(retryOptions, (retry, attempCount) => {
-    return axiosInst
+    return apiCall
       .post(`/${spaceId}/stories`, data)
       .then(res => res.data.story)
       .catch(error => {
@@ -259,7 +273,7 @@ function createStory(storyData) {
  */
 function deleteAsset(assetId) {
   return promiseRetry(retryOptions, (retry, attempCount) => {
-    return axiosInst
+    return apiCall
       .delete(`/${spaceId}/assets/${assetId}`)
       .then(() => assetId)
       .catch(error => {
@@ -282,7 +296,7 @@ function deleteAsset(assetId) {
  */
 function deleteComponent(componentId) {
   return promiseRetry(retryOptions, (retry, attempCount) => {
-    return axiosInst
+    return apiCall
       .delete(`/${spaceId}/components/${componentId}`)
       .then(() => componentId)
       .catch(error => {
@@ -317,7 +331,7 @@ function deleteExistingAssets(concurrency = defaults.concurrency) {
 function deleteExistingComponents() {
   return getComponents()
     .then(existingComponents => {
-      const deleteFn = limiter.wrap(component => deleteComponent(component.id))
+      const deleteFn = component => deleteComponent(component.id)
       return Promise.map(existingComponents, deleteFn)
         .then(() => existingComponents.map(component => component.id))
         .catch(error => Promise.reject(error))
@@ -337,7 +351,7 @@ async function deleteExistingStories() {
       let isFolder = story.is_folder === true
       return isAtRoot && isFolder
     })
-    const mapFn = limiter.wrap(folder => deleteStory(folder.id))
+    const mapFn = folder => deleteStory(folder.id)
     // delete root level folders
     await Promise.map(rootFolders, mapFn)
     // get stories from Storyblok server again
@@ -358,7 +372,7 @@ async function deleteExistingStories() {
  */
 function deleteStory(storyId) {
   return promiseRetry(retryOptions, (retry, attempCount) => {
-    return axiosInst
+    return apiCall
       .delete(`/${spaceId}/stories/${storyId}`)
       .then(() => storyId)
       .catch(error => {
@@ -438,7 +452,7 @@ function getAssetsAtPaginationPage(perPage = defaults.maxPerPage, page) {
   const per_page = perPage
   const paramsOpt = { params: { per_page, page } }
   return promiseRetry(retryOptions, (retry, attempCount) => {
-    return axiosInst
+    return apiCall
       .get(`${spaceId}/assets`, paramsOpt)
       .then(res => res.data.assets)
       .catch(error => {
@@ -456,7 +470,7 @@ function getAssetsAtPaginationPage(perPage = defaults.maxPerPage, page) {
  */
 function getComponent(componentId) {
   return promiseRetry(retryOptions, (retry, attempCount) => {
-    return axiosInst
+    return apiCall
       .get(`/${spaceId}/components/${componentId}`)
       .then(res => res.data.component)
       .catch(error => {
@@ -473,7 +487,7 @@ function getComponent(componentId) {
  */
 function getComponents() {
   return promiseRetry(retryOptions, (retry, attempCount) => {
-    return axiosInst
+    return apiCall
       .get(`/${spaceId}/components`)
       .then(res => res.data.components)
       .catch(error => {
@@ -490,7 +504,7 @@ function getComponents() {
  */
 function getSpace() {
   return promiseRetry(retryOptions, (retry, attempCount) => {
-    return axiosInst
+    return apiCall
       .get(`/${spaceId}`)
       .then(res => res.data.space)
       .catch(error => {
@@ -507,7 +521,7 @@ function getSpace() {
  */
 function getStoryCount() {
   return promiseRetry(retryOptions, (retry, attempCount) => {
-    return axiosInst
+    return apiCall
       .get(`/${spaceId}/stories`)
       .then(res => res.headers.total)
       .catch(error => {
@@ -540,7 +554,7 @@ function getStoriesAtPaginationPage(perPage = defaults.maxPerPage, page) {
   const per_page = perPage
   const paramsOpt = { params: { per_page, page } }
   return promiseRetry(retryOptions, (retry, attempCount) => {
-    return axiosInst
+    return apiCall
       .get(`${spaceId}/stories`, paramsOpt)
       .then(res => res.data.stories)
       .catch(error => {
@@ -594,7 +608,7 @@ async function getStories(perPage = defaults.maxPerPage) {
  */
 function getStory(storyId) {
   return promiseRetry(retryOptions, (retry, attempCount) => {
-    return axiosInst
+    return apiCall
       .get(`/${spaceId}/stories/${storyId}`)
       .then(res => res.data.story)
       .catch(error => {
@@ -626,7 +640,7 @@ function getUnpublishedStorieIds() {
  */
 function moveStory(storyId, afterId) {
   return promiseRetry(retryOptions, (retry, attempCount) => {
-    return axiosInst
+    return apiCall
       .put(`/${spaceId}/stories/${storyId}/move?after_id=${afterId}`)
       .then(() => Promise.resolve())
       .catch(error => {
@@ -661,7 +675,7 @@ function publishExistingStories(concurrency = defaults.concurrency) {
  */
 function publishStory(storyId) {
   return promiseRetry(retryOptions, (retry, attempCount) => {
-    return axiosInst
+    return apiCall
       .get(`/${spaceId}/stories/${storyId}/publish`)
       .then(() => storyId)
       .catch(error => {
@@ -712,7 +726,7 @@ async function restoreComponents(componentDefinitions) {
  */
 function signAsset(fileName) {
   return promiseRetry(retryOptions, (retry, attempCount) => {
-    return axiosInst
+    return apiCall
       .post(`${spaceId}/assets`, { filename: fileName })
       .then(res => res.data)
       .catch(error => {
@@ -732,7 +746,7 @@ function signAsset(fileName) {
 function updateComponent(componentId, componentDefinition) {
   const data = { component: componentDefinition }
   return promiseRetry(retryOptions, (retry, attempCount) => {
-    return axiosInst
+    return apiCall
       .put(`/${spaceId}/components/${componentId}`, data)
       .then(res => res.data.component)
       .catch(error => {
@@ -752,7 +766,7 @@ function updateComponent(componentId, componentDefinition) {
 function updateStory(storyId, storyData) {
   const data = { story: storyData }
   return promiseRetry(retryOptions, (retry, attempCount) => {
-    return axiosInst
+    return apiCall
       .put(`/${spaceId}/stories/${storyId}`, data)
       .then(res => res.data.story)
       .catch(error => {
