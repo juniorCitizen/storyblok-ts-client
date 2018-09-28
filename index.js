@@ -192,6 +192,7 @@ function bufferImage(
 
 /**
  * Create a component on server.
+ * request rate limit is enforced
  *
  * @param {Object} definition - Storyblok component definition object.
  * @returns {Object} Details of component that was created
@@ -199,8 +200,8 @@ function bufferImage(
 function createComponent(definition) {
   const data = { component: definition }
   return promiseRetry(retryOptions, (retry, attempCount) => {
-    return axiosInst
-      .post(`/${spaceId}/components`, data)
+    return limiter
+      .wrap(axiosInst.post(`/${spaceId}/components`, data))
       .then(res => res.data.component)
       .catch(error => {
         console.warn('attemp no:', attempCount, '/', retryOptions.retries)
