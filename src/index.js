@@ -23,7 +23,7 @@ const retryOptions = {
 }
 
 const limiter = new Bottleneck({
-  minTime: Math.round((1 / defaults.maxReqPerSec) * 1000),
+  minTime: Math.floor((1 / defaults.maxReqPerSec) * 1000),
   maxConcurrent: defaults.concurrency,
 })
 
