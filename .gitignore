@@ -1,1 +1,4 @@
 node_modules
+
+.eslintignore
+src/index.deprecated.js
