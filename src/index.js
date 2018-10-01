@@ -15,23 +15,33 @@ const defaults = {
   pngCompressionLevel: { compressionLevel: 7 },
 }
 
-/** instance of Storyblok API interface */
+/**
+ * instance of Storyblok API interface
+ * @example
+ * // 1. require the StoryblokApiClient
+ * const StoryblokApiClient = require("storyblok-management-api-wrapper")
+ *
+ * // 2. initialize the client with spaceId and apiKey
+ * const spaceId = 123456
+ * const apiKey = asdfklasjdfaksjfdaksjdfasjk
+ * const apiClient = new StoryblokApiClient({ spaceId, apiKey })
+ */
 class StoryblokApiClient {
   /**
    * initialize an instance
    *
    * @param {Object} config - setup parameters
-   * @param {string} config.region - string(optional)
-   * @param {number} config.timeout - timeout
-   * @param {boolean} config.https - request protocol
-   * @param {number} config.rateLimit - manually set request rate limit
    * @param {number|string} config.spaceId - working spaceId
-   * @param {string} config.apiKey - management API access key
+   * @param {string} config.apiKey - management API oauth token
+   * @param {string} config.region - region, default: undefined (optional)
+   * @param {number} config.timeout - timeout, default: 0 (optional)
+   * @param {boolean} config.https - request protocol, default: undefined (optional)
+   * @param {number} config.rateLimit - request rate limit, default: 3 (optional)
    */
   constructor(config) {
     let region = config.region ? `-${config.region}` : ''
     let protocol = config.https === false ? 'http' : 'https'
-    this.spaceId = config.spaceId
+    this.spaceId = parseInt(config.spaceId)
     this.apiClient = axios.create({
       baseURL: `${protocol}://api${region}.storyblok.com/v1/spaces/`,
       timeout: config.timeout || 0,
@@ -70,7 +80,7 @@ class StoryblokApiClient {
   }
 
   /**
-   * create an asset folder on server
+   * create an asset folder
    *
    * @param {string} name - name of folder to create
    * @returns {Object} asset folder information
@@ -82,7 +92,7 @@ class StoryblokApiClient {
   }
 
   /**
-   * create a component on server
+   * create a component
    *
    * @param {Object} definition - Storyblok component definition object
    * @returns {Object} details of component that was created
@@ -95,7 +105,7 @@ class StoryblokApiClient {
   }
 
   /**
-   * create a content story on server
+   * create a content story
    *
    * @param {Object} storyData - Storyblok story data object
    * @returns {Object} details of story that was created
@@ -108,7 +118,7 @@ class StoryblokApiClient {
   }
 
   /**
-   * register an image as a Storyblok asset and upload to server
+   * create an asset from image
    * compression and resize using the `sharp.js` library
    *
    * @param {string} filePath - absolute file path to image
@@ -133,7 +143,7 @@ class StoryblokApiClient {
   }
 
   /**
-   * delete an asset from server by its id
+   * delete a specific asset
    *
    * @param {number} assetId - id of the asset to be deleted
    * @returns {number} assetId is returned on success
@@ -165,7 +175,7 @@ class StoryblokApiClient {
   }
 
   /**
-   * delete a component from server by its id
+   * delete a specific component
    *
    * @param {number} componentId - id of component to be deleted
    * @returns {number} componentId is returned on success
@@ -177,7 +187,7 @@ class StoryblokApiClient {
   }
 
   /**
-   * delete all existing assets from server
+   * delete all existing assets
    *
    * @returns {number[]} array of asset id's that were removed
    */
@@ -191,7 +201,7 @@ class StoryblokApiClient {
   }
 
   /**
-   * delete all existing components from server
+   * delete all existing components
    *
    * @returns {number[]} array of component id's that were removed
    */
@@ -204,7 +214,7 @@ class StoryblokApiClient {
       .catch(error => Promise.reject(error))
   }
 
-  /** delete all existing stories from server */
+  /** delete all existing stories */
   deleteExistingStories() {
     const filterRootFoldersFn = story => {
       let isAtRoot = story.parent_id === 0
@@ -229,7 +239,7 @@ class StoryblokApiClient {
   }
 
   /**
-   * delete a specific story from server
+   * delete a specific story
    *
    * @param {number} storyId - id of the story to be deleted
    * @returns {number} id of story that was removed
@@ -241,7 +251,7 @@ class StoryblokApiClient {
   }
 
   /**
-   * get a component's definition from server by its id
+   * get a specific component
    *
    * @param {number} componentId - id of component
    * @returns {Object} component definition
@@ -253,7 +263,7 @@ class StoryblokApiClient {
   }
 
   /**
-   * get full listing of assets from server
+   * list all existing assets
    *
    * @returns {Object[]} full list of existing assets
    */
@@ -279,7 +289,7 @@ class StoryblokApiClient {
   }
 
   /**
-   * get a list of existing asset folders from server
+   * list all existing asset folders
    *
    * @returns {Object[]} List of asset folder details
    */
@@ -292,7 +302,7 @@ class StoryblokApiClient {
   }
 
   /**
-   * get a list of existing component details from server
+   * list all existing components
    * (it is assumed that the working space has at most 1000 existing components)
    *
    * @returns {Object[]} List of component definitions
@@ -305,7 +315,7 @@ class StoryblokApiClient {
   }
 
   /**
-   * get the complete list of content stories from server
+   * list all existing stories
    *
    * @returns {Object[]} full list of existing content stories
    */
@@ -332,7 +342,7 @@ class StoryblokApiClient {
   }
 
   /**
-   * get space information
+   * get information on the working space
    *
    * @returns {Object} space information
    */
@@ -343,7 +353,7 @@ class StoryblokApiClient {
   }
 
   /**
-   * get details of a content story by its id
+   * get a specific story
    *
    * @param {number} storyId - id of the content story
    * @returns {Object} details of content story
@@ -355,7 +365,7 @@ class StoryblokApiClient {
   }
 
   /**
-   * move a story's sequential order
+   * modify a story's sequential order
    *
    * @param {string} storyId - id of the story to be moved
    * @param {string} afterId - to be positioned after story of this id
