@@ -75,7 +75,7 @@ class Storyblok {
           const per_page = perPage
           const options = { params: { per_page, page: pageIndex + 1 } }
           return this.get(`${this.spaceId}/assets`, options)
-            .then(res => assets.push(res.data.assets))
+            .then(res => assets.push(...res.data.assets))
             .catch(error => Promise.reject(error))
         }
         return Promise.map(requests, mapFn, { concurrency: 1 })
