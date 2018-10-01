@@ -38,6 +38,32 @@ class Storyblok {
   }
 
   /**
+   * delete an asset from server by its id
+   *
+   * @param {number} assetId - id of the asset to be deleted
+   * @returns {number} assetId
+   */
+  deleteAsset(assetId) {
+    return this.delete(`/${this.spaceId}/assets/${assetId}`)
+      .then(() => assetId)
+      .catch(error => apiErrorHandler(error, 'deleteAsset'))
+  }
+
+  /**
+   * delete all existing assets from server
+   *
+   * @returns {number[]} array of asset id's that was removed
+   */
+  deleteExistingAssets() {
+    return this.getAssets()
+      .then(existingAssets => {
+        const mapFn = asset => this.deleteAsset(asset.id)
+        return Promise.mapSeries(existingAssets, mapFn)
+      })
+      .catch(error => Promise.reject(error))
+  }
+
+  /**
    * get total number of assets existing on server
    *
    * @returns {number} count of existing assets
@@ -78,7 +104,7 @@ class Storyblok {
             .then(res => assets.push(...res.data.assets))
             .catch(error => Promise.reject(error))
         }
-        return Promise.map(requests, mapFn, { concurrency: 1 })
+        return Promise.mapSeries(requests, mapFn)
           .then(() => assets)
           .catch(error => Promise.reject(error))
       })
