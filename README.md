@@ -1,4 +1,4 @@
-# Storyblok Management API Wrapper (storyblok-management-api-wrapper)
+# Storyblok Management API Wrapper
 
 library for working with Storyblok management API. Uses axios to make Storyblok management API calls. Based on the official [storyblok/storyblok-js-client](https://github.com/storyblok/storyblok-js-client)
 
@@ -7,84 +7,6 @@ library for working with Storyblok management API. Uses axios to make Storyblok 
 ```bash
 npm install --save storyblok-management-api-wrapper
 ```
-
-## Usage
-
-### Class `StoryblokApiClient`
-
-#### Parameters
-
-- `config` Object
-  - `apiKey` _String_ - the **personal access token** from Storyblok [account page](https://app.storyblok.com/#!/me/account)
-  - `spaceId` _Number_ - the id number of the space to work in
-  - `rateLimit` _Number_ (optional) - defaults to 3
-  - `timeout` _Number_ (optional)
-  - `region` _String_ (optional)
-  - `https` _Boolean_ (optional)
-
-#### Example
-
-```javascript
-// 1. Require the Storyblok client
-const StoryblokApiClient = require("storyblok-management-api-wrapper")
-
-// 2. Initialize the client with the spaceId and access token from your space account page
-const spaceId = 123456
-const apiKey = asdfklasjdfaksjfdaksjdfasjk
-const apiClient = new StoryblokApiClient({ spaceId, apiKey })
-```
-
-### Class Methods
-
-#### space
-
-`StoryblokApiClient.getSpace()` - get the space information
-
-#### assets
-
-`StoryblokApiClient.countAssets()` - get total number of existing assets
-
-`StoryblokApiClient.createAssetFolder(name)` - create an asset folder
-
-`StoryblokApiClient.createImageAssete(filePath, compression, dimLimit)` - create a Storyblok asset from a local image file
-
-`StoryblokApiClient.deleteAsset(assetId)` - delete a specific asset
-
-`StoryblokApiClient.deleteAssetFolder(assetFolderId)` - delete a specific asset folder
-
-`StoryblokApiClient.deleteExistingAssets()` - delete all existing assets
-
-`StoryblokApiClient.getExistingAssets()` - get full listing of assets
-
-`StoryblokApiClient.getExistingAssetFolders()` - get full listing of asset folders
-
-#### components
-
-`StoryblokApiClient.createComponent(definition)` - create a component
-
-`StoryblokApiClient.deleteComponent(componentId)` - delete a specific component
-
-`StoryblokApiClient.deleteExistingComponents()` - delete all existing components
-
-`StoryblokApiClient.getComponent(componentId)` - get the definitions of a specific component
-
-`StoryblokApiClient.getExistingComponents()` - get full listing of existing component details
-
-#### stories
-
-`StoryblokApiClient.countStories()` - get total number of existing stories
-
-`StoryblokApiClient.createStory(definition)` - create a content story
-
-`StoryblokApiClient.deleteExistingStories()` - delete all existing stories
-
-`StoryblokApiClient.deleteStory(storyId)` - delete a specific story
-
-`StoryblokApiClient.getExistingStories()` - get full list of existing content story details
-
-`StoryblokApiClient.getStory(storyId)` - get details of a specific content story
-
-`StoryblokApiClient.reorderStory(storyId, afterId)` - move a story's sequential order
 
 ## Classes
 
@@ -152,15 +74,27 @@ instance of Storyblok API interface
 
 initialize an instance
 
-| Param            | Type                                       | Description                     |
-| ---------------- | ------------------------------------------ | ------------------------------- |
-| config           | <code>Object</code>                        | setup parameters                |
-| config.region    | <code>string</code>                        | string(optional)                |
-| config.timeout   | <code>number</code>                        | timeout                         |
-| config.https     | <code>boolean</code>                       | request protocol                |
-| config.rateLimit | <code>number</code>                        | manually set request rate limit |
-| config.spaceId   | <code>number</code> \| <code>string</code> | working spaceId                 |
-| config.apiKey    | <code>string</code>                        | management API access key       |
+| Param            | Type                                       | Description                                     |
+| ---------------- | ------------------------------------------ | ----------------------------------------------- |
+| config           | <code>Object</code>                        | setup parameters                                |
+| config.spaceId   | <code>number</code> \| <code>string</code> | working spaceId                                 |
+| config.apiKey    | <code>string</code>                        | management API oauth token                      |
+| config.region    | <code>string</code>                        | region, default: undefined (optional)           |
+| config.timeout   | <code>number</code>                        | timeout, default: 0 (optional)                  |
+| config.https     | <code>boolean</code>                       | request protocol, default: undefined (optional) |
+| config.rateLimit | <code>number</code>                        | request rate limit, default: 3 (optional)       |
+
+**Example**
+
+```js
+// 1. require the StoryblokApiClient
+const StoryblokApiClient = require("storyblok-management-api-wrapper")
+
+// 2. initialize the client with spaceId and apiKey
+const spaceId = 123456
+const apiKey = asdfklasjdfaksjfdaksjdfasjk
+const apiClient = new StoryblokApiClient({ spaceId, apiKey })
+```
 
 <a name="StoryblokApiClient+countAssets"></a>
 
@@ -185,7 +119,7 @@ must be manually retrieved
 
 ### storyblokApiClient.createAssetFolder(name) ⇒ <code>Object</code>
 
-create an asset folder on server
+create an asset folder
 
 **Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
 **Returns**: <code>Object</code> - asset folder information
@@ -198,7 +132,7 @@ create an asset folder on server
 
 ### storyblokApiClient.createComponent(definition) ⇒ <code>Object</code>
 
-create a component on server
+create a component
 
 **Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
 **Returns**: <code>Object</code> - details of component that was created
@@ -211,7 +145,7 @@ create a component on server
 
 ### storyblokApiClient.createStory(storyData) ⇒ <code>Object</code>
 
-create a content story on server
+create a content story
 
 **Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
 **Returns**: <code>Object</code> - details of story that was created
@@ -224,7 +158,7 @@ create a content story on server
 
 ### storyblokApiClient.createImageAsset(filePath, compression, dimLimit) ⇒ <code>string</code>
 
-register an image as a Storyblok asset and upload to server
+create an asset from image
 compression and resize using the `sharp.js` library
 
 **Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
@@ -240,7 +174,7 @@ compression and resize using the `sharp.js` library
 
 ### storyblokApiClient.deleteAsset(assetId) ⇒ <code>number</code>
 
-delete an asset from server by its id
+delete a specific asset
 
 **Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
 **Returns**: <code>number</code> - assetId is returned on success
@@ -266,7 +200,7 @@ delete a specific asset folder
 
 ### storyblokApiClient.deleteComponent(componentId) ⇒ <code>number</code>
 
-delete a component from server by its id
+delete a specific component
 
 **Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
 **Returns**: <code>number</code> - componentId is returned on success
@@ -279,7 +213,7 @@ delete a component from server by its id
 
 ### storyblokApiClient.deleteExistingAssets() ⇒ <code>Array.&lt;number&gt;</code>
 
-delete all existing assets from server
+delete all existing assets
 
 **Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
 **Returns**: <code>Array.&lt;number&gt;</code> - array of asset id's that were removed
@@ -287,7 +221,7 @@ delete all existing assets from server
 
 ### storyblokApiClient.deleteExistingComponents() ⇒ <code>Array.&lt;number&gt;</code>
 
-delete all existing components from server
+delete all existing components
 
 **Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
 **Returns**: <code>Array.&lt;number&gt;</code> - array of component id's that were removed
@@ -295,14 +229,14 @@ delete all existing components from server
 
 ### storyblokApiClient.deleteExistingStories()
 
-delete all existing stories from server
+delete all existing stories
 
 **Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
 <a name="StoryblokApiClient+deleteStory"></a>
 
 ### storyblokApiClient.deleteStory(storyId) ⇒ <code>number</code>
 
-delete a specific story from server
+delete a specific story
 
 **Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
 **Returns**: <code>number</code> - id of story that was removed
@@ -315,7 +249,7 @@ delete a specific story from server
 
 ### storyblokApiClient.getComponent(componentId) ⇒ <code>Object</code>
 
-get a component's definition from server by its id
+get a specific component
 
 **Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
 **Returns**: <code>Object</code> - component definition
@@ -328,7 +262,7 @@ get a component's definition from server by its id
 
 ### storyblokApiClient.getExistingAssets() ⇒ <code>Array.&lt;Object&gt;</code>
 
-get full listing of assets from server
+list all existing assets
 
 **Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
 **Returns**: <code>Array.&lt;Object&gt;</code> - full list of existing assets
@@ -336,7 +270,7 @@ get full listing of assets from server
 
 ### storyblokApiClient.getExistingAssetFolders() ⇒ <code>Array.&lt;Object&gt;</code>
 
-get a list of existing asset folders from server
+list all existing asset folders
 
 **Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
 **Returns**: <code>Array.&lt;Object&gt;</code> - List of asset folder details
@@ -344,7 +278,7 @@ get a list of existing asset folders from server
 
 ### storyblokApiClient.getExistingComponents() ⇒ <code>Array.&lt;Object&gt;</code>
 
-get a list of existing component details from server
+list all existing components
 (it is assumed that the working space has at most 1000 existing components)
 
 **Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
@@ -353,7 +287,7 @@ get a list of existing component details from server
 
 ### storyblokApiClient.getExistingStories() ⇒ <code>Array.&lt;Object&gt;</code>
 
-get the complete list of content stories from server
+list all existing stories
 
 **Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
 **Returns**: <code>Array.&lt;Object&gt;</code> - full list of existing content stories
@@ -361,7 +295,7 @@ get the complete list of content stories from server
 
 ### storyblokApiClient.getSpace() ⇒ <code>Object</code>
 
-get space information
+get information on the working space
 
 **Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
 **Returns**: <code>Object</code> - space information
@@ -369,7 +303,7 @@ get space information
 
 ### storyblokApiClient.getStory(storyId) ⇒ <code>Object</code>
 
-get details of a content story by its id
+get a specific story
 
 **Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
 **Returns**: <code>Object</code> - details of content story
@@ -382,7 +316,7 @@ get details of a content story by its id
 
 ### storyblokApiClient.reorderStory(storyId, afterId) ⇒ <code>Object</code>
 
-move a story's sequential order
+modify a story's sequential order
 
 **Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
 **Returns**: <code>Object</code> - details of the moved story
