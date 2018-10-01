@@ -31,7 +31,6 @@
     "bluebird": "^3.5.2",
     "fs-extra": "^7.0.0",
     "p-throttle": "^2.0.0",
-    "qs": "^6.5.2",
     "request": "^2.88.0",
     "request-promise": "^4.2.2",
     "sharp": "^0.20.8",
