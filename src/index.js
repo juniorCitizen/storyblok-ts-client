@@ -2,14 +2,17 @@ const axios = require('axios')
 const Promise = require('bluebird')
 const pThrottle = require('p-throttle')
 // const qs = require('qs')
+const requestPromise = require('request-promise')
+const sharp = require('sharp')
 
 const defaults = {
-  rateLimit: 3,
+  imageDimensionLimit: null,
   maxPerPage: 1000,
+  rateLimit: 3,
 }
 
 /** instance of Storyblok API interface */
-class Storyblok {
+class StoryblokApiClient {
   /**
    * initialize an instance
    *
@@ -35,6 +38,64 @@ class Storyblok {
     this.post = pThrottle(this.apiClient.post, rateLimit, 1000)
     this.put = pThrottle(this.apiClient.put, rateLimit, 1000)
     this.delete = pThrottle(this.apiClient.delete, rateLimit, 1000)
+  }
+
+  /**
+   * Using 'sharp' library to generate data buffer
+   * image compression is applied accordingly
+   *
+   * @param {string} filePath - absolute path to image file
+   * @param {boolean} compression - flag to compress image
+   * @param {number} dimLimit - resizing dimension limit value
+   * @returns {Promise<Buffer>} buffered image data
+   */
+  bufferImage(
+    filePath,
+    compression = false,
+    dimLimit = defaults.imageDimensionLimit
+  ) {
+    const options = { failOnError: true }
+    const image = sharp(filePath, options).rotate()
+    return resizeImage(image, dimLimit)
+      .then(image => compressImage(image, compression))
+      .then(image => image.toBuffer())
+      .catch(error => Promise.reject(error))
+  }
+
+  /**
+   * create an asset folder on server
+   *
+   * @param {string} name - name of folder to create
+   * @returns {Object} asset folder information
+   */
+  createAssetFolder(name) {
+    return this.post(`/${this.spaceId}/asset_folders`, { name })
+      .then(createdFolder => createdFolder.asset_folder)
+      .catch(error => apiErrorHandler(error, 'createAssetFolder'))
+  }
+
+  /**
+   * register an image as a Storyblok asset and upload to server
+   *
+   * @param {string} filePath - absolute file path to image
+   * @param {boolean} compression - flag to compress image
+   * @param {number} dimLimit - resize dimension limit value
+   * @returns {string} Public url to access the asset.
+   */
+  createImageAsset(
+    filePath,
+    compression = false,
+    dimLimit = defaults.imageDimensionLimit
+  ) {
+    const fileName = filePath.split('\\').pop()
+    return Promise.all([
+      this.bufferImage(filePath, compression, dimLimit),
+      this.signAsset(fileName),
+    ])
+      .then(([buffer, signedRequest]) => {
+        return this.uploadAsset(buffer, signedRequest)
+      })
+      .catch(error => Promise.reject(error))
   }
 
   /**
@@ -121,9 +182,46 @@ class Storyblok {
       .then(res => res.data.space)
       .catch(error => apiErrorHandler(error, 'getSpace'))
   }
+
+  /**
+   * Register a file as a Storyblok asset
+   *
+   * @param {string} filename - file name to be register
+   * @returns {Object} asset signing info
+   */
+  signAsset(filename) {
+    return this.post(`${this.spaceId}/assets`, { filename })
+      .then(res => res.data)
+      .catch(error => apiErrorHandler(error, 'signAsset'))
+  }
+
+  /**
+   * Physically uploading an asset after it is registered with 'signAsset()' function.
+   *
+   * @param {Buffer} buffer - Buffered asset.
+   * @param {Object} signedRequest - The returned object from 'signAsset()' function, containing info to enable the actual physical file upload
+   * @returns {string} Url to access the asset
+   */
+  uploadAsset(buffer, signedRequest) {
+    const filename = signedRequest.public_url.split('/').pop()
+    const contentType = signedRequest.fields['Content-Type']
+    const formData = signedRequest.fields
+    formData.file = {
+      value: buffer,
+      options: { filename, contentType },
+    }
+    const options = {
+      method: 'post',
+      url: signedRequest.post_url,
+      formData,
+    }
+    return requestPromise(options)
+      .then(() => signedRequest.pretty_url)
+      .catch(error => Promise.reject(error))
+  }
 }
 
-module.exports = Storyblok
+module.exports = StoryblokApiClient
 
 /**
  * API error handler
@@ -140,4 +238,51 @@ function apiErrorHandler(error, fnName) {
     console.log('Error:', error.message)
   }
   throw error
+}
+
+/**
+ * takes a sharp.js image object and compress as specified
+ *
+ * @param {Object} image - sharp.js image object
+ * @param {boolean} compression - flag to compress image
+ * @returns {Object} processed sharp.js image object
+ */
+function compressImage(image, compression) {
+  if (!compression) return Promise.resolve(image)
+  return image
+    .metadata()
+    .then(({ format }) => {
+      if (format === 'jpeg') {
+        return image.jpeg(defaults.jpegQuality)
+      } else if (format === 'png') {
+        return image.png(defaults.pngCompressionLevel)
+      } else {
+        return image
+      }
+    })
+    .catch(error => Promise.reject(error))
+}
+
+/**
+ * takes a sharp.js image object and resize as specified
+ *
+ * @param {Object} image - sharp.js image object
+ * @param {number} dimLimit - value to limit image dimension
+ * @returns {Object} processed sharp.js image object
+ */
+function resizeImage(image, dimLimit) {
+  if (!dimLimit) return Promise.resolve(image)
+  return image
+    .metadata()
+    .then(({ height, width }) => {
+      const isSquare = height === width
+      const isWider = height < width
+      const resizedImage = isSquare
+        ? image.resize(dimLimit, dimLimit)
+        : isWider
+          ? image.resize(dimLimit, null)
+          : image.resize(null, dimLimit)
+      return resizedImage
+    })
+    .catch(error => Promise.reject(error))
 }
