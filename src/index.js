@@ -66,7 +66,7 @@ class Storyblok {
    * @param {number} perPage - How many assets per page (defaults to server max limit of 1000).
    * @returns {Object[]} Full list of existing assets
    */
-  async getAssets(perPage = defaults.maxPerPage) {
+  getAssets(perPage = defaults.maxPerPage) {
     return this.getSpace(space => Math.ceil(space.assets_count / perPage))
       .then(pageCount => {
         const requests = Array.from(Array(pageCount).keys())
