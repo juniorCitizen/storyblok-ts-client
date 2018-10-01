@@ -1,9 +1,11 @@
 const axios = require('axios')
 const Promise = require('bluebird')
 const pThrottle = require('p-throttle')
+const aRetry = require('async-retry')
 // const qs = require('qs')
 const requestPromise = require('request-promise')
 const sharp = require('sharp')
+const { parseString: parseXml } = require('xml2js')
 
 const defaults = {
   imageDimensionLimit: null,
@@ -210,13 +212,33 @@ class StoryblokApiClient {
       value: buffer,
       options: { filename, contentType },
     }
-    const options = {
-      method: 'post',
-      url: signedRequest.post_url,
-      formData,
+    const retryOptions = {
+      retries: 5,
+      minTimeout: 100,
+      maxTimout: 500,
+      randomize: true,
+      onRetry: () => console.log('asset upload retried'),
     }
-    return requestPromise(options)
-      .then(() => signedRequest.pretty_url)
+    return aRetry((bail, attempt) => {
+      return requestPromise({
+        method: 'post',
+        url: signedRequest.post_url,
+        formData,
+      })
+        .then(() => signedRequest.pretty_url)
+        .catch(requestError => {
+          parseXml(requestError, { trim: true }, (parseError, result) => {
+            console.log(`${attempt}/${retryOptions.retries}`)
+            console.log(JSON.parse(result))
+            const isInternalError = requestError.status === 500
+            if (parseError || !isInternalError) {
+              bail(requestError || requestError)
+              return
+            }
+          })
+        })
+    }, retryOptions)
+      .then(prettyUrl => prettyUrl)
       .catch(error => Promise.reject(error))
   }
 }
