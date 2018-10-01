@@ -1,6 +1,7 @@
-// const qs = require('qs')
 const axios = require('axios')
+const Promise = require('bluebird')
 const pThrottle = require('p-throttle')
+// const qs = require('qs')
 
 const defaults = {
   rateLimit: 3,
