@@ -31,7 +31,7 @@ const StoryblokApiClient = require("storyblok-management-api-wrapper")
 // 2. Initialize the client with the spaceId and access token from your space account page
 const spaceId = 123456
 const apiKey = asdfklasjdfaksjfdaksjdfasjk
-const Storyblok = new StoryblokApiClient({ spaceId, apiKey })
+const apiClient = new StoryblokApiClient({ spaceId, apiKey })
 ```
 
 ### Class Methods
