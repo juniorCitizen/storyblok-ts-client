@@ -365,6 +365,37 @@ class StoryblokApiClient {
   }
 
   /**
+   * publish existing stories
+   *
+   * @returns {number[]} list of published story id's
+   */
+  publishExistingStories() {
+    const filterFn = story => {
+      const isFolder = story.is_folder
+      const isPublished = story.published
+      return !isFolder && !isPublished
+    }
+    const mapFn = story => this.publishStory(story.id)
+    return this.getExistingStories()
+      .then(stories => stories.filter(filterFn))
+      .then(unPubStories => Promise.mapSeries(unPubStories, mapFn))
+      .then(pubStoryIds => pubStoryIds)
+      .catch(error => Promise.reject(error))
+  }
+
+  /**
+   * publish a specific story
+   *
+   * @param {number} storyId - story id
+   * @returns {number} published story id
+   */
+  publishStory(storyId) {
+    return this.get(`/${this.spaceId}/stories/${storyId}/publish`)
+      .then(() => storyId)
+      .catch(error => apiErrorHandler(error, 'publishStory'))
+  }
+
+  /**
    * modify a story's sequential order
    *
    * @param {string} storyId - id of the story to be moved

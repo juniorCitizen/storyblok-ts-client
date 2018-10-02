@@ -8,29 +8,23 @@ library for working with Storyblok management API. Uses axios to make Storyblok 
 npm install --save storyblok-management-api-wrapper
 ```
 
+## Usage
+
+```js
+// 1. require the StoryblokApiClient
+const StoryblokApiClient = require("storyblok-management-api-wrapper")
+
+// 2. initialize the client with spaceId and apiKey
+const spaceId = 123456
+const apiKey = asdfklasjdfaksjfdaksjdfasjk
+const apiClient = new StoryblokApiClient({ spaceId, apiKey })
+```
+
 ## Classes
 
 <dl>
 <dt><a href="#StoryblokApiClient">StoryblokApiClient</a></dt>
 <dd><p>instance of Storyblok API interface</p>
-</dd>
-</dl>
-
-## Functions
-
-<dl>
-<dt><a href="#apiErrorHandler">apiErrorHandler(error, fnName)</a></dt>
-<dd><p>API error handler</p>
-</dd>
-<dt><a href="#bufferImage">bufferImage(filePath, compression, dimLimit)</a> ⇒ <code>Promise.&lt;Buffer&gt;</code></dt>
-<dd><p>Using &#39;sharp&#39; library to generate data buffer
-image compression is applied accordingly</p>
-</dd>
-<dt><a href="#compressImage">compressImage(image, compression)</a> ⇒ <code>Object</code></dt>
-<dd><p>takes a sharp.js image object and compress as specified</p>
-</dd>
-<dt><a href="#resizeImage">resizeImage(image, dimLimit)</a> ⇒ <code>Object</code></dt>
-<dd><p>takes a sharp.js image object and resize as specified</p>
 </dd>
 </dl>
 
@@ -64,6 +58,8 @@ instance of Storyblok API interface
   - [.getExistingStories()](#StoryblokApiClient+getExistingStories) ⇒ <code>Array.&lt;Object&gt;</code>
   - [.getSpace()](#StoryblokApiClient+getSpace) ⇒ <code>Object</code>
   - [.getStory(storyId)](#StoryblokApiClient+getStory) ⇒ <code>Object</code>
+  - [.publishExistingStories()](#StoryblokApiClient+publishExistingStories) ⇒ <code>Array.&lt;number&gt;</code>
+  - [.publishStory(storyId)](#StoryblokApiClient+publishStory) ⇒ <code>number</code>
   - [.reorderStory(storyId, afterId)](#StoryblokApiClient+reorderStory) ⇒ <code>Object</code>
   - [.signAsset(filename)](#StoryblokApiClient+signAsset) ⇒ <code>Object</code>
   - [.uploadAsset(buffer, signedRequest)](#StoryblokApiClient+uploadAsset) ⇒ <code>string</code>
@@ -311,6 +307,27 @@ get a specific story
 | Param   | Type                | Description             |
 | ------- | ------------------- | ----------------------- |
 | storyId | <code>number</code> | id of the content story |
+
+<a name="StoryblokApiClient+publishExistingStories"></a>
+
+### storyblokApiClient.publishExistingStories() ⇒ <code>Array.&lt;number&gt;</code>
+
+publish existing stories
+
+**Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
+**Returns**: <code>Array.&lt;number&gt;</code> - list of published story id's
+<a name="StoryblokApiClient+publishStory"></a>
+
+### storyblokApiClient.publishStory(storyId) ⇒ <code>number</code>
+
+publish a specific story
+
+**Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
+**Returns**: <code>number</code> - published story id
+
+| Param   | Type                | Description |
+| ------- | ------------------- | ----------- |
+| storyId | <code>number</code> | story id    |
 
 <a name="StoryblokApiClient+reorderStory"></a>
 

@@ -3,9 +3,6 @@
   "version": "2.3.1",
   "description": "library for working with Storyblok management API",
   "main": "src/index.js",
-  "scripts": {
-    "genDocs": "jsdoc2md src/index.js"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chiayutsaipersonal/storyblok-management-api-wrapper.git"
@@ -42,8 +39,12 @@
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-jsdoc": "^3.8.0",
     "eslint-plugin-node": "^7.0.1",
-    "eslint-plugin-prettier": "^2.7.0",
+    "eslint-plugin-prettier": "^3.0.0",
     "eslint-plugin-promise": "^4.0.1",
+    "jsdoc-to-markdown": "^4.0.1",
     "prettier": "^1.14.3"
+  },
+  "scripts": {
+    "genDocs": "jsdoc2md src/index.js"
   }
 }
