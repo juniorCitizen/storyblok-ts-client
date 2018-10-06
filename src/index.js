@@ -1,6 +1,7 @@
 const asyncRetry = require('async-retry')
 const axios = require('axios')
 const Promise = require('bluebird')
+const EventEmitter = require('events')
 const pThrottle = require('p-throttle')
 const requestPromise = require('request-promise')
 const sharp = require('sharp')
@@ -37,6 +38,7 @@ class StoryblokApiClient {
    * @param {number} config.timeout - timeout, default: 0 (optional)
    * @param {boolean} config.https - request protocol, default: undefined (optional)
    * @param {number} config.rateLimit - request rate limit, default: 3 (optional)
+   * @param {boolean} config.verbose - flag to broadcast debug messages, default: false (optional)
    */
   constructor(config) {
     let region = config.region ? `-${config.region}` : ''
@@ -52,6 +54,10 @@ class StoryblokApiClient {
     this.post = pThrottle(this.apiClient.post, rateLimit, 1000)
     this.put = pThrottle(this.apiClient.put, rateLimit, 1000)
     this.delete = pThrottle(this.apiClient.delete, rateLimit, 1000)
+    this.broadcaster = new EventEmitter()
+    this.broadcaster.on('broadcast', message => {
+      if (config.verbose) console.log(message)
+    })
   }
 
   /**
