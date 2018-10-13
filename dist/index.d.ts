@@ -15,5 +15,6 @@ import { IApiClient, ICredentials } from './interfaces';
  * return storyblok.space.get()
  *   .then(space => console.log('space id:', space.id)) // => space id: 12345
  */
-export declare function getApiClient(credentials: ICredentials): IApiClient;
+declare function getApiClient(credentials: ICredentials): IApiClient;
+export = getApiClient;
 //# sourceMappingURL=index.d.ts.map

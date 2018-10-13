@@ -22,7 +22,7 @@ import {IApiClient, ICredentials} from './interfaces'
  * return storyblok.space.get()
  *   .then(space => console.log('space id:', space.id)) // => space id: 12345
  */
-export function getApiClient(credentials: ICredentials): IApiClient {
+function getApiClient(credentials: ICredentials): IApiClient {
   return {
     assetFolders: {
       create: name => assetFolders.create(credentials, name),
@@ -76,3 +76,5 @@ export function getApiClient(credentials: ICredentials): IApiClient {
     },
   }
 }
+
+export = getApiClient

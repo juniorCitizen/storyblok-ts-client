@@ -1,5 +1,4 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 var assetFolders = require("./assetFolders");
 var assets = require("./assets");
 var components = require("./components");
@@ -68,5 +67,5 @@ function getApiClient(credentials) {
         },
     };
 }
-exports.getApiClient = getApiClient;
+module.exports = getApiClient;
 //# sourceMappingURL=index.js.map
