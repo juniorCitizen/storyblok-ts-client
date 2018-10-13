@@ -1,4 +1,4 @@
-# Storyblok Management API Wrapper
+# Storyblok Management API Typescript Client
 
 [typescript](https://github.com/Microsoft/TypeScript) library for working with Storyblok management API. Uses [axios](https://github.com/axios/axios) and [request-promise](https://github.com/request/request-promise) to make Storyblok management API calls
 
