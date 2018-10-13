@@ -85,6 +85,9 @@ exports.deleteStory = deleteStory;
 /**
  * delete all existing stories
  *
+ * @param credentials - API access credentials
+ * @param credentials.spaceId - Storyblok working space ID
+ * @param credentials.apiToken - API access token
  * @returns a list of details of deleted stories
  */
 function deleteExisting(credentials) {
