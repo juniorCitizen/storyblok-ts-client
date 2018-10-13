@@ -1,50 +1,67 @@
 {
   "name": "storyblok-management-api-wrapper",
   "version": "2.6.0",
-  "description": "library for working with Storyblok management API",
-  "main": "src/index.js",
+  "description": "Typescript library for working with Storyblok management API. Uses axios and request-promise to make Storyblok management API calls",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chiayutsaipersonal/storyblok-management-api-wrapper.git"
   },
   "keywords": [
     "Storyblok",
-    "javascript",
-    "node.js"
+    "node.js",
+    "typescript",
+    "Storyblok Mangement API"
   ],
   "engines": {
     "node": ">=8.12.0",
     "npm": ">=6.4.1"
   },
-  "author": "juniorCitizen <chiayu.tsai.personal@gmail.com>",
+  "author": {
+    "name": "juniorCitizen",
+    "email": "chiayu.tsai.personal@gmail.com"
+  },
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/chiayutsaipersonal/storyblok-management-api-wrapper/issues"
   },
   "homepage": "https://github.com/chiayutsaipersonal/storyblok-management-api-wrapper#readme",
   "dependencies": {
-    "async-retry": "^1.2.3",
     "axios": "^0.18.0",
-    "bluebird": "^3.5.2",
-    "fs-extra": "^7.0.0",
     "p-throttle": "^2.0.0",
     "request": "^2.88.0",
     "request-promise": "^4.2.2",
-    "sharp": "^0.21.0",
-    "xml2js": "^0.4.19"
+    "sharp": "^0.21.0"
   },
   "devDependencies": {
-    "eslint": "^5.6.1",
-    "eslint-config-prettier": "^3.1.0",
-    "eslint-plugin-import": "^2.14.0",
-    "eslint-plugin-jsdoc": "^3.8.0",
-    "eslint-plugin-node": "^7.0.1",
-    "eslint-plugin-prettier": "^3.0.0",
-    "eslint-plugin-promise": "^4.0.1",
-    "jsdoc-to-markdown": "^4.0.1",
-    "prettier": "^1.14.3"
+    "@types/axios": "^0.14.0",
+    "@types/dotenv-safe": "^5.0.0",
+    "@types/jest": "^23.3.5",
+    "@types/node": "^10.11.7",
+    "@types/p-throttle": "^1.1.0",
+    "@types/request": "^2.47.1",
+    "@types/request-promise": "^4.1.42",
+    "@types/sharp": "^0.17.10",
+    "dotenv-safe": "^6.1.0",
+    "jest": "^23.6.0",
+    "prettier": "^1.14.3",
+    "prettier-tslint": "^0.4.0",
+    "promise-retry": "^1.1.1",
+    "ts-jest": "^23.10.4",
+    "tslint": "^5.11.0",
+    "tslint-config-prettier": "^1.15.0",
+    "tslint-plugin-prettier": "^2.0.0",
+    "typescript": "^3.1.3"
   },
   "scripts": {
-    "genDocs": "jsdoc2md src/index.js"
+    "build": "tsc",
+    "coverage": "jest --coverage",
+    "dev:test": "jest --watch",
+    "dev": "tsc -w",
+    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
+    "lint": "tslint -p tsconfig.json",
+    "start": "node dist/index.js",
+    "test": "jest --bail"
   }
 }
