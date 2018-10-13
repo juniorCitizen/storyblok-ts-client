@@ -1,8 +1,19 @@
 # Storyblok Management API Wrapper
 
-library for working with Storyblok management API. Uses axios to make Storyblok management API calls. Based on the official [storyblok/storyblok-js-client](https://github.com/storyblok/storyblok-js-client)
+[typescript](https://github.com/Microsoft/TypeScript) library for working with Storyblok management API. Uses [axios](https://github.com/axios/axios) and [request-promise](https://github.com/request/request-promise) to make Storyblok management API calls
 
-## Install
+## Features and Notes
+
+<hr>
+
+* requests are throttled to 3 calls per second
+* images are compressed and resized using [sharp](https://github.com/lovell/sharp)
+* [jest](https://github.com/facebook/jest) is setup for testing but no test has been written yet
+* only parts of the management API are implemented
+
+## Installation
+
+<hr>
 
 ```bash
 npm install --save storyblok-management-api-wrapper
@@ -10,420 +21,182 @@ npm install --save storyblok-management-api-wrapper
 
 ## Usage
 
-```js
-// 1. require the StoryblokApiClient
-const StoryblokApiClient = require("storyblok-management-api-wrapper")
-
-// 2. initialize the client with spaceId and apiKey
-const spaceId = 123456
-const apiKey = asdfklasjdfaksjfdaksjdfasjk
-const apiClient = new StoryblokApiClient({ spaceId, apiKey })
-```
-
-## Classes
-
-<dl>
-<dt><a href="#StoryblokApiClient">StoryblokApiClient</a></dt>
-<dd><p>instance of Storyblok API interface</p>
-</dd>
-</dl>
-
-<a name="StoryblokApiClient"></a>
-
-## StoryblokApiClient
-
-instance of Storyblok API interface
-
-**Kind**: global class
-
-- [StoryblokApiClient](#StoryblokApiClient)
-  - [new StoryblokApiClient(config)](#new_StoryblokApiClient_new)
-  - [.countAssets()](#StoryblokApiClient+countAssets) ⇒ <code>number</code>
-  - [.countStories()](#StoryblokApiClient+countStories) ⇒ <code>number</code>
-  - [.createAssetFolder(name)](#StoryblokApiClient+createAssetFolder) ⇒ <code>Object</code>
-  - [.createComponent(definition)](#StoryblokApiClient+createComponent) ⇒ <code>Object</code>
-  - [.createStory(storyData)](#StoryblokApiClient+createStory) ⇒ <code>Object</code>
-  - [.createImageAsset(filePath, compression, dimLimit)](#StoryblokApiClient+createImageAsset) ⇒ <code>string</code>
-  - [.deleteAsset(assetId)](#StoryblokApiClient+deleteAsset) ⇒ <code>number</code>
-  - [.deleteAssetFolder(assetFolderId)](#StoryblokApiClient+deleteAssetFolder) ⇒ <code>number</code>
-  - [.deleteComponent(componentId)](#StoryblokApiClient+deleteComponent) ⇒ <code>number</code>
-  - [.deleteExistingAssets()](#StoryblokApiClient+deleteExistingAssets) ⇒ <code>Array.&lt;number&gt;</code>
-  - [.deleteExistingComponents()](#StoryblokApiClient+deleteExistingComponents) ⇒ <code>Array.&lt;number&gt;</code>
-  - [.deleteExistingStories()](#StoryblokApiClient+deleteExistingStories)
-  - [.deleteStory(storyId)](#StoryblokApiClient+deleteStory) ⇒ <code>number</code>
-  - [.getComponent(componentId)](#StoryblokApiClient+getComponent) ⇒ <code>Object</code>
-  - [.getExistingAssets()](#StoryblokApiClient+getExistingAssets) ⇒ <code>Array.&lt;Object&gt;</code>
-  - [.getExistingAssetFolders()](#StoryblokApiClient+getExistingAssetFolders) ⇒ <code>Array.&lt;Object&gt;</code>
-  - [.getExistingComponents()](#StoryblokApiClient+getExistingComponents) ⇒ <code>Array.&lt;Object&gt;</code>
-  - [.getExistingStories()](#StoryblokApiClient+getExistingStories) ⇒ <code>Array.&lt;Object&gt;</code>
-  - [.getSpace()](#StoryblokApiClient+getSpace) ⇒ <code>Object</code>
-  - [.getStory(storyId)](#StoryblokApiClient+getStory) ⇒ <code>Object</code>
-  - [.publishExistingStories()](#StoryblokApiClient+publishExistingStories) ⇒ <code>Array.&lt;number&gt;</code>
-  - [.publishStory(storyId)](#StoryblokApiClient+publishStory) ⇒ <code>number</code>
-  - [.reorderStory(storyId, afterId)](#StoryblokApiClient+reorderStory) ⇒ <code>Object</code>
-  - [.signAsset(filename)](#StoryblokApiClient+signAsset) ⇒ <code>Object</code>
-  - [.uploadAsset(buffer, signedRequest)](#StoryblokApiClient+uploadAsset) ⇒ <code>string</code>
-
-<a name="new_StoryblokApiClient_new"></a>
-
-### new StoryblokApiClient(config)
-
-initialize an instance
-
-| Param            | Type                                       | Description                                     |
-| ---------------- | ------------------------------------------ | ----------------------------------------------- |
-| config           | <code>Object</code>                        | setup parameters                                |
-| config.spaceId   | <code>number</code> \| <code>string</code> | working spaceId                                 |
-| config.apiKey    | <code>string</code>                        | management API oauth token                      |
-| config.region    | <code>string</code>                        | region, default: undefined (optional)           |
-| config.timeout   | <code>number</code>                        | timeout, default: 0 (optional)                  |
-| config.https     | <code>boolean</code>                       | request protocol, default: undefined (optional) |
-| config.rateLimit | <code>number</code>                        | request rate limit, default: 3 (optional)       |
-
-**Example**
+<hr>
 
 ```js
-// 1. require the StoryblokApiClient
-const StoryblokApiClient = require("storyblok-management-api-wrapper")
+const storyblok = require('storyblok-management-api-wrapper')({
+  spaceId: 12345,
+  apiToken: fake_api_token,
+})
 
-// 2. initialize the client with spaceId and apiKey
-const spaceId = 123456
-const apiKey = asdfklasjdfaksjfdaksjdfasjk
-const apiClient = new StoryblokApiClient({ spaceId, apiKey })
+return storyblok.spaces.get()
+  .then(space => console.log('space id:', space.id))
+  // => space id: 12345
 ```
 
-<a name="StoryblokApiClient+countAssets"></a>
+## CLI Scripts
 
-### storyblokApiClient.countAssets() ⇒ <code>number</code>
+```bash
+// development and testing
+npm run dev      // runs typescript transpiler in watch mode
+npm run dev:test // runs jest in watch mode
+npm test         // runs jest
+npm run coverage // runs jest and check code coverage stat
+npm start        // runs any executable code in the index.js
 
-get total number of existing assets
+// build
+npm run build
 
-**Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
-**Returns**: <code>number</code> - get a count of existing assets
-<a name="StoryblokApiClient+countStories"></a>
+// tslint
+npm run lint
 
-### storyblokApiClient.countStories() ⇒ <code>number</code>
+// prettier
+npm run format
+```
 
-get total number of existing stories
+## API Reference
 
-Storyblok API's space info does not account 'folders' as stories, so "this.getSpace({ spaceId }).then(space => space.stories_count)" does not work for the purpose of this function
-must be manually retrieved
+<hr>
 
-**Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
-**Returns**: <code>number</code> - get a count of existing stories
-<a name="StoryblokApiClient+createAssetFolder"></a>
+API has been organized into categories and exposed through the following properties:
 
-### storyblokApiClient.createAssetFolder(name) ⇒ <code>Object</code>
+* `assetFolders` (methods to access Storyblok feature that's available to paid accounts or during trial period only)
+* `assets`
+* `components`
+* `spaces`
+* `stories`
 
-create an asset folder
+### `storyblok.assetFolders` - *methods for assetFolders*
 
-**Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
-**Returns**: <code>Object</code> - asset folder information
+* storyblok.assetFolders.create(`name: string`) => `Promise<assetFolder>`
 
-| Param | Type                | Description              |
-| ----- | ------------------- | ------------------------ |
-| name  | <code>string</code> | name of folder to create |
+  * create an asset folder
 
-<a name="StoryblokApiClient+createComponent"></a>
+* storyblok.assetFolders.delete(`id: number`) => `void`
 
-### storyblokApiClient.createComponent(definition) ⇒ <code>Object</code>
+  * delete a specific asset folder
 
-create a component
+* storyblok.assetFolders.deleteExisting() => `void`
 
-**Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
-**Returns**: <code>Object</code> - details of component that was created
+  * delete all existing asset folders
 
-| Param      | Type                | Description                           |
-| ---------- | ------------------- | ------------------------------------- |
-| definition | <code>Object</code> | Storyblok component definition object |
+* storyblok.assetFolders.get(`id: number`) => `Promise<assetFolder>`
 
-<a name="StoryblokApiClient+createStory"></a>
+  * get a specific asset folder
 
-### storyblokApiClient.createStory(storyData) ⇒ <code>Object</code>
+* storyblok.assetFolders.getExisting() => `Promise<assetFolder[]>`
 
-create a content story
+  * get existing asset folders
 
-**Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
-**Returns**: <code>Object</code> - details of story that was created
+* storyblok.assetFolders.searchByName(`name: string`) => `Promise<assetFolder[]>`
 
-| Param     | Type                | Description                 |
-| --------- | ------------------- | --------------------------- |
-| storyData | <code>Object</code> | Storyblok story data object |
+  * search asset folders by matching asset folder names to the supplied string
 
-<a name="StoryblokApiClient+createImageAsset"></a>
+### `storyblok.assets` - *methods for assets*
 
-### storyblokApiClient.createImageAsset(filePath, compression, dimLimit) ⇒ <code>string</code>
+* storyblok.assets.count() => `Promise<number>`
 
-create an asset from image
-compression and resize using the `sharp.js` library
+  * get total number of existing assets
 
-**Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
-**Returns**: <code>string</code> - public url to access the asset
+* storyblok.assets.createFromImage(`asset: {}`, `filePath: string`, `compress?: boolean`, `dimensionLimit?: number`) => `Promise<asset>`
 
-| Param       | Type                 | Default            | Description                  |
-| ----------- | -------------------- | ------------------ | ---------------------------- |
-| filePath    | <code>string</code>  |                    | absolute file path to image  |
-| compression | <code>boolean</code> | <code>false</code> | flag to compress image       |
-| dimLimit    | <code>number</code>  |                    | resize dimension limit value |
+  * create an asset from image.
+  * This method calls the assets.register(), resize/compress the image then finally upload the physical file with assets.upload() at one go
+  * compression defaults to true and at the following level:
+    * jpeg: {quality: 70}
+    * png: {compressionLevel: 7}
+  * resize default: 640px (image width/height are detected and resized so the longer side does not exceed the limit)
+  * to use your own image process scheme/lib, use the assets.register() and assets.upload() methods instead
 
-<a name="StoryblokApiClient+deleteAsset"></a>
+* storyblok.assets.delete(`id: number`) => `Promise<asset>`
 
-### storyblokApiClient.deleteAsset(assetId) ⇒ <code>number</code>
+  * delete a specific asset
 
-delete a specific asset
+* storyblok.assets.deleteExisting() => `Promise<asset[]>`
 
-**Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
-**Returns**: <code>number</code> - assetId is returned on success
+  * delete all existing assets
 
-| Param   | Type                | Description                   |
-| ------- | ------------------- | ----------------------------- |
-| assetId | <code>number</code> | id of the asset to be deleted |
+* storyblok.assets.get(`id: number`) => `Promise<asset>`
 
-<a name="StoryblokApiClient+deleteAssetFolder"></a>
+  * get a specific asset
 
-### storyblokApiClient.deleteAssetFolder(assetFolderId) ⇒ <code>number</code>
+* storyblok.assets.getExisting() => `Promise<asset[]>`
 
-delete a specific asset folder
+  * list all existing assets
 
-**Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
-**Returns**: <code>number</code> - assetFolderId is returned on success
+* storyblok.assets.register(`filename: string`) => `Promise<signingResponse>`
 
-| Param         | Type                | Description                      |
-| ------------- | ------------------- | -------------------------------- |
-| assetFolderId | <code>number</code> | id of asset folder to be deleted |
+  * register a file as a Storyblok asset
+  * the physical file still has to be uploaded AWS S3 bucket
 
-<a name="StoryblokApiClient+deleteComponent"></a>
+* storyblok.assets.searchByUrl(`publicUrl: string`) => `Promise<asset>`
 
-### storyblokApiClient.deleteComponent(componentId) ⇒ <code>number</code>
+  * find a specific asset by access url
 
-delete a specific component
+* storyblok.assets.upload(`buffer: Buffer`, `signedResponse: {}`) => `Promise<asset>`
 
-**Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
-**Returns**: <code>number</code> - componentId is returned on success
+  * upload an asset after it is registered as a Storyblok asset
 
-| Param       | Type                | Description                   |
-| ----------- | ------------------- | ----------------------------- |
-| componentId | <code>number</code> | id of component to be deleted |
+### `storyblok.components` - *methods for components*
 
-<a name="StoryblokApiClient+deleteExistingAssets"></a>
+* storyblok.components.create(`component: component`) => `Promise<component>`
 
-### storyblokApiClient.deleteExistingAssets() ⇒ <code>Array.&lt;number&gt;</code>
+  * create a component
 
-delete all existing assets
+* storyblok.components.delete(`id: number`) => `Promise<component>`
 
-**Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
-**Returns**: <code>Array.&lt;number&gt;</code> - array of asset id's that were removed
-<a name="StoryblokApiClient+deleteExistingComponents"></a>
+  * delete a specific component
 
-### storyblokApiClient.deleteExistingComponents() ⇒ <code>Array.&lt;number&gt;</code>
+* storyblok.components.deleteExisting() => `Promise<component[]>`
 
-delete all existing components
+  * delete all existing components
 
-**Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
-**Returns**: <code>Array.&lt;number&gt;</code> - array of component id's that were removed
-<a name="StoryblokApiClient+deleteExistingStories"></a>
+* storyblok.components.getExisting() => `Promise<component[]>`
 
-### storyblokApiClient.deleteExistingStories()
+  * list all existing components
+  * it is assumed that the working space has only 1,000 existing components at most
 
-delete all existing stories
+### `storyblok.spaces` - *methods for the working space*
 
-**Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
-<a name="StoryblokApiClient+deleteStory"></a>
+* storyblok.spaces.get() => `Promise<space>`
 
-### storyblokApiClient.deleteStory(storyId) ⇒ <code>number</code>
+  * get working space information
 
-delete a specific story
+### `storyblok.stories` - *methods for content stories*
 
-**Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
-**Returns**: <code>number</code> - id of story that was removed
+* storyblok.stories.count() => `Promise<number>`
 
-| Param   | Type                | Description                   |
-| ------- | ------------------- | ----------------------------- |
-| storyId | <code>number</code> | id of the story to be deleted |
+  * get total number of existing stories (including folders)
+  * Storyblok API's space info does not account 'folders' as stories, and must be manually retrieved
 
-<a name="StoryblokApiClient+getComponent"></a>
+* storyblok.stories.create(`story: story`) => `Promise<story>`
 
-### storyblokApiClient.getComponent(componentId) ⇒ <code>Object</code>
+  * create a story
 
-get a specific component
+* storyblok.stories.delete(`id: number`) => `Promise<story>`
 
-**Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
-**Returns**: <code>Object</code> - component definition
+  * delete a specific story
 
-| Param       | Type                | Description     |
-| ----------- | ------------------- | --------------- |
-| componentId | <code>number</code> | id of component |
+* storyblok.stories.deleteExisting() => `Promise<story[]>`
 
-<a name="StoryblokApiClient+getExistingAssets"></a>
+  * delete all existing stories
 
-### storyblokApiClient.getExistingAssets() ⇒ <code>Array.&lt;Object&gt;</code>
+* storyblok.stories.get(`id: number`) => `Promise<story>`
 
-list all existing assets
+  * get a specific story
 
-**Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
-**Returns**: <code>Array.&lt;Object&gt;</code> - full list of existing assets
-<a name="StoryblokApiClient+getExistingAssetFolders"></a>
+* storyblok.stories.getExisting() => `Promise<story[]>`
 
-### storyblokApiClient.getExistingAssetFolders() ⇒ <code>Array.&lt;Object&gt;</code>
+  * list all existing stories
 
-list all existing asset folders
+* storyblok.stories.publish(`id: number`) => `Promise<story>`
 
-**Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
-**Returns**: <code>Array.&lt;Object&gt;</code> - List of asset folder details
-<a name="StoryblokApiClient+getExistingComponents"></a>
+  * publish a specific story
 
-### storyblokApiClient.getExistingComponents() ⇒ <code>Array.&lt;Object&gt;</code>
+* storyblok.stories.publishPendings() => `Promise<story[]>`
 
-list all existing components
-(it is assumed that the working space has at most 1000 existing components)
+  * publish all unpublished stories
 
-**Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
-**Returns**: <code>Array.&lt;Object&gt;</code> - List of component definitions
-<a name="StoryblokApiClient+getExistingStories"></a>
+* storyblok.stories.reorder(`id: number`, `afterId: number`) => `Promise<story>`
 
-### storyblokApiClient.getExistingStories() ⇒ <code>Array.&lt;Object&gt;</code>
-
-list all existing stories
-
-**Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
-**Returns**: <code>Array.&lt;Object&gt;</code> - full list of existing content stories
-<a name="StoryblokApiClient+getSpace"></a>
-
-### storyblokApiClient.getSpace() ⇒ <code>Object</code>
-
-get information on the working space
-
-**Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
-**Returns**: <code>Object</code> - space information
-<a name="StoryblokApiClient+getStory"></a>
-
-### storyblokApiClient.getStory(storyId) ⇒ <code>Object</code>
-
-get a specific story
-
-**Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
-**Returns**: <code>Object</code> - details of content story
-
-| Param   | Type                | Description             |
-| ------- | ------------------- | ----------------------- |
-| storyId | <code>number</code> | id of the content story |
-
-<a name="StoryblokApiClient+publishExistingStories"></a>
-
-### storyblokApiClient.publishExistingStories() ⇒ <code>Array.&lt;number&gt;</code>
-
-publish existing stories
-
-**Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
-**Returns**: <code>Array.&lt;number&gt;</code> - list of published story id's
-<a name="StoryblokApiClient+publishStory"></a>
-
-### storyblokApiClient.publishStory(storyId) ⇒ <code>number</code>
-
-publish a specific story
-
-**Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
-**Returns**: <code>number</code> - published story id
-
-| Param   | Type                | Description |
-| ------- | ------------------- | ----------- |
-| storyId | <code>number</code> | story id    |
-
-<a name="StoryblokApiClient+reorderStory"></a>
-
-### storyblokApiClient.reorderStory(storyId, afterId) ⇒ <code>Object</code>
-
-modify a story's sequential order
-
-**Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
-**Returns**: <code>Object</code> - details of the moved story
-
-| Param   | Type                | Description                             |
-| ------- | ------------------- | --------------------------------------- |
-| storyId | <code>string</code> | id of the story to be moved             |
-| afterId | <code>string</code> | to be positioned after story of this id |
-
-<a name="StoryblokApiClient+signAsset"></a>
-
-### storyblokApiClient.signAsset(filename) ⇒ <code>Object</code>
-
-register a file as a Storyblok asset
-the physical file still has to be uploaded
-
-**Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
-**Returns**: <code>Object</code> - asset signing info
-
-| Param    | Type                | Description              |
-| -------- | ------------------- | ------------------------ |
-| filename | <code>string</code> | file name to be register |
-
-<a name="StoryblokApiClient+uploadAsset"></a>
-
-### storyblokApiClient.uploadAsset(buffer, signedRequest) ⇒ <code>string</code>
-
-physically upload an asset after it is registered with 'signAsset()' method
-
-**Kind**: instance method of [<code>StoryblokApiClient</code>](#StoryblokApiClient)
-**Returns**: <code>string</code> - Url to access the asset
-
-| Param         | Type                | Description                                   |
-| ------------- | ------------------- | --------------------------------------------- |
-| buffer        | <code>Buffer</code> | buffered asset                                |
-| signedRequest | <code>Object</code> | the server response from 'signAsset()' method |
-
-<a name="apiErrorHandler"></a>
-
-## apiErrorHandler(error, fnName)
-
-API error handler
-
-**Kind**: global function
-
-| Param  | Type                | Description                           |
-| ------ | ------------------- | ------------------------------------- |
-| error  | <code>Object</code> | error object provided by the request  |
-| fnName | <code>string</code> | function name where the error occured |
-
-<a name="bufferImage"></a>
-
-## bufferImage(filePath, compression, dimLimit) ⇒ <code>Promise.&lt;Buffer&gt;</code>
-
-Using 'sharp' library to generate data buffer
-image compression is applied accordingly
-
-**Kind**: global function
-**Returns**: <code>Promise.&lt;Buffer&gt;</code> - buffered image data
-
-| Param       | Type                 | Default            | Description                    |
-| ----------- | -------------------- | ------------------ | ------------------------------ |
-| filePath    | <code>string</code>  |                    | absolute path to image file    |
-| compression | <code>boolean</code> | <code>false</code> | flag to compress image         |
-| dimLimit    | <code>number</code>  |                    | resizing dimension limit value |
-
-<a name="compressImage"></a>
-
-## compressImage(image, compression) ⇒ <code>Object</code>
-
-takes a sharp.js image object and compress as specified
-
-**Kind**: global function
-**Returns**: <code>Object</code> - processed sharp.js image object
-
-| Param       | Type                 | Description            |
-| ----------- | -------------------- | ---------------------- |
-| image       | <code>Object</code>  | sharp.js image object  |
-| compression | <code>boolean</code> | flag to compress image |
-
-<a name="resizeImage"></a>
-
-## resizeImage(image, dimLimit) ⇒ <code>Object</code>
-
-takes a sharp.js image object and resize as specified
-
-**Kind**: global function
-**Returns**: <code>Object</code> - processed sharp.js image object
-
-| Param    | Type                | Description                    |
-| -------- | ------------------- | ------------------------------ |
-| image    | <code>Object</code> | sharp.js image object          |
-| dimLimit | <code>number</code> | value to limit image dimension |
+  * modify a story's sequential order
