@@ -68,5 +68,5 @@ function getApiClient(credentials) {
         },
     };
 }
-exports.default = getApiClient;
+exports.getApiClient = getApiClient;
 //# sourceMappingURL=index.js.map
