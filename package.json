@@ -6,7 +6,7 @@
   "types": "./dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/chiayutsaipersonal/storyblok-management-api-wrapper.git"
+    "url": "git+https://github.com/chiayutsaipersonal/storyblok-ts-client.git"
   },
   "keywords": [
     "Storyblok",
@@ -24,9 +24,9 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/chiayutsaipersonal/storyblok-management-api-wrapper/issues"
+    "url": "https://github.com/chiayutsaipersonal/storyblok-ts-client/issues"
   },
-  "homepage": "https://github.com/chiayutsaipersonal/storyblok-management-api-wrapper#readme",
+  "homepage": "https://github.com/chiayutsaipersonal/storyblok-ts-client#readme",
   "dependencies": {
     "axios": "^0.18.0",
     "p-throttle": "^2.0.0",
