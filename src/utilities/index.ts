@@ -39,9 +39,7 @@ export function calcPageCount(totalCount: number): number {
  * @param image - sharp.js image object
  * @returns compressed sharp.js image object
  */
-async function compressImage(
-  image: sharp.SharpInstance
-): Promise<sharp.SharpInstance> {
+async function compressImage(image: sharp.Sharp): Promise<sharp.Sharp> {
   try {
     const metadata: sharp.Metadata = await image.metadata()
     if (metadata.format === 'png') {
@@ -107,7 +105,7 @@ export async function imageToBuffer(
   compress: boolean = false,
   dimensionLimit?: number
 ): Promise<Buffer> {
-  let image: sharp.SharpInstance = sharp(filePath).rotate()
+  let image: sharp.Sharp = sharp(filePath).rotate()
   try {
     if (compress) {
       image = await compressImage(image)
@@ -154,9 +152,9 @@ export function promiseRetry(
  * @returns resized sharp.js image object
  */
 async function resizeImage(
-  image: sharp.SharpInstance,
+  image: sharp.Sharp,
   dimensionLimit: number = 640
-): Promise<sharp.SharpInstance> {
+): Promise<sharp.Sharp> {
   try {
     const metadata: sharp.Metadata = await image.metadata()
     if (!metadata.height || !metadata.width) {
