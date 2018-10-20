@@ -2,9 +2,7 @@
 
 [typescript](https://github.com/Microsoft/TypeScript) library for working with [Storyblok management API](https://api.storyblok.com/docs). Uses [axios](https://github.com/axios/axios) and [request-promise](https://github.com/request/request-promise) to make Storyblok management API calls
 
-[![npm](https://img.shields.io/npm/v/:package.svg)](https://www.npmjs.com/package/storyblok-ts-client)
-
-[![GitHub package version](https://img.shields.io/github/package-json/v/badges/shields.svg)](https://github.com/chiayutsaipersonal/storyblok-ts-client)
+[![npm](https://img.shields.io/npm/v/storyblok-ts-client.svg)](https://www.npmjs.com/package/storyblok-ts-client)
 
 ## Description
 
