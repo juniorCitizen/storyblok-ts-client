@@ -1,6 +1,6 @@
 {
   "name": "storyblok-ts-client",
-  "version": "3.1.0",
+  "version": "4.0.0",
   "description": "Typescript library for working with Storyblok management API. Uses axios and request-promise to make Storyblok management API calls",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
