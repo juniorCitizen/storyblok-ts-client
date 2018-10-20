@@ -2,15 +2,18 @@
   "defaultSeverity": "error",
   "extends": [
     "tslint:latest",
+    "tslint-plugin-prettier",
     "tslint-config-prettier"
   ],
   "rules": {
-    "prettier": true,
     "no-console": false,
-    "eofline": true
+    "no-implicit-dependencies": [true, "dev"],
+    "prettier":[true, ".prettierrc.js"]
   },
-  "rulesDirectory": ["tslint-plugin-prettier"],
   "linterOptions": {
-    "exclude": ["node_modules", "dist"]
+    "exclude": [
+      "dist/**/*",
+      "node_modules/**/*"
+    ]
   }
 }

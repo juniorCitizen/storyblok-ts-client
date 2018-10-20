@@ -1,7 +1,9 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "lib": ["es2015"],
+    "lib": [
+      "es2015"
+    ],
     "module": "commonjs",
     "declaration": true,
     "declarationMap": true,
@@ -17,11 +19,12 @@
     "pretty": true
   },
   "include": [
-    "src"
+    "./src"
   ],
   "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.test.ts"
+    "./dist",
+    "./node_modules",
+    "./src/**/*.test.ts",
+    "./tests"
   ]
 }
