@@ -4,6 +4,8 @@
 
 [![npm](https://img.shields.io/npm/v/:package.svg)](https://www.npmjs.com/package/storyblok-ts-client)
 
+[![GitHub package version](https://img.shields.io/github/package-json/v/badges/shields.svg)](https://github.com/chiayutsaipersonal/storyblok-ts-client)
+
 ## Description
 
 <hr>
@@ -53,20 +55,20 @@ return apiClient.spaces.get()
 <hr>
 
 ```bash
-// development and testing
-npm run dev // runs typescript transpiler in watch mode
-npm run dev:test // runs jest in watch mode
-npm test // runs jest
-npm run coverage // runs jest and check code coverage stat
-npm start // runs any executable code in the index.js
+# development and testing
+npm run dev       # runs typescript transpiler in watch mode
+npm run dev:test  # runs jest in watch mode
+npm test          # runs jest
+npm run coverage  # runs jest and check code coverage stat
+npm start         # runs any executable code in the index.js
 
-// build
+# build
 npm run build
 
-// tslint
+# tslint
 npm run lint
 
-// prettier
+# prettier
 npm run format
 ```
 
