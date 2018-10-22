@@ -175,8 +175,8 @@ var ApiClient = /** @class */ (function () {
                  * @fulfil {IAsset} Information of the created asset.
                  * @reject {AxiosError} Axios error.
                  */
-                createFromImage: function (filePath, compress, dimensionLimit) {
-                    return _this.createAssetFromImage(filePath, compress, dimensionLimit);
+                createFromImage: function (asset, filePath, compress, dimensionLimit) {
+                    return _this.createAssetFromImage(asset, filePath, compress, dimensionLimit);
                 },
                 /**
                  * Delete a specific asset.
@@ -538,6 +538,10 @@ var ApiClient = /** @class */ (function () {
      * This method calls the ApiClient.registerAsset(), resize/compress the image then finally upload the physical file with ApiClient.uploadAsset() at one go.
      *
      * @name ApiClient#createAssetFromImage
+     * @param {IAsset} asset - Information to create asset from.
+     * @param {string} asset.filename - File name to register with.
+     * @param {number} [asset.asset_folder_id] - (optional) Assign a asset folder.
+     * @param {number} [asset.id] - (optional) Id of existing asset to replace with this new asset.
      * @param {string} filePath - Absolute file path to the image.
      * @param {boolean} compress - Flag to compress image.
      * @param {number} dimensionLimit - Resizing dimension limit value.
@@ -545,10 +549,8 @@ var ApiClient = /** @class */ (function () {
      * @fulfil {IAsset} Information of the created asset.
      * @reject {AxiosError} Axios error.
      */
-    ApiClient.prototype.createAssetFromImage = function (filePath, compress, dimensionLimit) {
+    ApiClient.prototype.createAssetFromImage = function (asset, filePath, compress, dimensionLimit) {
         var _this = this;
-        var filename = filePath.split('\\').pop();
-        var asset = { filename: filename };
         return Promise.all([
             utilities_1.imageToBuffer(filePath, compress || true, dimensionLimit || 640),
             this.registerAsset(asset),
@@ -1013,7 +1015,7 @@ var ApiClient = /** @class */ (function () {
      *
      * @name ApiClient#registerAsset
      * @param {IAsset} asset - Information to create asset from.
-     * @param {string} asset.filename - File name to register for.
+     * @param {string} asset.filename - File name to register with.
      * @param {number} [asset.asset_folder_id] - (optional) Assign a asset folder.
      * @param {number} [asset.id] - (optional) Id of existing asset to replace with this new asset.
      * @returns {Promise}

@@ -161,11 +161,12 @@ export class ApiClient {
        * @reject {AxiosError} Axios error.
        */
       createFromImage: (
+        asset: IAsset,
         filePath: string,
         compress?: boolean,
         dimensionLimit?: number
       ): Promise<IAsset> =>
-        this.createAssetFromImage(filePath, compress, dimensionLimit),
+        this.createAssetFromImage(asset, filePath, compress, dimensionLimit),
       /**
        * Delete a specific asset.
        *
@@ -511,6 +512,10 @@ export class ApiClient {
    * This method calls the ApiClient.registerAsset(), resize/compress the image then finally upload the physical file with ApiClient.uploadAsset() at one go.
    *
    * @name ApiClient#createAssetFromImage
+   * @param {IAsset} asset - Information to create asset from.
+   * @param {string} asset.filename - File name to register with.
+   * @param {number} [asset.asset_folder_id] - (optional) Assign a asset folder.
+   * @param {number} [asset.id] - (optional) Id of existing asset to replace with this new asset.
    * @param {string} filePath - Absolute file path to the image.
    * @param {boolean} compress - Flag to compress image.
    * @param {number} dimensionLimit - Resizing dimension limit value.
@@ -519,12 +524,11 @@ export class ApiClient {
    * @reject {AxiosError} Axios error.
    */
   private createAssetFromImage(
+    asset: IAsset,
     filePath: string,
     compress?: boolean,
     dimensionLimit?: number
   ): Promise<IAsset> {
-    const filename: string = filePath.split('\\').pop() as string
-    const asset: IAsset = {filename}
     return Promise.all([
       imageToBuffer(filePath, compress || true, dimensionLimit || 640),
       this.registerAsset(asset),
@@ -1007,7 +1011,7 @@ export class ApiClient {
    *
    * @name ApiClient#registerAsset
    * @param {IAsset} asset - Information to create asset from.
-   * @param {string} asset.filename - File name to register for.
+   * @param {string} asset.filename - File name to register with.
    * @param {number} [asset.asset_folder_id] - (optional) Assign a asset folder.
    * @param {number} [asset.id] - (optional) Id of existing asset to replace with this new asset.
    * @returns {Promise}

@@ -132,7 +132,7 @@ export declare class ApiClient {
          * @fulfil {IAsset} Information of the created asset.
          * @reject {AxiosError} Axios error.
          */
-        createFromImage: (filePath: string, compress?: boolean | undefined, dimensionLimit?: number | undefined) => Promise<IAsset>;
+        createFromImage: (asset: IAsset, filePath: string, compress?: boolean | undefined, dimensionLimit?: number | undefined) => Promise<IAsset>;
         /**
          * Delete a specific asset.
          *
@@ -439,6 +439,10 @@ export declare class ApiClient {
      * This method calls the ApiClient.registerAsset(), resize/compress the image then finally upload the physical file with ApiClient.uploadAsset() at one go.
      *
      * @name ApiClient#createAssetFromImage
+     * @param {IAsset} asset - Information to create asset from.
+     * @param {string} asset.filename - File name to register with.
+     * @param {number} [asset.asset_folder_id] - (optional) Assign a asset folder.
+     * @param {number} [asset.id] - (optional) Id of existing asset to replace with this new asset.
      * @param {string} filePath - Absolute file path to the image.
      * @param {boolean} compress - Flag to compress image.
      * @param {number} dimensionLimit - Resizing dimension limit value.
@@ -693,7 +697,7 @@ export declare class ApiClient {
      *
      * @name ApiClient#registerAsset
      * @param {IAsset} asset - Information to create asset from.
-     * @param {string} asset.filename - File name to register for.
+     * @param {string} asset.filename - File name to register with.
      * @param {number} [asset.asset_folder_id] - (optional) Assign a asset folder.
      * @param {number} [asset.id] - (optional) Id of existing asset to replace with this new asset.
      * @returns {Promise}

@@ -693,6 +693,10 @@ return apiClient.spaces.get()
 
 | Param | Type | Description |
 | --- | --- | --- |
+| asset | <code>IAsset</code> | <p>Information to create asset from.</p> |
+| asset.filename | <code>string</code> | <p>File name to register with.</p> |
+| [asset.asset_folder_id] | <code>number</code> | <p>(optional) Assign a asset folder.</p> |
+| [asset.id] | <code>number</code> | <p>(optional) Id of existing asset to replace with this new asset.</p> |
 | filePath | <code>string</code> | <p>Absolute file path to the image.</p> |
 | compress | <code>boolean</code> | <p>Flag to compress image.</p> |
 | dimensionLimit | <code>number</code> | <p>Resizing dimension limit value.</p> |
@@ -985,7 +989,7 @@ return apiClient.spaces.get()
 | Param | Type | Description |
 | --- | --- | --- |
 | asset | <code>IAsset</code> | <p>Information to create asset from.</p> |
-| asset.filename | <code>string</code> | <p>File name to register for.</p> |
+| asset.filename | <code>string</code> | <p>File name to register with.</p> |
 | [asset.asset_folder_id] | <code>number</code> | <p>(optional) Assign a asset folder.</p> |
 | [asset.id] | <code>number</code> | <p>(optional) Id of existing asset to replace with this new asset.</p> |
 
