@@ -38,6 +38,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var p_throttle_1 = require("p-throttle");
 var rp = require("request-promise-native");
 var utilities_1 = require("../utilities");
 var Storyblok_1 = require("./Storyblok");
@@ -1066,7 +1067,7 @@ var ApiClient = /** @class */ (function () {
             .catch(function (error) { return Promise.reject(error); });
     };
     /**
-     * Upload a newly registered asset.
+     * Upload a newly registered asset.  The request is throttled and set to retry on failure.
      *
      * @name ApiClient#uploadAsset
      * @param {Buffer} buffer - Buffered asset data.
@@ -1090,8 +1091,11 @@ var ApiClient = /** @class */ (function () {
             method: 'post',
             url: registration.post_url,
         };
+        var callsPerInterval = 3;
+        var interval = 1000;
+        var throttledRequest = p_throttle_1.default(rp, callsPerInterval, interval);
         var uploadFn = function (options) {
-            return rp(options)
+            return throttledRequest(options)
                 .then(function (res) { return Promise.resolve(res); })
                 .catch(function (error) { return Promise.reject(error); });
         };

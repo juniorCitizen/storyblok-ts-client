@@ -1023,7 +1023,7 @@ return apiClient.spaces.get()
 <a name="ApiClient+uploadAsset"></a>
 
 ### apiClient.uploadAsset ⇒ <code>Promise</code>
-<p>Upload a newly registered asset.</p>
+<p>Upload a newly registered asset.  The request is throttled and set to retry on failure.</p>
 
 **Kind**: instance property of [<code>ApiClient</code>](#ApiClient)  
 **Fulfil**: <code>IAsset</code> Information of the uploaded asset.  

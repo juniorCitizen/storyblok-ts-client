@@ -727,7 +727,7 @@ export declare class ApiClient {
      */
     private updateStory;
     /**
-     * Upload a newly registered asset.
+     * Upload a newly registered asset.  The request is throttled and set to retry on failure.
      *
      * @name ApiClient#uploadAsset
      * @param {Buffer} buffer - Buffered asset data.

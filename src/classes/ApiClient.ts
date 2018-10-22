@@ -3,6 +3,7 @@
  */
 
 import {AxiosError, AxiosPromise, AxiosResponse} from 'axios'
+import pThrottle from 'p-throttle'
 import * as rp from 'request-promise-native'
 
 import {
@@ -1064,7 +1065,7 @@ export class ApiClient {
   }
 
   /**
-   * Upload a newly registered asset.
+   * Upload a newly registered asset.  The request is throttled and set to retry on failure.
    *
    * @name ApiClient#uploadAsset
    * @param {Buffer} buffer - Buffered asset data.
@@ -1090,9 +1091,12 @@ export class ApiClient {
       method: 'post',
       url: registration.post_url,
     }
+    const callsPerInterval = 3
+    const interval = 1000
+    const throttledRequest = pThrottle(rp, callsPerInterval, interval)
     type UploadFn = (options: rp.Options) => Promise<any>
     const uploadFn: UploadFn = options =>
-      rp(options)
+      throttledRequest(options)
         .then((res: any) => Promise.resolve(res))
         .catch((error: any) => Promise.reject(error))
     return promiseRetry(uploadFn, [requestOptions], 3, 500)
