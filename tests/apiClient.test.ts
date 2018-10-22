@@ -227,16 +227,20 @@ describe('class instantiation', () => {
     describe('asset folder related operations', () => {
       let folder1: IAssetFolder
       let folder2: IAssetFolder
-      test('delete existing asset folders to execute successfully', () => {
-        expect.assertions(1)
-        return apiClient.assetFolders
-          .deleteExisting()
-          .then(() => {
-            expect(1).toBe(1)
-            return Promise.resolve()
-          })
-          .catch((e: any) => Promise.reject(e))
-      })
+      test(
+        'delete existing asset folders to execute successfully',
+        () => {
+          expect.assertions(1)
+          return apiClient.assetFolders
+            .deleteExisting()
+            .then(() => {
+              expect(1).toBe(1)
+              return Promise.resolve()
+            })
+            .catch((e: any) => Promise.reject(e))
+        },
+        60000 * 5
+      )
       test('to have no existing asset folder', () => {
         expect.assertions(1)
         return apiClient.assetFolders
@@ -304,13 +308,17 @@ describe('class instantiation', () => {
     })
     describe('asset related operations', () => {
       let assets: IAsset[] = []
-      test('delete existing assets to execute successfully', () => {
-        expect.assertions(1)
-        return apiClient.assets
-          .deleteExisting()
-          .then(() => expect(1).toBe(1))
-          .catch((e: any) => Promise.reject(e))
-      })
+      test(
+        'delete existing assets to execute successfully',
+        () => {
+          expect.assertions(1)
+          return apiClient.assets
+            .deleteExisting()
+            .then(() => expect(1).toBe(1))
+            .catch((e: any) => Promise.reject(e))
+        },
+        60000 * 15
+      )
       test('to have no existing asset by .count() method', () => {
         expect.assertions(1)
         return apiClient.assets
@@ -327,6 +335,7 @@ describe('class instantiation', () => {
           return Promise.all(
             fileNames.map(fileName => {
               return apiClient.assets.createFromImage(
+                {filename: fileName},
                 path.join(basePath, fileName),
                 true,
                 640
