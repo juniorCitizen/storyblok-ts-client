@@ -11,7 +11,7 @@ const pngOptions: sharp.PngOptions = {compressionLevel: 7}
  * @fulfil {Sharp} Compressed sharp object.
  * @reject {Error} Error value.
  */
-export async function compressImage(image: sharp.Sharp): Promise<sharp.Sharp> {
+async function compressImage(image: sharp.Sharp): Promise<sharp.Sharp> {
   try {
     const metadata: sharp.Metadata = await image.metadata()
     if (metadata.format === 'png') {
@@ -64,7 +64,7 @@ export async function imageToBuffer(
  * @fulfil {Sharp} Resized sharp object.
  * @reject {Error} Error value.
  */
-export async function resizeImage(
+async function resizeImage(
   image: sharp.Sharp,
   dimensionLimit: number = 640
 ): Promise<sharp.Sharp> {
