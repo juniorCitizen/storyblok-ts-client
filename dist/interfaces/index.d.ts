@@ -1,22 +1,6 @@
-export { IAsset } from './IAsset';
-export { IAssetFolder } from './IAssetFolder';
-export { IAssetSigningResponse } from './IAssetSigningResponse';
-export { IAssetSigningResponseFields } from './IAssetSigningResponseFields';
-export { IComponent } from './IComponent';
-export { IComponentSchema } from './IComponentSchema';
-export { ICredentials } from './ICredentials';
-export { ISpace } from './ISpace';
-export { ISpaceApiLogsPerMonth } from './ISpaceApiLogsPerMonth';
-export { ISpaceBillingAddress } from './ISpaceBillingAddress';
-export { ISpaceLimits } from './ISpaceLimits';
-export { ISpaceOwner } from './ISpaceOwner';
-export { IStory } from './IStory';
-export { IStoryblokClass } from './IStoryblokClass';
-export { IStoryBreadcrumb } from './IStoryBreadcrumb';
-export { IStoryContent } from './IStoryContent';
-export { IStoryLastAuthor } from './IStoryLastAuthor';
-export { IStoryParent } from './IStoryParent';
-export { IStoryPreviewToken } from './IStoryPreviewToken';
-export { IThrottledRequests } from './IThrottledRequests';
-export { IThrottleSettings } from './IThrottleSettings';
+export * from './assets';
+export * from './assetFolders';
+export * from './components';
+export * from './spaces';
+export * from './stories';
 //# sourceMappingURL=index.d.ts.map

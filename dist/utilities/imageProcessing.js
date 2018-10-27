@@ -74,19 +74,19 @@ function compressImage(image) {
         });
     });
 }
-exports.compressImage = compressImage;
 /**
  * Generate buffered image (image compression and resize is applied accordingly).
  *
  * @param {string} filePath - Absolute path to image file.
  * @param {boolean} compress - Flag to compress image.
- * @param {number} [dimensionLimit] - (optional) Resizing dimension limit value.
+ * @param {number} sizeLimit - Resizing dimension limit value.
  * @returns {Promise}
  * @fulfil {Buffer} Buffered image data.
  * @reject {Error} Error value.
  */
-function imageToBuffer(filePath, compress, dimensionLimit) {
+function imageToBuffer(filePath, compress, sizeLimit) {
     if (compress === void 0) { compress = false; }
+    if (sizeLimit === void 0) { sizeLimit = 640; }
     return __awaiter(this, void 0, void 0, function () {
         var image, error_2;
         return __generator(this, function (_a) {
@@ -102,8 +102,8 @@ function imageToBuffer(filePath, compress, dimensionLimit) {
                     image = _a.sent();
                     _a.label = 3;
                 case 3:
-                    if (!dimensionLimit) return [3 /*break*/, 5];
-                    return [4 /*yield*/, resizeImage(image, dimensionLimit)];
+                    if (!sizeLimit) return [3 /*break*/, 5];
+                    return [4 /*yield*/, resizeImage(image, sizeLimit)];
                 case 4:
                     image = _a.sent();
                     _a.label = 5;
@@ -122,13 +122,13 @@ exports.imageToBuffer = imageToBuffer;
  * Resize a sharp object
  *
  * @param {Sharp} image - sharp object.
- * @param {number} dimensionLimit - Size (in pixels) to limit image dimension.
+ * @param {number} sizeLimit - Size (in pixels) to limit image dimension.
  * @returns {Promise}
  * @fulfil {Sharp} Resized sharp object.
  * @reject {Error} Error value.
  */
-function resizeImage(image, dimensionLimit) {
-    if (dimensionLimit === void 0) { dimensionLimit = 640; }
+function resizeImage(image, sizeLimit) {
+    if (sizeLimit === void 0) { sizeLimit = 640; }
     return __awaiter(this, void 0, void 0, function () {
         var metadata, error_3;
         return __generator(this, function (_a) {
@@ -142,10 +142,10 @@ function resizeImage(image, dimensionLimit) {
                         throw new Error('image dimension cannot be determined');
                     }
                     return [2 /*return*/, metadata.height === metadata.width
-                            ? image.resize(dimensionLimit, dimensionLimit) // square image
+                            ? image.resize(sizeLimit, sizeLimit) // square image
                             : metadata.height < metadata.width
-                                ? image.resize(dimensionLimit, undefined) // wider image
-                                : image.resize(undefined, dimensionLimit)]; // taller image
+                                ? image.resize(sizeLimit, undefined) // wider image
+                                : image.resize(undefined, sizeLimit)]; // taller image
                 case 2:
                     error_3 = _a.sent();
                     throw error_3;
@@ -154,5 +154,4 @@ function resizeImage(image, dimensionLimit) {
         });
     });
 }
-exports.resizeImage = resizeImage;
 //# sourceMappingURL=imageProcessing.js.map

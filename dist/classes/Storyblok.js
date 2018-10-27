@@ -1,109 +1,236 @@
 "use strict";
-/**
- * @module Storyblok
- */
 Object.defineProperty(exports, "__esModule", { value: true });
 var axios_1 = require("axios");
 var p_throttle_1 = require("p-throttle");
+var apiServerUrl = 'http://api.storyblok.com/v1/spaces';
+var throttleLimit = 3;
 /**
- * Basic Storyblok management API CRUD client using axios.  See "https://api.storyblok.com/docs" for details.
+ * A class to provide basic CRUD request methods to Storyblok's management API with failure-retry options and built-in request throttling.  Uses axios library to facilitation the API calls.
  *
- * @class
+ * @export
+ * @class Storyblok
+ * @implements {IStoryblokClass}
+ * @param {string} apiToken - API access token.
  * @example
  * const {Storyblok} = require('storyblok-ts-client')
- * const storyblok = Storyblok('fake_api_token')
- *
- * return storyblok.get('/12345')
- *   .then(res => console.log('space id:', res.data.id))
- *   // => space id: 12345
+ * const storyblok = new Storyblok('fake_api_token')
  */
 var Storyblok = /** @class */ (function () {
-    /**
-     * Class instantiation.
-     *
-     * @param {string} apiToken - API access token.
-     */
     function Storyblok(apiToken) {
         this.apiToken = apiToken;
-        this.axiosInst = axios_1.default.create({
-            baseURL: "https://api.storyblok.com/v1/spaces",
+        this.axiosInstance = axios_1.default.create({
+            baseURL: apiServerUrl,
             headers: { Authorization: this.apiToken },
         });
-        var callsPerInterval = 3;
-        var interval = 1000;
-        this.throttledRequests = {
-            delete: p_throttle_1.default(this.axiosInst.delete, callsPerInterval, interval),
-            get: p_throttle_1.default(this.axiosInst.get, callsPerInterval, interval),
-            post: p_throttle_1.default(this.axiosInst.post, callsPerInterval, interval),
-            put: p_throttle_1.default(this.axiosInst.put, callsPerInterval, interval),
-            request: p_throttle_1.default(this.axiosInst.request, callsPerInterval, interval),
+        this.throttled = {
+            delete: p_throttle_1.default(this.axiosInstance.delete, throttleLimit, 1000),
+            get: p_throttle_1.default(this.axiosInstance.get, throttleLimit, 1000),
+            post: p_throttle_1.default(this.axiosInstance.post, throttleLimit, 1000),
+            put: p_throttle_1.default(this.axiosInstance.put, throttleLimit, 1000),
         };
     }
     /**
-     * General purpose 'delete' method to Storyblok using axios.
+     * DELETE request method.
      *
+     * @param {string} [url='/'] - Request url.
+     * @param {ICustomAxiosRequestConfig} [config] - Request config.
+     * @returns {Promise<any>}
+     * @example
+     * const {Storyblok} = require('storyblok-ts-client')
+     * const storyblok = new Storyblok('fake_api_token')
+     * const spaceId = 12345
+     * const storyId = 123456
+     * const url = `/${spaceId}/stories/${storyId}`
+     * storyblok.delete(url, {retries: 3, retryDelay: 1000})
+     *   .then(res => console.log('deleted story id:', res.story.id))
+     * // => deleted story id: 123456
      * @name Storyblok#delete
-     * @param {string} url - Request url.
-     * @param {AxiosRequestConfig} [config] - (optional) Request config.
-     * @returns {Promise}
-     * @fulfil {any} Resolved value.
-     * @reject {any} Axios error.
+     * @memberof Storyblok
      */
     Storyblok.prototype.delete = function (url, config) {
-        return this.throttledRequests.delete(url, config || undefined);
+        var _this = this;
+        if (url === void 0) { url = '/'; }
+        var interceptor = this.activateRetry();
+        return this.throttled
+            .delete(url, config || {})
+            .then(function (response) {
+            _this.deactivateRetry(interceptor);
+            return response;
+        })
+            .catch(function (error) {
+            _this.deactivateRetry(interceptor);
+            return Promise.reject(error);
+        });
     };
     /**
-     * General purpose 'get' method to Storyblok using axios.
+     * GET request method.
      *
+     * @param {string} [url='/'] - Request url.
+     * @param {ICustomAxiosRequestConfig} [config] - Request config.
+     * @returns {Promise<any>}
+     * @example
+     * const {Storyblok} = require('storyblok-ts-client')
+     * const storyblok = new Storyblok('fake_api_token')
+     * const spaceId = 12345
+     * const url = `/${spaceId}`
+     * storyblok.get(url, {retries: 3, retryDelay: 1000})
+     *   .then(res => console.log('space id:', res.space.id))
+     * // => space id: 12345
      * @name Storyblok#get
-     * @param {string} url - Request url.
-     * @param {AxiosRequestConfig} [config] - (optional) Request config.
-     * @returns {Promise}
-     * @fulfil {any} Resolved value.
-     * @reject {any} Axios error.
+     * @memberof Storyblok
      */
     Storyblok.prototype.get = function (url, config) {
-        return this.throttledRequests.get(url, config || undefined);
+        var _this = this;
+        if (url === void 0) { url = '/'; }
+        var interceptor = this.activateRetry();
+        return this.throttled
+            .get(url, config || {})
+            .then(function (response) {
+            _this.deactivateRetry(interceptor);
+            return response;
+        })
+            .catch(function (error) {
+            _this.deactivateRetry(interceptor);
+            return Promise.reject(error);
+        });
     };
     /**
-     * General purpose 'post' method to Storyblok using axios.
+     * POST request method.
      *
+     * @param {string} [url='/'] - Request url.
+     * @param {any} [data] - Request data body.
+     * @param {ICustomAxiosRequestConfig} [config] - Request config.
+     * @returns {Promise<any>}
+     * @example
+     * const {Storyblok} = require('storyblok-ts-client')
+     * const storyblok = new Storyblok('fake_api_token')
+     * const spaceId = 12345
+     * const url = `/${spaceId}/stories`
+     * const story = {
+     *   name: 'test',
+     *   slug: 'test',
+     * }
+     * storyblok.post(url, {story}, {retries: 3, retryDelay: 1000})
+     *   .then(res => console.log('new story id:', res.story.id))
+     * // => new story id: 123456
      * @name Storyblok#post
-     * @param {string} url - Request url.
-     * @param {any} [data] - (optional) Request body.
-     * @param {AxiosRequestConfig} [config] - (optional) Request config.
-     * @returns {Promise}
-     * @fulfil {any} Resolved value.
-     * @reject {any} Axios error.
+     * @memberof Storyblok
      */
     Storyblok.prototype.post = function (url, data, config) {
-        return this.throttledRequests.post(url, data || undefined, config || undefined);
+        var _this = this;
+        if (url === void 0) { url = '/'; }
+        var interceptor = this.activateRetry();
+        return this.throttled
+            .post(url, data || undefined, config || {})
+            .then(function (response) {
+            _this.deactivateRetry(interceptor);
+            return response;
+        })
+            .catch(function (error) {
+            _this.deactivateRetry(interceptor);
+            return Promise.reject(error);
+        });
     };
     /**
-     * General purpose 'put' method to Storyblok using axios.
+     * PUT request method.
      *
+     * @param {string} [url='/'] - Request url.
+     * @param {any} [data] - Request data body.
+     * @param {ICustomAxiosRequestConfig} [config] - Request config.
+     * @returns {Promise<any>}
+     * @example
+     * const {Storyblok} = require('storyblok-ts-client')
+     * const storyblok = new Storyblok('fake_api_token')
+     * const spaceId = 12345
+     * const url = `/${spaceId}/stories`
+     * const story = {name: 'test', slug: 'test'}
+     * storyblok.(url, {story}, {retries: 3, retryDelay: 1000})
+     *   .then(res => {
+     *     const newStoryId = res.story.id
+     *     console.log('new story id:', newStoryId)
+     *     console.log('new story name:', res.story.name)
+     *     const updateContent = {name: 'new test', slug: 'test'}
+     *     return storyblok.put(
+     *       url + `/${newStoryId}`,
+     *       {story: updateContent},
+     *       {retries: 3, retryDelay: 1000}
+     *     )
+     *   })
+     *   .then(res => console.log('updated story name:', res.story.name))
+     *   .catch(e => console.log(e.config))
+     * // => new story id: 123456
+     * // => new story name: test
+     * // => updated story name: new test
      * @name Storyblok#put
-     * @param {string} url - Request url.
-     * @param {any} [data] - (optional) Request body.
-     * @param {AxiosRequestConfig} [config] - (optional) Request config.
-     * @returns {Promise}
-     * @fulfil {any} Resolved value.
-     * @reject {any} Axios error.
+     * @memberof Storyblok
      */
     Storyblok.prototype.put = function (url, data, config) {
-        return this.throttledRequests.put(url, data || undefined, config || undefined);
+        var _this = this;
+        if (url === void 0) { url = '/'; }
+        var interceptor = this.activateRetry();
+        return this.throttled
+            .put(url, data || undefined, config || {})
+            .then(function (response) {
+            _this.deactivateRetry(interceptor);
+            return response;
+        })
+            .catch(function (error) {
+            _this.deactivateRetry(interceptor);
+            return Promise.reject(error);
+        });
     };
     /**
-     * All-purpose purpose request method to Storyblok using axios.
+     * Uses axios's interceptors to faciliate failure-retry's.  Based on: "http://www.itomtan.com/2017/10/17/vue-axios-timeout-retry-callback"
      *
-     * @name Storyblok#request
-     * @param {AxiosRequestConfig} config - Request config.
-     * @returns {Promise}
-     * @fulfil {any} Resolved value.
-     * @reject {any} Axios error.
+     * @private
+     * @returns {number} - Id for the interceptor, so failure-retry action can be removed after the API request is completed.
+     * @memberof Storyblok
      */
-    Storyblok.prototype.request = function (config) {
-        return this.throttledRequests.request(config);
+    Storyblok.prototype.activateRetry = function () {
+        var _this = this;
+        return this.axiosInstance.interceptors.response.use(function (response) { return Promise.resolve(response); }, function (error) {
+            var config = error.config;
+            if (!config || !config.retries) {
+                return Promise.reject(error);
+            }
+            config.retryCount = config.retryCount || 0;
+            if (config.retryCount > config.retries) {
+                console.log('retry threshhold reached, promise is rejected');
+                return Promise.reject(error);
+            }
+            var response = error.response;
+            if (response) {
+                if (response.status !== 429) {
+                    console.log('terminal failure, promise is rejected');
+                    console.log('status:', response.status);
+                    console.log('message:', response.data);
+                    return Promise.reject(error);
+                }
+                else {
+                    config.retryCount += 1;
+                    return new Promise(function (resolve) {
+                        var delay = config.retryDelay || 1000;
+                        var factor = config.retryCount;
+                        setTimeout(function () {
+                            console.log('status:', response.status);
+                            console.log('message:', response.data);
+                            console.log('retry attempt:', config.retryCount);
+                            return resolve();
+                        }, delay * factor);
+                    }).then(function () { return _this.axiosInstance(config); });
+                }
+            }
+        });
+    };
+    /**
+     * Used to deactivate the failure-retry mechanism, by removing the interceptor.
+     *
+     * @private
+     * @param {number} interceptor - Id of the interceptor
+     * @memberof Storyblok
+     */
+    Storyblok.prototype.deactivateRetry = function (interceptor) {
+        this.axiosInstance.interceptors.response.eject(interceptor);
     };
     return Storyblok;
 }());

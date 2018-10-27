@@ -1,1 +1,0 @@
-{"version":3,"file":"IAssetSigningResponse.d.ts","sourceRoot":"","sources":["../../src/interfaces/IAssetSigningResponse.ts"],"names":[],"mappings":"AAAA,OAAO,EAAC,2BAA2B,EAAC,MAAM,+BAA+B,CAAA;AAEzE;;;;GAIG;AACH,MAAM,WAAW,qBAAqB;IACpC,UAAU,EAAE,MAAM,CAAA;IAClB,UAAU,EAAE,MAAM,CAAA;IAClB,MAAM,EAAE,2BAA2B,CAAA;IACnC,QAAQ,EAAE,MAAM,CAAA;CACjB"}

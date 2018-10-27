@@ -1,6 +1,6 @@
 # Storyblok Management API Typescript Client
 
-[typescript](https://github.com/Microsoft/TypeScript) library for working with [Storyblok management API](https://api.storyblok.com/docs). Uses [axios](https://github.com/axios/axios) and [request-promise](https://github.com/request/request-promise) to make Storyblok management API calls
+[typescript](https://github.com/Microsoft/TypeScript) library for working with [Storyblok management API](https://api.storyblok.com/docs). Uses [axios](https://github.com/axios/axios) to make Storyblok management API calls.
 
 [![npm](https://img.shields.io/npm/v/storyblok-ts-client.svg)](https://www.npmjs.com/package/storyblok-ts-client)
 
@@ -9,15 +9,21 @@
 <hr>
 
 * consists of a basic CRUD client "[`Storyblok`](#Storyblok)" and a wrapper library of axios management API requests "[`ApiClient`](#ApiClient)"
+
 * [ApiClient](#ApiClient) methods are categorized into the following:
+
   * [assetFolders](#ApiClient+assetFolders)
   * [assets](#ApiClient+assets)
   * [components](#ApiClient+components)
   * [spaces](#ApiClient+spaces)
   * [stories](#ApiClient+stories)
-* API requests are throttled to 3 calls per second
+
+* API requests are throttled
+
 * images are compressed and resized using [sharp](https://github.com/lovell/sharp)
+
 * [jest](https://github.com/facebook/jest) is setup for testing (not fully tested)
+
 * the management API is not fully implemented
 
 ## Installation
@@ -55,10 +61,12 @@ return apiClient.spaces.get()
 ```bash
 # development and testing
 npm run dev       # runs typescript transpiler in watch mode
+npm start         # runs any executable code in the index.js
+
+# test - remember to update .env file with a test Storyblok account api token and test space id
 npm run dev:test  # runs jest in watch mode
 npm test          # runs jest
 npm run coverage  # runs jest and check code coverage stat
-npm start         # runs any executable code in the index.js
 
 # build
 npm run build
@@ -70,11 +78,11 @@ npm run lint
 npm run format
 ```
 
-## API Reference
+## API Reference - generated with [jsdoc2md](https://github.com/jsdoc2md/jsdoc-to-markdown/wiki/How-to-document-TypeScript)
 
 <hr>
 
-{{>main}}
+{{>main~}}
 
 
 <hr>

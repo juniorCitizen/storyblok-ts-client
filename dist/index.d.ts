@@ -1,4 +1,4 @@
-export * from './classes';
+export { ApiClient, retrySettings } from './classes/ApiClient';
+export { Storyblok } from './classes/Storyblok';
 export * from './interfaces';
-export * from './utilities';
 //# sourceMappingURL=index.d.ts.map

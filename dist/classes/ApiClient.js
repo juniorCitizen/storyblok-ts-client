@@ -1,7 +1,4 @@
 "use strict";
-/**
- * @module ApiClient
- */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -38,39 +35,43 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var p_throttle_1 = require("p-throttle");
-var rp = require("request-promise-native");
-var utilities_1 = require("../utilities");
+var FormData = require("form-data");
+var imageProcessing_1 = require("../utilities/imageProcessing");
 var Storyblok_1 = require("./Storyblok");
+exports.retrySettings = {
+    burst: {
+        retries: 3,
+        retryDelay: 1000,
+    },
+    extended: {
+        retries: 10,
+        retryDelay: 1000,
+    },
+};
 /**
- * Class to facilitate Storyblok management API interface.
+ * Management API wrapper around Storyblok class.
  *
- * @class
+ * @export
+ * @class ApiClient
+ * @implements {IStoryblokClass}
+ * @param {string} apiToken - API access token.
+ * @param {number} spaceId - Storyblok working space id.
  * @example
  * const {ApiClient} = require('storyblok-ts-client')
- * const apiClient = ApiClient('fake_api_token', 12345)
- *
- * return apiClient.spaces.get()
- *   .then(space => console.log('space id:', space.id))
- *   // => space id: 12345
+ * const apiClient = new ApiClient('fake_api_token', 12345)
  */
 var ApiClient = /** @class */ (function () {
-    /**
-     * Class instantiation.
-     *
-     * @param {string} apiToken - API access token.
-     * @param {number} spaceId - Storyblok working space id.
-     */
     function ApiClient(apiToken, spaceId) {
         this.spaceId = spaceId;
         this.storyblok = new Storyblok_1.Storyblok(apiToken);
     }
     Object.defineProperty(ApiClient.prototype, "assetFolders", {
         /**
-         * Provides API methods for asset folders.
+         * Object that contains API methods for asset folder operations
          *
+         * @readonly
          * @name ApiClient#assetFolders
-         * @returns {Object}
+         * @memberof ApiClient
          */
         get: function () {
             var _this = this;
@@ -83,6 +84,7 @@ var ApiClient = /** @class */ (function () {
                  * @returns {Promise}
                  * @fulfil {IAssetFolder} Details of the asset folder created.
                  * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient#assetFolders
                  */
                 create: function (name) {
                     return _this.createAssetFolder(name);
@@ -95,6 +97,7 @@ var ApiClient = /** @class */ (function () {
                  * @returns {Promise}
                  * @fulfil {void}
                  * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient#assetFolders
                  */
                 delete: function (id) { return _this.deleteAssetFolder(id); },
                 /**
@@ -104,6 +107,7 @@ var ApiClient = /** @class */ (function () {
                  * @returns {Promise}
                  * @fulfil {void[]}
                  * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient#assetFolders
                  */
                 deleteExisting: function () { return _this.deleteExistingAssetFolders(); },
                 /**
@@ -114,16 +118,18 @@ var ApiClient = /** @class */ (function () {
                  * @returns {Promise}
                  * @fulfil {IAssetFolder} Asset folder information.
                  * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient#assetFolders
                  */
                 get: function (id) { return _this.getAssetFolder(id); },
                 /**
-                 * Get a list of asset folders by matching asset folders names to the supplied string.
+                 * Get asset folders by matching asset folders names to the supplied string.
                  *
                  * @name ApiClient#assetFolders#getByName
-                 * @param {string} name - String to search asset folders by.
+                 * @param {string} searchString - String to search by.
                  * @returns {Promise}
-                 * @fulfil {IAssetFolder[]} List of asset folders that matches the name string.
+                 * @fulfil {IAssetFolder[]} List of matched asset folders.
                  * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient#assetFolders
                  */
                 getByName: function (searchString) {
                     return _this.getAssetFolderByName(searchString);
@@ -135,6 +141,7 @@ var ApiClient = /** @class */ (function () {
                  * @returns {Promise}
                  * @fulfil {IAssetFolder[]} List of existing asset folders.
                  * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient#assetFolders
                  */
                 getExisting: function () {
                     return _this.getExistingAssetFolders();
@@ -146,10 +153,11 @@ var ApiClient = /** @class */ (function () {
     });
     Object.defineProperty(ApiClient.prototype, "assets", {
         /**
-         * Provides API methods for assets.
+         * Object that contains API methods for asset operations
          *
+         * @readonly
          * @name ApiClient#assets
-         * @returns {Object} Asset API methods.
+         * @memberof ApiClient
          */
         get: function () {
             var _this = this;
@@ -161,23 +169,24 @@ var ApiClient = /** @class */ (function () {
                  * @returns {Promise}
                  * @fulfil {number} A count of existing assets.
                  * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient#assets
                  */
                 count: function () { return _this.countAssets(); },
                 /**
-                 * Create an image asset at root.
-                 *
-                 * This method calls the ApiClient.registerAsset(), resize/compress the image then finally upload the physical file with ApiClient.uploadAsset() at one go.
+                 * Create and asset and upload the physical file.
                  *
                  * @name ApiClient#assets#createFromImage
+                 * @param {IPendingAsset} data - Asset information.
                  * @param {string} filePath - Absolute file path to the image.
                  * @param {boolean} compress - Flag to compress image.
-                 * @param {number} dimensionLimit - Resizing dimension limit value.
+                 * @param {number} sizeLimit - Resizing dimension limit value.
                  * @returns {Promise}
-                 * @fulfil {IAsset} Information of the created asset.
+                 * @fulfil {IAsset} Information on the new asset.
                  * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient#assets
                  */
-                createFromImage: function (asset, filePath, compress, dimensionLimit) {
-                    return _this.createAssetFromImage(asset, filePath, compress, dimensionLimit);
+                createFromImage: function (data, filePath, compress, sizeLimit) {
+                    return _this.createAssetFromImage(data, filePath, compress, sizeLimit);
                 },
                 /**
                  * Delete a specific asset.
@@ -187,6 +196,7 @@ var ApiClient = /** @class */ (function () {
                  * @returns {Promise}
                  * @fulfil {IAsset} Information of the deleted asset.
                  * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient#assets
                  */
                 delete: function (id) { return _this.deleteAsset(id); },
                 /**
@@ -196,6 +206,7 @@ var ApiClient = /** @class */ (function () {
                  * @returns {Promise}
                  * @fulfil {IAsset[]} Information on the deleted assets.
                  * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient#assets
                  */
                 deleteExisting: function () { return _this.deleteExistingAssets(); },
                 /**
@@ -206,20 +217,34 @@ var ApiClient = /** @class */ (function () {
                  * @returns {Promise}
                  * @fulfil {IAsset} Details of the asset.
                  * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient#assets
                  */
                 get: function (id) { return _this.getAsset(id); },
+                /**
+                 * Get asset on a specific pagination page number.
+                 *
+                 * @name ApiClient#assets#getByPage
+                 * @param {number} [page=1] - Pagination page.
+                 * @param {number} [perPage=25] - Assets per page.
+                 * @returns {Promise<IAsset[]>}
+                 * @fulfil {IAsset[]} Assets on the pagination page.
+                 * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient#assets
+                 */
+                getByPage: function (page, perPage) {
+                    return _this.getAssetsByPage(page, perPage);
+                },
                 /**
                  * Find a specific asset by its public url.
                  *
                  * @name ApiClient#assets#getByUrl
                  * @param {string} url - Url to match by.
                  * @returns {Promise}
-                 * @fulfil {IAsset | undefined} Matched asset or undefined if not fund.
+                 * @fulfil {IAsset} Matched asset.
                  * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient
                  */
-                getByUrl: function (url) {
-                    return _this.getAssetByUrl(url);
-                },
+                getByUrl: function (url) { return _this.getAssetByUrl(url); },
                 /**
                  * List all existing assets.
                  *
@@ -227,34 +252,39 @@ var ApiClient = /** @class */ (function () {
                  * @returns {Promise}
                  * @fulfil {IAsset[]} A list of existing assets.
                  * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient#assets
                  */
                 getExisting: function () { return _this.getExistingAssets(); },
                 /**
-                 * Register an image file as a Storyblok asset (the physical file still has to be uploaded).
+                 * Register a Storyblok asset.
                  *
                  * @name ApiClient#assets#register
-                 * @param {IAsset} asset - Information to create asset from.
+                 * @param {IPendingAsset} asset - Information to create asset from.
                  * @param {string} asset.filename - File name to register for.
                  * @param {number} [asset.asset_folder_id] - (optional) Assign a asset folder.
                  * @param {number} [asset.id] - (optional) Id of existing asset to replace with this new asset.
                  * @returns {Promise}
-                 * @fulfil {IAssetSigningResponse} Asset registration info (used for uploading).
+                 * @fulfil {IRegistration} Asset registration info (used for uploading).
                  * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient#assets
                  */
-                register: function (asset) {
-                    return _this.registerAsset(asset);
+                register: function (data) {
+                    return _this.registerAsset(data);
                 },
                 /**
-                 * Upload a newly registered asset.
+                 * Upload a registered asset.
                  *
                  * @name ApiClient#assets#upload
                  * @param {Buffer} buffer - Buffered asset data.
-                 * @param {IAssetSigningResponse} registration - Registration info.
+                 * @param {IRegistration} registration - Registration info.
                  * @returns {Promise}
-                 * @fulfil {IAsset} Information of the uploaded asset.
+                 * @fulfil {string} Access url of the uploaded asset.
                  * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient#assets
                  */
-                upload: function (buffer, registration) { return _this.uploadAsset(buffer, registration); },
+                upload: function (buffer, registration) {
+                    return _this.uploadAsset(buffer, registration);
+                },
             };
         },
         enumerable: true,
@@ -262,10 +292,11 @@ var ApiClient = /** @class */ (function () {
     });
     Object.defineProperty(ApiClient.prototype, "components", {
         /**
-         * Provides API methods for components.
+         * Object that contains API methods for component operations
          *
          * @name ApiClient#components
-         * @returns {Object} Component API methods.
+         * @readonly
+         * @memberof ApiClient
          */
         get: function () {
             var _this = this;
@@ -274,13 +305,14 @@ var ApiClient = /** @class */ (function () {
                  * Create a component.
                  *
                  * @name ApiClient#components#create
-                 * @param {IComponent} component - Info on component to be created.
+                 * @param {IPendingComponent} data - Info on component to be created.
                  * @returns {Promise}
                  * @fulfil {IComponent} Details of the component that was created.
                  * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient#components
                  */
-                create: function (component) {
-                    return _this.createComponent(component);
+                create: function (data) {
+                    return _this.createComponent(data);
                 },
                 /**
                  * Delete a specific component.
@@ -290,15 +322,17 @@ var ApiClient = /** @class */ (function () {
                  * @returns {Promise}
                  * @fulfil {IComponent} Details of the deleted component.
                  * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient#components
                  */
                 delete: function (id) { return _this.deleteComponent(id); },
                 /**
-                 * Delete all existing components.
+                 * Delete existing components.
                  *
-                 * @name ApiClient#components#deleteExistingAssetFolders
+                 * @name ApiClient#components#deleteExisting
                  * @returns {Promise}
                  * @fulfil {IComponent[]} A list of deleted components details.
                  * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient#components
                  */
                 deleteExisting: function () {
                     return _this.deleteExistingComponents();
@@ -311,15 +345,17 @@ var ApiClient = /** @class */ (function () {
                  * @returns {Promise}
                  * @fulfil {IComponent} Details of the component definition.
                  * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient#components
                  */
                 get: function (id) { return _this.getComponent(id); },
                 /**
-                 * List all existing components.
+                 * List existing components.
                  *
                  * @name ApiClient#components#getExisting
                  * @returns {Promise}
                  * @fulfil {IComponent[]} A list of component definitions.
                  * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient#components
                  */
                 getExisting: function () { return _this.getExistingComponents(); },
             };
@@ -329,10 +365,11 @@ var ApiClient = /** @class */ (function () {
     });
     Object.defineProperty(ApiClient.prototype, "spaces", {
         /**
-         * Provides API methods for the working space.
+         * Object that contains API methods for space operations
          *
          * @name ApiClient#spaces
-         * @returns {Object} Working space API methods.
+         * @readonly
+         * @memberof ApiClient
          */
         get: function () {
             var _this = this;
@@ -344,6 +381,7 @@ var ApiClient = /** @class */ (function () {
                  * @returns {Promise}
                  * @fulfil {ISpace} Working space information.
                  * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient#spaces
                  */
                 get: function () { return _this.getSpace(); },
             };
@@ -353,10 +391,11 @@ var ApiClient = /** @class */ (function () {
     });
     Object.defineProperty(ApiClient.prototype, "stories", {
         /**
-         * Provides API methods for stories.
+         * Object that contains API methods for story operations
          *
          * @name ApiClient#stories
-         * @returns {Object} Story API methods.
+         * @readonly
+         * @memberof ApiClient
          */
         get: function () {
             var _this = this;
@@ -368,6 +407,7 @@ var ApiClient = /** @class */ (function () {
                  * @returns {Promise}
                  * @fulfil {number} A count of existing stories.
                  * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient#stories
                  */
                 count: function () { return _this.countStories(); },
                 /**
@@ -378,30 +418,34 @@ var ApiClient = /** @class */ (function () {
                  * @returns {Promise}
                  * @fulfil {number} Total story pagination page count.
                  * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient#stories
                  */
                 countPages: function (perPage) {
-                    return _this.countStoryPages(perPage || 25);
+                    if (perPage === void 0) { perPage = 25; }
+                    return _this.countStoryPages(perPage);
                 },
                 /**
                  * Create a story.
                  *
                  * @name ApiClient#stories#create
-                 * @param {IStory} story - Storyblok story data object.
+                 * @param {IPendingStory} data - Storyblok story data object.
                  * @returns {Promise}
                  * @fulfil {IStory} Details of story that was created.
                  * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient#stories
                  */
-                create: function (story) { return _this.createStory(story); },
+                create: function (data) { return _this.createStory(data); },
                 /**
                  * Delete a specific story.
                  *
                  * @name ApiClient#stories#delete
-                 * @param {IStory} storyId - Id of the story to be deleted.
+                 * @param {IStory} id - Id of the story to be deleted.
                  * @returns {Promise}
                  * @fulfil {IStory} Details of the story that was deleted.
                  * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient#stories
                  */
-                delete: function (storyId) { return _this.deleteStory(storyId); },
+                delete: function (id) { return _this.deleteStory(id); },
                 /**
                  * Delete all existing stories.
                  *
@@ -409,50 +453,55 @@ var ApiClient = /** @class */ (function () {
                  * @returns {Promise}
                  * @fulfil {IStory[]} A list of deleted stories details.
                  * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient#stories
                  */
                 deleteExisting: function () { return _this.deleteExistingStories(); },
                 /**
                  * Get a specific story.
                  *
                  * @name ApiClient#stories#get
-                 * @param {number} storyId - Id of the content story.
+                 * @param {number} id - Id of the content story.
                  * @returns {Promise}
                  * @fulfil {IStory} Details of content story.
                  * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient#stories
                  */
-                get: function (storyId) { return _this.getStory(storyId); },
+                get: function (id) { return _this.getStory(id); },
                 /**
-                 * Get paginated stories.
+                 * Get stories on a pagination page.
                  *
                  * @name ApiClient#stories#getByPage
-                 * @param {number} page - Pagination number.
+                 * @param {number} page - Pagination page number.
                  * @param {number} [perPage] - (optional) How many stories per page.  Defaults to 25.
                  * @returns {Promise}
                  * @fulfil {IStory[]} A page of stories.
                  * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient#stories
                  */
                 getByPage: function (page, perPage) {
-                    return _this.getStoriesByPage(page, perPage || 25);
+                    return _this.getStoriesByPage(page, perPage);
                 },
                 /**
                  * List all existing stories.
                  *
                  * @name ApiClient#stories#getExisting
                  * @returns {Promise}
-                 * @fulfil {IStory[]} A full list of existing content stories.
+                 * @fulfil {IStory[]} A list of existing content stories.
                  * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient#stories
                  */
                 getExisting: function () { return _this.getExistingStories(); },
                 /**
                  * Publish a specific story.
                  *
                  * @name ApiClient#stories#publish
-                 * @param {number} storyId - Id of the story to publish
+                 * @param {number} id - Id of the story to publish
                  * @returns {Promise}
                  * @fulfil {IStory} Details of the published story
                  * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient#stories
                  */
-                publish: function (storyId) { return _this.publishStory(storyId); },
+                publish: function (id) { return _this.publishStory(id); },
                 /**
                  * Publish all unpublished stories.
                  *
@@ -460,31 +509,34 @@ var ApiClient = /** @class */ (function () {
                  * @returns {Promise}
                  * @fulfil {IStory[]} List of published stories.
                  * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient#stories
                  */
                 publishPendings: function () { return _this.publishPendingStories(); },
                 /**
                  * Update a story's sequential order.
                  *
                  * @name ApiClient#stories#reorder
-                 * @param {number} storyId - Id of the story to be moved.
-                 * @param {number} afterId - Reference story to position after.
+                 * @param {number} id - Id of the story to be moved.
+                 * @param {number} afterId - Id of reference story to position after.
                  * @returns {Promise}
                  * @fulfil {IStory} Details of the moved story.
                  * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient#stories
                  */
-                reorder: function (storyId, afterId) {
-                    return _this.reorderStory(storyId, afterId);
+                reorder: function (id, afterId) {
+                    return _this.reorderStory(id, afterId);
                 },
                 /**
                  * Update a story.
                  *
                  * @name ApiClient#stories#update
-                 * @param {IStory} story - Storyblok story data object with modified info.
+                 * @param {IStory} data - Modified story info.
                  * @returns {Promise}
                  * @fulfil {IStory} Details of story that was updated.
                  * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient#stories
                  */
-                update: function (story) { return _this.updateStory(story); },
+                update: function (data) { return _this.updateStory(data); },
             };
         },
         enumerable: true,
@@ -497,24 +549,48 @@ var ApiClient = /** @class */ (function () {
      * @returns {Promise}
      * @fulfil {number} A count of existing assets.
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
     ApiClient.prototype.countAssets = function () {
         return this.getSpace()
-            .then(function (space) { return space.assets_count; })
-            .catch(function (error) { return Promise.reject(error); });
+            .then(function (s) { return s.assets_count; })
+            .catch(function (e) { return Promise.reject(e); });
     };
     /**
-     * Get total number of existing stories (including folders).  Storyblok API's space info does not account 'folders' as stories, so this is manually counted.
+     * Get total number of existing stories (including folders).
      *
      * @name ApiClient#countStories
      * @returns {Promise}
      * @fulfil {number} A count of existing stories.
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
     ApiClient.prototype.countStories = function () {
         return this.getExistingStories()
-            .then(function (stories) { return stories.length; })
-            .catch(function (error) { return Promise.reject(error); });
+            .then(function (ss) { return ss.length; })
+            .catch(function (e) { return Promise.reject(e); });
+    };
+    /**
+     * Get total pagination page count.
+     *
+     * @name ApiClient#countStoryPages
+     * @param {number} [perPage] - (optional) How many stories per page.  Defaults to 25.
+     * @returns {Promise}
+     * @fulfil {number} Total story pagination page count.
+     * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
+     */
+    ApiClient.prototype.countStoryPages = function (perPage) {
+        if (perPage === void 0) { perPage = 25; }
+        var url = "/" + this.spaceId + "/stories";
+        var responseHandler = function (r) {
+            var total = r.headers.total;
+            return Math.ceil(total / perPage);
+        };
+        return this.storyblok
+            .get(url, exports.retrySettings.burst)
+            .then(responseHandler)
+            .catch(function (r) { return Promise.reject(r); });
     };
     /**
      * Create an asset folder.
@@ -524,77 +600,98 @@ var ApiClient = /** @class */ (function () {
      * @returns {Promise}
      * @fulfil {IAssetFolder} Details of the asset folder created.
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
     ApiClient.prototype.createAssetFolder = function (name) {
-        var url = this.spaceId + "/asset_folders";
-        var data = { asset_folder: { name: name } };
+        var url = "/" + this.spaceId + "/asset_folders";
+        var data = { name: name };
         return this.storyblok
-            .post(url, data)
-            .then(function (res) { return res.data.asset_folder; })
-            .catch(function (error) { return Promise.reject(error); });
+            .post(url, { asset_folder: data }, exports.retrySettings.burst)
+            .then(function (r) { return r.data.asset_folder; })
+            .catch(function (e) { return Promise.reject(e); });
     };
     /**
-     * Create an image asset at root.
-     *
-     * This method calls the ApiClient.registerAsset(), resize/compress the image then finally upload the physical file with ApiClient.uploadAsset() at one go.
+     * Create and asset and upload the physical file.
      *
      * @name ApiClient#createAssetFromImage
-     * @param {IAsset} asset - Information to create asset from.
-     * @param {string} asset.filename - File name to register with.
-     * @param {number} [asset.asset_folder_id] - (optional) Assign a asset folder.
-     * @param {number} [asset.id] - (optional) Id of existing asset to replace with this new asset.
+     * @param {IPendingAsset} data - Asset information.
      * @param {string} filePath - Absolute file path to the image.
      * @param {boolean} compress - Flag to compress image.
-     * @param {number} dimensionLimit - Resizing dimension limit value.
+     * @param {number} sizeLimit - Resizing dimension limit value.
      * @returns {Promise}
-     * @fulfil {IAsset} Information of the created asset.
+     * @fulfil {IAsset} Information on the new asset.
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
-    ApiClient.prototype.createAssetFromImage = function (asset, filePath, compress, dimensionLimit) {
-        var _this = this;
-        return Promise.all([
-            utilities_1.imageToBuffer(filePath, compress || true, dimensionLimit || 640),
-            this.registerAsset(asset),
-        ])
-            .then(function (_a) {
-            var buffer = _a[0], registration = _a[1];
-            return _this.uploadAsset(buffer, registration);
-        })
-            .catch(function (error) { return Promise.reject(error); });
+    ApiClient.prototype.createAssetFromImage = function (data, filePath, compress, sizeLimit) {
+        if (compress === void 0) { compress = true; }
+        if (sizeLimit === void 0) { sizeLimit = 640; }
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, registration, buffer, asset, e_1;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        _b.trys.push([0, 3, , 4]);
+                        return [4 /*yield*/, Promise.all([
+                                this.registerAsset(data),
+                                imageProcessing_1.imageToBuffer(filePath, compress, sizeLimit),
+                            ])];
+                    case 1:
+                        _a = _b.sent(), registration = _a[0], buffer = _a[1];
+                        return [4 /*yield*/, Promise.all([
+                                this.getAssetByUrl(registration.public_url),
+                                this.uploadAsset(buffer, registration),
+                            ])];
+                    case 2:
+                        asset = (_b.sent())[0];
+                        if (!asset) {
+                            throw new Error('asset was not created properly');
+                        }
+                        else {
+                            return [2 /*return*/, asset];
+                        }
+                        return [3 /*break*/, 4];
+                    case 3:
+                        e_1 = _b.sent();
+                        throw e_1;
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
     };
     /**
      * Create a component.
      *
-     * @name ApiClient#createComponent
-     * @param {IComponent} component - Info on component to be created.
+     * @name ApiClient#components#create
+     * @param {IPendingComponent} data - Info on component to be created.
      * @returns {Promise}
      * @fulfil {IComponent} Details of the component that was created.
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
-    ApiClient.prototype.createComponent = function (component) {
-        var url = this.spaceId + "/components";
-        var data = { component: component };
+    ApiClient.prototype.createComponent = function (data) {
+        var url = "/" + this.spaceId + "/components";
         return this.storyblok
-            .post(url, data)
-            .then(function (res) { return res.data.component; })
-            .catch(function (error) { return Promise.reject(error); });
+            .post(url, { component: data }, exports.retrySettings.burst)
+            .then(function (r) { return r.data.component; })
+            .catch(function (e) { return Promise.reject(e); });
     };
     /**
      * Create a story.
      *
      * @name ApiClient#createStory
-     * @param {IStory} story - Storyblok story data object.
+     * @param {IPendingStory} data - Storyblok story data object.
      * @returns {Promise}
      * @fulfil {IStory} Details of story that was created.
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
-    ApiClient.prototype.createStory = function (story) {
-        var url = this.spaceId + "/stories";
-        var data = { story: story };
+    ApiClient.prototype.createStory = function (data) {
+        var url = "/" + this.spaceId + "/stories";
         return this.storyblok
-            .post(url, data)
-            .then(function (res) { return res.data.story; })
-            .catch(function (error) { return Promise.reject(error); });
+            .post(url, { story: data }, exports.retrySettings.burst)
+            .then(function (r) { return r.data.story; })
+            .catch(function (e) { return Promise.reject(e); });
     };
     /**
      * Delete a specific asset.
@@ -602,15 +699,16 @@ var ApiClient = /** @class */ (function () {
      * @name ApiClient#deleteAsset
      * @param {number} id - Id of the asset to be deleted.
      * @returns {Promise}
-     * @fulfil {IAsset} Information on the deleted asset.
+     * @fulfil {IAsset} Information of the deleted asset.
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
     ApiClient.prototype.deleteAsset = function (id) {
-        var url = this.spaceId + "/assets/" + id;
+        var url = "/" + this.spaceId + "/assets/" + id;
         return this.storyblok
-            .delete(url)
-            .then(function (res) { return res.data.assets; })
-            .catch(function (error) { return Promise.reject(error); });
+            .delete(url, exports.retrySettings.burst)
+            .then(function (r) { return r.data; })
+            .catch(function (e) { return Promise.reject(e); });
     };
     /**
      * Delete a specific asset folder.
@@ -620,13 +718,14 @@ var ApiClient = /** @class */ (function () {
      * @returns {Promise}
      * @fulfil {void}
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
     ApiClient.prototype.deleteAssetFolder = function (id) {
-        var url = this.spaceId + "/asset_folders/" + id;
+        var url = "/" + this.spaceId + "/asset_folders/" + id;
         return this.storyblok
-            .delete(url)
+            .delete(url, exports.retrySettings.burst)
             .then(function () { return Promise.resolve(); })
-            .catch(function (error) { return Promise.reject(error); });
+            .catch(function (e) { return Promise.reject(e); });
     };
     /**
      * Delete a specific component.
@@ -636,13 +735,31 @@ var ApiClient = /** @class */ (function () {
      * @returns {Promise}
      * @fulfil {IComponent} Details of the deleted component.
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
     ApiClient.prototype.deleteComponent = function (id) {
-        var url = this.spaceId + "/components/" + id;
+        var url = "/" + this.spaceId + "/components/" + id;
         return this.storyblok
-            .delete(url)
-            .then(function (res) { return res.data.component; })
-            .catch(function (error) { return Promise.reject(error); });
+            .delete(url, exports.retrySettings.burst)
+            .then(function (r) { return r.data.component; })
+            .catch(function (e) { return Promise.reject(e); });
+    };
+    /**
+     * Delete a specific story.
+     *
+     * @name ApiClient#deleteStory
+     * @param {IStory} id - Id of the story to be deleted.
+     * @returns {Promise}
+     * @fulfil {IStory} Details of the story that was deleted.
+     * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
+     */
+    ApiClient.prototype.deleteStory = function (id) {
+        var url = "/" + this.spaceId + "/stories/" + id;
+        return this.storyblok
+            .delete(url, exports.retrySettings.burst)
+            .then(function (r) { return r.data.story; })
+            .catch(function (e) { return Promise.reject(e); });
     };
     /**
      * Delete all existing asset folders.
@@ -651,46 +768,46 @@ var ApiClient = /** @class */ (function () {
      * @returns {Promise}
      * @fulfil {void[]}
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
     ApiClient.prototype.deleteExistingAssetFolders = function () {
         var _this = this;
-        var mapFn = function (assetFolder) {
-            return _this.deleteAssetFolder(assetFolder.id);
-        };
+        var mapFn = function (af) { return _this.deleteAssetFolder(af.id); };
         return this.getExistingAssetFolders()
-            .then(function (assetFolders) { return Promise.all(assetFolders.map(mapFn)); })
-            .catch(function (error) { return Promise.reject(error); });
+            .then(function (afs) { return Promise.all(afs.map(mapFn)); })
+            .catch(function (e) { return Promise.reject(e); });
     };
     /**
      * Delete all existing assets.
      *
      * @name ApiClient#deleteExistingAssets
      * @returns {Promise}
-     * @fulfil {IAsset[]} Details of the deleted assets.
+     * @fulfil {IAsset[]} Information on the deleted assets.
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
     ApiClient.prototype.deleteExistingAssets = function () {
         var _this = this;
-        var mapFn = function (asset) { return _this.deleteAsset(asset.id); };
-        var responseHandler = function (assets) { return Promise.all(assets.map(mapFn)); };
+        var mapFn = function (a) { return _this.deleteAsset(a.id); };
         return this.getExistingAssets()
-            .then(responseHandler)
-            .catch(function (error) { return Promise.reject(error); });
+            .then(function (as) { return Promise.all(as.map(mapFn)); })
+            .catch(function (e) { return Promise.reject(e); });
     };
     /**
-     * Delete all existing components.
+     * Delete existing components.
      *
      * @name ApiClient#deleteExistingComponents
      * @returns {Promise}
      * @fulfil {IComponent[]} A list of deleted components details.
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
     ApiClient.prototype.deleteExistingComponents = function () {
         var _this = this;
-        var mapFn = function (comp) { return _this.deleteComponent(comp.id); };
+        var mapFn = function (c) { return _this.deleteComponent(c.id); };
         return this.getExistingComponents()
-            .then(function (components) { return Promise.all(components.map(mapFn)); })
-            .catch(function (error) { return Promise.reject(error); });
+            .then(function (cs) { return Promise.all(cs.map(mapFn)); })
+            .catch(function (e) { return Promise.reject(e); });
     };
     /**
      * Delete all existing stories.
@@ -699,31 +816,38 @@ var ApiClient = /** @class */ (function () {
      * @returns {Promise}
      * @fulfil {IStory[]} A list of deleted stories details.
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
     ApiClient.prototype.deleteExistingStories = function () {
-        var _this = this;
-        var filterFn = function (story) { return story.parent_id === 0; };
-        var mapFn = function (story) { return _this.deleteStory(story.id); };
-        return this.getExistingStories()
-            .then(function (stories) { return stories.filter(filterFn); })
-            .then(function (rootStories) { return Promise.all(rootStories.map(mapFn)); })
-            .catch(function (error) { return Promise.reject(error); });
-    };
-    /**
-     * Delete a specific story.
-     *
-     * @name ApiClient#deleteStory
-     * @param {number} storyId - Id of the story to be deleted.
-     * @returns {Promise}
-     * @fulfil {IStory} Details of the story that was deleted.
-     * @reject {AxiosError} Axios error.
-     */
-    ApiClient.prototype.deleteStory = function (storyId) {
-        var url = this.spaceId + "/stories/" + storyId;
-        return this.storyblok
-            .delete(url)
-            .then(function (res) { return res.data.story; })
-            .catch(function (error) { return Promise.reject(error); });
+        return __awaiter(this, void 0, void 0, function () {
+            var existing, filterFn, root, mapFn, deleted, remainder, _a, _b, e_2;
+            var _this = this;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        _c.trys.push([0, 5, , 6]);
+                        return [4 /*yield*/, this.getExistingStories()];
+                    case 1:
+                        existing = _c.sent();
+                        filterFn = function (s) { return s.parent_id === 0; };
+                        root = existing.filter(filterFn);
+                        mapFn = function (s) { return _this.deleteStory(s.id); };
+                        return [4 /*yield*/, Promise.all(root.map(mapFn))];
+                    case 2:
+                        deleted = _c.sent();
+                        return [4 /*yield*/, this.getExistingStories()];
+                    case 3:
+                        remainder = _c.sent();
+                        _b = (_a = deleted).concat;
+                        return [4 /*yield*/, Promise.all(remainder.map(mapFn))];
+                    case 4: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
+                    case 5:
+                        e_2 = _c.sent();
+                        throw e_2;
+                    case 6: return [2 /*return*/];
+                }
+            });
+        });
     };
     /**
      * Get a specific asset.
@@ -733,13 +857,14 @@ var ApiClient = /** @class */ (function () {
      * @returns {Promise}
      * @fulfil {IAsset} Details of the asset.
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
     ApiClient.prototype.getAsset = function (id) {
-        var url = this.spaceId + "/assets/" + id;
+        var url = "/" + this.spaceId + "/assets/" + id;
         return this.storyblok
-            .get(url)
-            .then(function (res) { return res.data; })
-            .catch(function (error) { return Promise.reject(error); });
+            .get(url, exports.retrySettings.burst)
+            .then(function (r) { return r.data; })
+            .catch(function (e) { return Promise.reject(e); });
     };
     /**
      * Find a specific asset by its public url.
@@ -747,17 +872,24 @@ var ApiClient = /** @class */ (function () {
      * @name ApiClient#getAssetByUrl
      * @param {string} url - Url to match by.
      * @returns {Promise}
-     * @fulfil {IAsset | undefined} Matched asset or undefined if not fund.
+     * @fulfil {IAsset} Matched asset.
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
     ApiClient.prototype.getAssetByUrl = function (url) {
-        var predicate = function (asset) {
-            return asset.filename === url;
+        var responseHandler = function (as) {
+            var findFn = function (a) { return a.filename === url; };
+            var asset = as.find(findFn);
+            if (!asset) {
+                throw new Error('unable to find an asset by this url');
+            }
+            else {
+                return asset;
+            }
         };
-        var responseHandler = function (assets) { return assets.find(predicate); };
         return this.getExistingAssets()
             .then(responseHandler)
-            .catch(function (error) { return Promise.reject(error); });
+            .catch(function (e) { return Promise.reject(e); });
     };
     /**
      * Get a specific asset folder.
@@ -767,29 +899,52 @@ var ApiClient = /** @class */ (function () {
      * @returns {Promise}
      * @fulfil {IAssetFolder} Asset folder information.
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
     ApiClient.prototype.getAssetFolder = function (id) {
-        var url = this.spaceId + "/asset_folders/" + id;
+        var url = "/" + this.spaceId + "/asset_folders/" + id;
         return this.storyblok
-            .get(url)
-            .then(function (res) { return res.data.asset_folder; })
-            .catch(function (error) { return Promise.reject(error); });
+            .get(url, exports.retrySettings.burst)
+            .then(function (r) { return r.data.asset_folder; })
+            .catch(function (e) { return Promise.reject(e); });
     };
     /**
-     * Get a list of asset folders by matching asset folders names to the supplied string.
+     * Get asset folders by matching asset folders names to the supplied string.
      *
-     * @name ApiClient#getAssetFolderByName
-     * @param {string} searchString - String to search asset folders by.
+     * @name ApiClient#assetFolders#getByName
+     * @param {string} searchString - String to search by.
      * @returns {Promise}
-     * @fulfil {IAssetFolder[]} List of asset folders that matches the name string.
+     * @fulfil {IAssetFolder[]} List of matched asset folders.
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
     ApiClient.prototype.getAssetFolderByName = function (searchString) {
-        var url = this.spaceId + "/asset_folders?search=" + searchString;
+        var url = "/" + this.spaceId + "/asset_folders";
+        var query = "?search=" + searchString;
         return this.storyblok
-            .get(url)
-            .then(function (res) { return res.data.asset_folders; })
-            .catch(function (error) { return Promise.reject(error); });
+            .get(url + query, exports.retrySettings.burst)
+            .then(function (r) { return r.data.asset_folders; })
+            .catch(function (e) { return Promise.reject(e); });
+    };
+    /**
+     * Get asset on a specific pagination page number.
+     *
+     * @param {number} [page=1] - Pagination page.
+     * @param {number} [perPage=25] - Assets per page.
+     * @returns {Promise<IAsset[]>}
+     * @fulfil {IAsset[]} Assets on the pagination page.
+     * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
+     */
+    ApiClient.prototype.getAssetsByPage = function (page, perPage) {
+        if (page === void 0) { page = 1; }
+        if (perPage === void 0) { perPage = 25; }
+        var url = "/" + this.spaceId + "/assets";
+        var query = "?per_page=" + perPage + "&page=" + page;
+        return this.storyblok
+            .get(url + query, exports.retrySettings.burst)
+            .then(function (r) { return r.data.assets; })
+            .catch(function (e) { return Promise.reject(e); });
     };
     /**
      * Fetch for a specific component.
@@ -799,28 +954,14 @@ var ApiClient = /** @class */ (function () {
      * @returns {Promise}
      * @fulfil {IComponent} Details of the component definition.
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
     ApiClient.prototype.getComponent = function (id) {
-        var url = this.spaceId + "/components/" + id;
+        var url = "/" + this.spaceId + "/components/" + id;
         return this.storyblok
-            .get(url)
-            .then(function (res) { return res.data.component; })
-            .catch(function (error) { return Promise.reject(error); });
-    };
-    /**
-     * Get existing asset folders.
-     *
-     * @name ApiClient#getExistingAssetFolders
-     * @returns {Promise}
-     * @fulfil {IAssetFolder[]} List of existing asset folders.
-     * @reject {AxiosError} Axios error.
-     */
-    ApiClient.prototype.getExistingAssetFolders = function () {
-        var url = this.spaceId + "/asset_folders?search";
-        return this.storyblok
-            .get(url)
-            .then(function (res) { return res.data.asset_folders; })
-            .catch(function (error) { return Promise.reject(error); });
+            .get(url, exports.retrySettings.burst)
+            .then(function (r) { return r.data.component; })
+            .catch(function (e) { return Promise.reject(e); });
     };
     /**
      * List all existing assets.
@@ -829,42 +970,69 @@ var ApiClient = /** @class */ (function () {
      * @returns {Promise}
      * @fulfil {IAsset[]} A list of existing assets.
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
     ApiClient.prototype.getExistingAssets = function () {
-        var _this = this;
-        var maxPerPage = 1000;
-        var countPage = function (total) { return Math.ceil(total / maxPerPage); };
-        return this.countAssets()
-            .then(countPage)
-            .then(function (pageCount) {
-            var url = _this.spaceId + "/assets";
-            var mapFn = function (pageIndex) {
-                var page = pageIndex + 1;
-                var params = { page: page, per_page: maxPerPage };
-                return _this.storyblok.get(url, { params: params });
-            };
-            var pageIndices = Array.from(Array(pageCount).keys());
-            return Promise.all(pageIndices.map(mapFn))
-                .then(function (resArray) { return resArray.map(function (res) { return res.data.assets; }); })
-                .then(function (arrayOfAssets) { return [].concat.apply([], arrayOfAssets); })
-                .catch(function (error) { return Promise.reject(error); });
-        })
-            .catch(function (error) { return Promise.reject(error); });
+        return __awaiter(this, void 0, void 0, function () {
+            var perPage_1, total, pageCount, pageIndices, mapFn, arrayOfAssets, e_3;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 3, , 4]);
+                        perPage_1 = 1000;
+                        return [4 /*yield*/, this.countAssets()];
+                    case 1:
+                        total = _a.sent();
+                        pageCount = Math.ceil(total / perPage_1);
+                        if (pageCount === 0) {
+                            return [2 /*return*/, []];
+                        }
+                        pageIndices = Array.from(Array(pageCount).keys());
+                        mapFn = function (pi) { return _this.getAssetsByPage(pi + 1, perPage_1); };
+                        return [4 /*yield*/, Promise.all(pageIndices.map(mapFn))];
+                    case 2:
+                        arrayOfAssets = _a.sent();
+                        return [2 /*return*/, [].concat.apply([], arrayOfAssets)];
+                    case 3:
+                        e_3 = _a.sent();
+                        throw e_3;
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
     };
     /**
-     * List all existing components.  It is assumed that the working space has only 1,000 existing components at most.
+     * List existing components.
      *
      * @name ApiClient#getExistingComponents
      * @returns {Promise}
      * @fulfil {IComponent[]} A list of component definitions.
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
     ApiClient.prototype.getExistingComponents = function () {
-        var url = this.spaceId + "/components";
+        var url = "/" + this.spaceId + "/components";
         return this.storyblok
-            .get(url)
-            .then(function (res) { return res.data.components; })
-            .catch(function (error) { return Promise.reject(error); });
+            .get(url, exports.retrySettings.burst)
+            .then(function (r) { return r.data.components; })
+            .catch(function (e) { return Promise.reject(e); });
+    };
+    /**
+     * Get existing asset folders.
+     *
+     * @name ApiClient#getExistingAssetFolders
+     * @returns {Promise}
+     * @fulfil {IAssetFolder[]} List of existing asset folders.
+     * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
+     */
+    ApiClient.prototype.getExistingAssetFolders = function () {
+        var url = "/" + this.spaceId + "/asset_folders?search";
+        return this.storyblok
+            .get(url, exports.retrySettings.burst)
+            .then(function (r) { return r.data.asset_folders; })
+            .catch(function (e) { return Promise.reject(e); });
     };
     /**
      * List all existing stories.
@@ -873,31 +1041,32 @@ var ApiClient = /** @class */ (function () {
      * @returns {Promise}
      * @fulfil {IStory[]} A list of existing content stories.
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
     ApiClient.prototype.getExistingStories = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var maxPerPage_1, pageCount, indicies, mapFn, arrayOfStories, error_1;
+            var perPage_2, pageCount, pageIndices, mapFn, arrayOfStories, e_4;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 3, , 4]);
-                        maxPerPage_1 = 1000;
-                        return [4 /*yield*/, this.countStoryPages(maxPerPage_1)];
+                        perPage_2 = 1000;
+                        return [4 /*yield*/, this.countStoryPages(perPage_2)];
                     case 1:
                         pageCount = _a.sent();
                         if (pageCount === 0) {
                             return [2 /*return*/, []];
                         }
-                        indicies = Array.from(Array(pageCount).keys());
-                        mapFn = function (index) { return _this.getStoriesByPage(index + 1, maxPerPage_1); };
-                        return [4 /*yield*/, Promise.all(indicies.map(mapFn))];
+                        pageIndices = Array.from(Array(pageCount).keys());
+                        mapFn = function (pi) { return _this.getStoriesByPage(pi + 1, perPage_2); };
+                        return [4 /*yield*/, Promise.all(pageIndices.map(mapFn))];
                     case 2:
                         arrayOfStories = _a.sent();
                         return [2 /*return*/, [].concat.apply([], arrayOfStories)];
                     case 3:
-                        error_1 = _a.sent();
-                        throw error_1;
+                        e_4 = _a.sent();
+                        throw e_4;
                     case 4: return [2 /*return*/];
                 }
             });
@@ -910,206 +1079,175 @@ var ApiClient = /** @class */ (function () {
      * @returns {Promise}
      * @fulfil {ISpace} Working space information.
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
     ApiClient.prototype.getSpace = function () {
         var url = "/" + this.spaceId;
         return this.storyblok
-            .get(url)
-            .then(function (res) { return res.data.space; })
-            .catch(function (error) { return Promise.reject(error); });
+            .get(url, exports.retrySettings.burst)
+            .then(function (r) { return r.data.space; })
+            .catch(function (e) { return Promise.reject(e); });
     };
     /**
-     * Get paginated stories.
+     * Get stories on a pagination page.
      *
      * @name ApiClient#getStoriesByPage
-     * @param {number} page - Pagination number.
-     * @param {number} [perPage] - (optional) How many stories per page.
+     * @param {number} page - Pagination page number.
+     * @param {number} [perPage] - (optional) How many stories per page.  Defaults to 25.
      * @returns {Promise}
      * @fulfil {IStory[]} A page of stories.
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
     ApiClient.prototype.getStoriesByPage = function (page, perPage) {
-        var url = this.spaceId + "/stories";
+        if (page === void 0) { page = 1; }
+        if (perPage === void 0) { perPage = 25; }
+        var url = "/" + this.spaceId + "/stories";
         var query = "?per_page=" + perPage + "&page=" + page;
         return this.storyblok
-            .get(url + query)
-            .then(function (res) { return res.data.stories; })
-            .catch(function (error) { return Promise.reject(error); });
+            .get(url + query, exports.retrySettings.burst)
+            .then(function (r) { return r.data.stories; })
+            .catch(function (e) { return Promise.reject(e); });
     };
-    /**
-     * Get a specific story.
-     *
-     * @name ApiClient#getStory
-     * @param {number} storyId - Id of the content story.
-     * @returns {Promise}
-     * @fulfil {IStory} Details of content story.
-     * @reject {AxiosError} Axios error.
-     */
-    ApiClient.prototype.getStory = function (storyId) {
-        var url = this.spaceId + "/stories/" + storyId;
+    ApiClient.prototype.getStory = function (id) {
+        var url = "/" + this.spaceId + "/stories/" + id;
         return this.storyblok
-            .get(url)
-            .then(function (res) { return res.data.story; })
-            .catch(function (error) { return Promise.reject(error); });
-    };
-    /**
-     * Get total pagination page count.
-     *
-     * @name ApiClient#countStoryPages
-     * @param {number} [perPage] - (optional) How many stories per page.  Defaults to 25.
-     * @returns {Promise}
-     * @fulfil {number} Total story pagination page count.
-     * @reject {AxiosError} Axios error.
-     */
-    ApiClient.prototype.countStoryPages = function (perPage) {
-        var url = this.spaceId + "/stories";
-        var resHander = function (res) {
-            var total = res.headers.total;
-            return Math.ceil(total / (perPage || 25));
-        };
-        return this.storyblok
-            .get(url)
-            .then(resHander)
-            .catch(function (error) { return Promise.reject(error); });
+            .get(url, exports.retrySettings.burst)
+            .then(function (r) { return r.data.story; })
+            .catch(function (e) { return Promise.reject(e); });
     };
     /**
      * Publish all unpublished stories.
      *
-     * @name ApiClient#publishPendingStories
+     * @name ApiClient#stories#publishPendings
      * @returns {Promise}
      * @fulfil {IStory[]} List of published stories.
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
     ApiClient.prototype.publishPendingStories = function () {
-        var _this = this;
-        var filterFn = function (stories) {
-            var filter = function (s) { return !s.is_folder && !s.published; };
-            return stories.filter(filter);
-        };
-        var publishFn = function (stories) {
-            var mapFn = function (story) { return _this.publishStory(story.id); };
-            return Promise.all(stories.map(mapFn));
-        };
-        return this.getExistingStories()
-            .then(filterFn)
-            .then(publishFn)
-            .catch(function (error) { return Promise.reject(error); });
+        return __awaiter(this, void 0, void 0, function () {
+            var existing, filterFn, pendings, mapFn, e_5;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 3, , 4]);
+                        return [4 /*yield*/, this.getExistingStories()];
+                    case 1:
+                        existing = _a.sent();
+                        filterFn = function (s) { return !s.is_folder && !s.published; };
+                        pendings = existing.filter(filterFn);
+                        mapFn = function (s) { return _this.publishStory(s.id); };
+                        return [4 /*yield*/, Promise.all(pendings.map(mapFn))];
+                    case 2: return [2 /*return*/, _a.sent()];
+                    case 3:
+                        e_5 = _a.sent();
+                        throw e_5;
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
     };
     /**
      * Publish a specific story.
      *
      * @name ApiClient#publishStory
-     * @param storyId - Id of the story to publish
+     * @param {number} id - Id of the story to publish
      * @returns {Promise}
-     * @fulfil {IStory} Details of the published story.
+     * @fulfil {IStory} Details of the published story
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
-    ApiClient.prototype.publishStory = function (storyId) {
-        var url = this.spaceId + "/stories/" + storyId + "/publish";
+    ApiClient.prototype.publishStory = function (id) {
+        var url = "/" + this.spaceId + "/stories/" + id + "/publish";
         return this.storyblok
-            .get(url)
-            .then(function (res) { return res.data.story; })
-            .catch(function (error) { return Promise.reject(error); });
+            .get(url, exports.retrySettings.burst)
+            .then(function (r) { return r.data.story; })
+            .catch(function (e) { return Promise.reject(e); });
     };
     /**
-     * Register an image file as a Storyblok asset (the physical file still has to be uploaded).
+     * Register a Storyblok asset.
      *
      * @name ApiClient#registerAsset
-     * @param {IAsset} asset - Information to create asset from.
-     * @param {string} asset.filename - File name to register with.
+     * @param {IPendingAsset} asset - Information to create asset from.
+     * @param {string} asset.filename - File name to register for.
      * @param {number} [asset.asset_folder_id] - (optional) Assign a asset folder.
      * @param {number} [asset.id] - (optional) Id of existing asset to replace with this new asset.
      * @returns {Promise}
-     * @fulfil {IAssetSigningResponse} Asset registration info (used for uploading).
+     * @fulfil {IRegistration} Asset registration info (used for uploading).
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
-    ApiClient.prototype.registerAsset = function (asset) {
-        var url = this.spaceId + "/assets";
+    ApiClient.prototype.registerAsset = function (data) {
+        var url = "/" + this.spaceId + "/assets";
         return this.storyblok
-            .post(url, asset)
-            .then(function (res) { return res.data; })
-            .catch(function (error) { return Promise.reject(error); });
+            .post(url, data, exports.retrySettings.extended)
+            .then(function (r) { return r.data; })
+            .catch(function (e) { return Promise.reject(e); });
     };
     /**
      * Update a story's sequential order.
      *
      * @name ApiClient#reorderStory
-     * @param {number} storyId - Id of the story to be moved.
+     * @param {number} id - Id of the story to be moved.
      * @param {number} afterId - Reference story to position after.
      * @returns {Promise}
      * @fulfil {IStory} Details of the moved story.
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
-    ApiClient.prototype.reorderStory = function (storyId, afterId) {
+    ApiClient.prototype.reorderStory = function (id, afterId) {
         var _this = this;
-        var url = this.spaceId + "/stories/" + storyId + "/move";
+        var url = "/" + this.spaceId + "/stories/" + id + "/move";
         var query = "?after_id=" + afterId;
         return this.storyblok
-            .put(url + query)
-            .then(function () { return _this.getStory(storyId); })
-            .catch(function (error) { return Promise.reject(error); });
+            .put(url + query, exports.retrySettings.burst)
+            .then(function () { return _this.getStory(id); })
+            .catch(function (e) { return Promise.reject(e); });
     };
     /**
      * Update a story.
      *
      * @name ApiClient#updateStory
-     * @param {IStory} story - Storyblok story data object with modified info.
+     * @param {IStory} data - Storyblok story data object with modified info.
      * @returns {Promise}
      * @fulfil {IStory} Details of story that was updated.
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
-    ApiClient.prototype.updateStory = function (story) {
-        var url = this.spaceId + "/stories";
-        var data = { story: story };
+    ApiClient.prototype.updateStory = function (data) {
+        var url = "/" + this.spaceId + "/stories";
         return this.storyblok
-            .put(url, { data: data })
-            .then(function (res) { return res.data.story; })
-            .catch(function (error) { return Promise.reject(error); });
+            .put(url, { story: data }, exports.retrySettings.burst)
+            .then(function (r) { return r.data.story; })
+            .catch(function (e) { return Promise.reject(e); });
     };
     /**
-     * Upload a newly registered asset.  The request is throttled and set to retry on failure.
+     * Upload a registered asset.
      *
      * @name ApiClient#uploadAsset
      * @param {Buffer} buffer - Buffered asset data.
-     * @param {IAssetSigningResponse} registration - Registration info.
+     * @param {IRegistration} registration - Registration info.
      * @returns {Promise}
-     * @fulfil {IAsset} Information of the uploaded asset.
+     * @fulfil {string} Access url of the uploaded asset.
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
     ApiClient.prototype.uploadAsset = function (buffer, registration) {
-        var _this = this;
-        var publicUrl = registration.public_url;
-        var filename = publicUrl.split('\\').pop();
-        var contentType = registration.fields['Content-Type'];
-        var formData = registration.fields;
-        formData.file = {
-            options: { filename: filename, contentType: contentType },
-            value: buffer,
-        };
-        var requestOptions = {
-            formData: formData,
-            method: 'post',
-            url: registration.post_url,
-        };
-        var callsPerInterval = 3;
-        var interval = 1000;
-        var throttledRequest = p_throttle_1.default(rp, callsPerInterval, interval);
-        var uploadFn = function (options) {
-            return throttledRequest(options)
-                .then(function (res) { return Promise.resolve(res); })
-                .catch(function (error) { return Promise.reject(error); });
-        };
-        return utilities_1.promiseRetry(uploadFn, [requestOptions], 3, 500)
-            .then(function () { return _this.getAssetByUrl(publicUrl); })
-            .then(function (asset) {
-            if (!asset) {
-                throw new Error('asset upload failure');
+        var formData = new FormData();
+        var formFields = registration.fields;
+        for (var key in formFields) {
+            if (key in formFields) {
+                formData.append(key, formFields[key]);
             }
-            else {
-                return _this.getAsset(asset.id);
-            }
-        })
-            .catch(function (error) { return Promise.reject(error); });
+        }
+        formData.append('file', buffer);
+        return new Promise(function (resolve, reject) {
+            formData.submit(registration.post_url, function (e) {
+                return e ? reject(e) : resolve(registration.pretty_url);
+            });
+        });
     };
     return ApiClient;
 }());

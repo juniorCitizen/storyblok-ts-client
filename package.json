@@ -1,7 +1,7 @@
 {
   "name": "storyblok-ts-client",
   "version": "4.2.0",
-  "description": "Typescript library for working with Storyblok management API. Uses axios and request-promise to make Storyblok management API calls",
+  "description": "Typescript library for working with Storyblok management API.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "repository": {
@@ -28,10 +28,13 @@
   },
   "homepage": "https://github.com/chiayutsaipersonal/storyblok-ts-client#readme",
   "dependencies": {
+    "@types/form-data": "^2.2.1",
+    "@types/node": "^10.12.0",
+    "@types/p-throttle": "^1.1.0",
+    "@types/sharp": "^0.21.0",
     "axios": "^0.18.0",
+    "form-data": "^2.3.3",
     "p-throttle": "^2.0.0",
-    "request": "^2.88.0",
-    "request-promise-native": "^1.0.5",
     "sharp": "^0.21.0"
   },
   "devDependencies": {
@@ -42,12 +45,7 @@
     "@babel/preset-env": "^7.1.0",
     "@babel/preset-typescript": "^7.1.0",
     "@types/dotenv-safe": "^5.0.1",
-    "@types/jest": "^23.3.5",
-    "@types/node": "^10.12.0",
-    "@types/p-throttle": "^1.1.0",
-    "@types/request": "^2.47.1",
-    "@types/request-promise-native": "^1.0.15",
-    "@types/sharp": "^0.21.0",
+    "@types/jest": "^23.3.7",
     "dotenv-safe": "^6.1.0",
     "jest": "^23.6.0",
     "jsdoc-babel": "^0.5.0",

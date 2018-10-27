@@ -31,7 +31,7 @@ async function compressImage(image: sharp.Sharp): Promise<sharp.Sharp> {
  *
  * @param {string} filePath - Absolute path to image file.
  * @param {boolean} compress - Flag to compress image.
- * @param {number} [dimensionLimit] - (optional) Resizing dimension limit value.
+ * @param {number} sizeLimit - Resizing dimension limit value.
  * @returns {Promise}
  * @fulfil {Buffer} Buffered image data.
  * @reject {Error} Error value.
@@ -39,15 +39,15 @@ async function compressImage(image: sharp.Sharp): Promise<sharp.Sharp> {
 export async function imageToBuffer(
   filePath: string,
   compress: boolean = false,
-  dimensionLimit?: number
+  sizeLimit: number = 640
 ): Promise<Buffer> {
   let image: sharp.Sharp = sharp(filePath).rotate()
   try {
     if (compress) {
       image = await compressImage(image)
     }
-    if (dimensionLimit) {
-      image = await resizeImage(image, dimensionLimit)
+    if (sizeLimit) {
+      image = await resizeImage(image, sizeLimit)
     }
     return await image.toBuffer()
   } catch (error) {
@@ -59,14 +59,14 @@ export async function imageToBuffer(
  * Resize a sharp object
  *
  * @param {Sharp} image - sharp object.
- * @param {number} dimensionLimit - Size (in pixels) to limit image dimension.
+ * @param {number} sizeLimit - Size (in pixels) to limit image dimension.
  * @returns {Promise}
  * @fulfil {Sharp} Resized sharp object.
  * @reject {Error} Error value.
  */
 async function resizeImage(
   image: sharp.Sharp,
-  dimensionLimit: number = 640
+  sizeLimit: number = 640
 ): Promise<sharp.Sharp> {
   try {
     const metadata: sharp.Metadata = await image.metadata()
@@ -74,10 +74,10 @@ async function resizeImage(
       throw new Error('image dimension cannot be determined')
     }
     return metadata.height === metadata.width
-      ? image.resize(dimensionLimit, dimensionLimit) // square image
+      ? image.resize(sizeLimit, sizeLimit) // square image
       : metadata.height < metadata.width
-        ? image.resize(dimensionLimit, undefined) // wider image
-        : image.resize(undefined, dimensionLimit) // taller image
+        ? image.resize(sizeLimit, undefined) // wider image
+        : image.resize(undefined, sizeLimit) // taller image
   } catch (error) {
     throw error
   }

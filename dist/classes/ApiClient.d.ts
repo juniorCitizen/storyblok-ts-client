@@ -1,47 +1,78 @@
-/**
- * @module ApiClient
- */
 /// <reference types="node" />
-import { IAsset, IAssetFolder, IAssetSigningResponse, IComponent, ISpace, IStory } from '../interfaces';
+import { IAsset, IAssetFolder, IComponent, IPendingAsset, IPendingComponent, IPendingStory, IRegistration, ISpace, IStory } from '../interfaces';
+import { ICustomAxiosRequestConfig } from './Storyblok';
+export declare const retrySettings: {
+    burst: ICustomAxiosRequestConfig;
+    extended: ICustomAxiosRequestConfig;
+};
+interface IApiClientClass {
+    assetFolders: {
+        create: (n: string) => Promise<IAssetFolder>;
+        delete: (i: number) => Promise<void>;
+        deleteExisting: () => Promise<void[]>;
+        get: (i: number) => Promise<IAssetFolder>;
+        getByName: (s: string) => Promise<IAssetFolder[]>;
+        getExisting: () => Promise<IAssetFolder[]>;
+    };
+    assets: {
+        count: () => Promise<number>;
+        createFromImage: (d: IPendingAsset, f: string, c?: boolean, s?: number) => Promise<IAsset>;
+        delete: (i: number) => Promise<IAsset>;
+        deleteExisting: () => Promise<IAsset[]>;
+        get: (i: number) => Promise<IAsset>;
+        getByPage: (p?: number, pp?: number) => Promise<IAsset[]>;
+        getByUrl: (u: string) => Promise<IAsset>;
+        getExisting: () => Promise<IAsset[]>;
+        register: (d: IPendingAsset) => Promise<IRegistration>;
+        upload: (b: Buffer, r: IRegistration) => Promise<string>;
+    };
+    components: {
+        create: (d: IPendingComponent) => Promise<IComponent>;
+        delete: (i: number) => Promise<IComponent>;
+        deleteExisting: () => Promise<IComponent[]>;
+        get: (i: number) => Promise<IComponent>;
+        getExisting: () => Promise<IComponent[]>;
+    };
+    spaces: {
+        get: () => Promise<ISpace>;
+    };
+    stories: {
+        count: () => Promise<number>;
+        countPages: (p: number) => Promise<number>;
+        create: (d: IPendingStory) => Promise<IStory>;
+        delete: (i: number) => Promise<IStory>;
+        deleteExisting: () => Promise<IStory[]>;
+        get: (i: number) => Promise<IStory>;
+        getByPage: (p?: number, pp?: number) => Promise<IStory[]>;
+        getExisting: () => Promise<IStory[]>;
+        publish: (i: number) => Promise<IStory>;
+        publishPendings: () => Promise<IStory[]>;
+        reorder: (i: number, ai: number) => Promise<IStory>;
+        update: (d: IStory) => Promise<IStory>;
+    };
+}
 /**
- * Class to facilitate Storyblok management API interface.
+ * Management API wrapper around Storyblok class.
  *
- * @class
+ * @export
+ * @class ApiClient
+ * @implements {IStoryblokClass}
+ * @param {string} apiToken - API access token.
+ * @param {number} spaceId - Storyblok working space id.
  * @example
  * const {ApiClient} = require('storyblok-ts-client')
- * const apiClient = ApiClient('fake_api_token', 12345)
- *
- * return apiClient.spaces.get()
- *   .then(space => console.log('space id:', space.id))
- *   // => space id: 12345
+ * const apiClient = new ApiClient('fake_api_token', 12345)
  */
-export declare class ApiClient {
-    /**
-     * Storyblok working space id.
-     *
-     * @name Storyblok#spaceId
-     * @type number
-     */
+export declare class ApiClient implements IApiClientClass {
     private spaceId;
-    /**
-     * Storyblok class instance
-     *
-     * @name Storyblok#storyblok
-     * @type Storyblok
-     */
     private storyblok;
-    /**
-     * Class instantiation.
-     *
-     * @param {string} apiToken - API access token.
-     * @param {number} spaceId - Storyblok working space id.
-     */
     constructor(apiToken: string, spaceId: number);
     /**
-     * Provides API methods for asset folders.
+     * Object that contains API methods for asset folder operations
      *
+     * @readonly
      * @name ApiClient#assetFolders
-     * @returns {Object}
+     * @memberof ApiClient
      */
     readonly assetFolders: {
         /**
@@ -52,6 +83,7 @@ export declare class ApiClient {
          * @returns {Promise}
          * @fulfil {IAssetFolder} Details of the asset folder created.
          * @reject {AxiosError} Axios error.
+         * @memberof ApiClient#assetFolders
          */
         create: (name: string) => Promise<IAssetFolder>;
         /**
@@ -62,6 +94,7 @@ export declare class ApiClient {
          * @returns {Promise}
          * @fulfil {void}
          * @reject {AxiosError} Axios error.
+         * @memberof ApiClient#assetFolders
          */
         delete: (id: number) => Promise<void>;
         /**
@@ -71,6 +104,7 @@ export declare class ApiClient {
          * @returns {Promise}
          * @fulfil {void[]}
          * @reject {AxiosError} Axios error.
+         * @memberof ApiClient#assetFolders
          */
         deleteExisting: () => Promise<void[]>;
         /**
@@ -81,16 +115,18 @@ export declare class ApiClient {
          * @returns {Promise}
          * @fulfil {IAssetFolder} Asset folder information.
          * @reject {AxiosError} Axios error.
+         * @memberof ApiClient#assetFolders
          */
         get: (id: number) => Promise<IAssetFolder>;
         /**
-         * Get a list of asset folders by matching asset folders names to the supplied string.
+         * Get asset folders by matching asset folders names to the supplied string.
          *
          * @name ApiClient#assetFolders#getByName
-         * @param {string} name - String to search asset folders by.
+         * @param {string} searchString - String to search by.
          * @returns {Promise}
-         * @fulfil {IAssetFolder[]} List of asset folders that matches the name string.
+         * @fulfil {IAssetFolder[]} List of matched asset folders.
          * @reject {AxiosError} Axios error.
+         * @memberof ApiClient#assetFolders
          */
         getByName: (searchString: string) => Promise<IAssetFolder[]>;
         /**
@@ -100,14 +136,16 @@ export declare class ApiClient {
          * @returns {Promise}
          * @fulfil {IAssetFolder[]} List of existing asset folders.
          * @reject {AxiosError} Axios error.
+         * @memberof ApiClient#assetFolders
          */
         getExisting: () => Promise<IAssetFolder[]>;
     };
     /**
-     * Provides API methods for assets.
+     * Object that contains API methods for asset operations
      *
+     * @readonly
      * @name ApiClient#assets
-     * @returns {Object} Asset API methods.
+     * @memberof ApiClient
      */
     readonly assets: {
         /**
@@ -117,22 +155,23 @@ export declare class ApiClient {
          * @returns {Promise}
          * @fulfil {number} A count of existing assets.
          * @reject {AxiosError} Axios error.
+         * @memberof ApiClient#assets
          */
         count: () => Promise<number>;
         /**
-         * Create an image asset at root.
-         *
-         * This method calls the ApiClient.registerAsset(), resize/compress the image then finally upload the physical file with ApiClient.uploadAsset() at one go.
+         * Create and asset and upload the physical file.
          *
          * @name ApiClient#assets#createFromImage
+         * @param {IPendingAsset} data - Asset information.
          * @param {string} filePath - Absolute file path to the image.
          * @param {boolean} compress - Flag to compress image.
-         * @param {number} dimensionLimit - Resizing dimension limit value.
+         * @param {number} sizeLimit - Resizing dimension limit value.
          * @returns {Promise}
-         * @fulfil {IAsset} Information of the created asset.
+         * @fulfil {IAsset} Information on the new asset.
          * @reject {AxiosError} Axios error.
+         * @memberof ApiClient#assets
          */
-        createFromImage: (asset: IAsset, filePath: string, compress?: boolean | undefined, dimensionLimit?: number | undefined) => Promise<IAsset>;
+        createFromImage: (data: IPendingAsset, filePath: string, compress?: boolean | undefined, sizeLimit?: number | undefined) => Promise<IAsset>;
         /**
          * Delete a specific asset.
          *
@@ -141,6 +180,7 @@ export declare class ApiClient {
          * @returns {Promise}
          * @fulfil {IAsset} Information of the deleted asset.
          * @reject {AxiosError} Axios error.
+         * @memberof ApiClient#assets
          */
         delete: (id: number) => Promise<IAsset>;
         /**
@@ -150,6 +190,7 @@ export declare class ApiClient {
          * @returns {Promise}
          * @fulfil {IAsset[]} Information on the deleted assets.
          * @reject {AxiosError} Axios error.
+         * @memberof ApiClient#assets
          */
         deleteExisting: () => Promise<IAsset[]>;
         /**
@@ -160,18 +201,32 @@ export declare class ApiClient {
          * @returns {Promise}
          * @fulfil {IAsset} Details of the asset.
          * @reject {AxiosError} Axios error.
+         * @memberof ApiClient#assets
          */
         get: (id: number) => Promise<IAsset>;
+        /**
+         * Get asset on a specific pagination page number.
+         *
+         * @name ApiClient#assets#getByPage
+         * @param {number} [page=1] - Pagination page.
+         * @param {number} [perPage=25] - Assets per page.
+         * @returns {Promise<IAsset[]>}
+         * @fulfil {IAsset[]} Assets on the pagination page.
+         * @reject {AxiosError} Axios error.
+         * @memberof ApiClient#assets
+         */
+        getByPage: (page?: number | undefined, perPage?: number | undefined) => Promise<IAsset[]>;
         /**
          * Find a specific asset by its public url.
          *
          * @name ApiClient#assets#getByUrl
          * @param {string} url - Url to match by.
          * @returns {Promise}
-         * @fulfil {IAsset | undefined} Matched asset or undefined if not fund.
+         * @fulfil {IAsset} Matched asset.
          * @reject {AxiosError} Axios error.
+         * @memberof ApiClient
          */
-        getByUrl: (url: string) => Promise<IAsset | undefined>;
+        getByUrl: (url: string) => Promise<IAsset>;
         /**
          * List all existing assets.
          *
@@ -179,50 +234,55 @@ export declare class ApiClient {
          * @returns {Promise}
          * @fulfil {IAsset[]} A list of existing assets.
          * @reject {AxiosError} Axios error.
+         * @memberof ApiClient#assets
          */
         getExisting: () => Promise<IAsset[]>;
         /**
-         * Register an image file as a Storyblok asset (the physical file still has to be uploaded).
+         * Register a Storyblok asset.
          *
          * @name ApiClient#assets#register
-         * @param {IAsset} asset - Information to create asset from.
+         * @param {IPendingAsset} asset - Information to create asset from.
          * @param {string} asset.filename - File name to register for.
          * @param {number} [asset.asset_folder_id] - (optional) Assign a asset folder.
          * @param {number} [asset.id] - (optional) Id of existing asset to replace with this new asset.
          * @returns {Promise}
-         * @fulfil {IAssetSigningResponse} Asset registration info (used for uploading).
+         * @fulfil {IRegistration} Asset registration info (used for uploading).
          * @reject {AxiosError} Axios error.
+         * @memberof ApiClient#assets
          */
-        register: (asset: IAsset) => Promise<IAssetSigningResponse>;
+        register: (data: IPendingAsset) => Promise<IRegistration>;
         /**
-         * Upload a newly registered asset.
+         * Upload a registered asset.
          *
          * @name ApiClient#assets#upload
          * @param {Buffer} buffer - Buffered asset data.
-         * @param {IAssetSigningResponse} registration - Registration info.
+         * @param {IRegistration} registration - Registration info.
          * @returns {Promise}
-         * @fulfil {IAsset} Information of the uploaded asset.
+         * @fulfil {string} Access url of the uploaded asset.
          * @reject {AxiosError} Axios error.
+         * @memberof ApiClient#assets
          */
-        upload: (buffer: Buffer, registration: IAssetSigningResponse) => Promise<IAsset>;
+        upload: (buffer: Buffer, registration: IRegistration) => Promise<string>;
     };
     /**
-     * Provides API methods for components.
+     * Object that contains API methods for component operations
      *
      * @name ApiClient#components
-     * @returns {Object} Component API methods.
+     * @readonly
+     * @memberof ApiClient
      */
     readonly components: {
         /**
          * Create a component.
          *
          * @name ApiClient#components#create
-         * @param {IComponent} component - Info on component to be created.
+         * @param {IPendingComponent} data - Info on component to be created.
          * @returns {Promise}
          * @fulfil {IComponent} Details of the component that was created.
          * @reject {AxiosError} Axios error.
+         * @memberof ApiClient#components
          */
-        create: (component: IComponent) => Promise<IComponent>;
+        create: (data: IPendingComponent) => Promise<IComponent>;
         /**
          * Delete a specific component.
          *
@@ -231,15 +291,17 @@ export declare class ApiClient {
          * @returns {Promise}
          * @fulfil {IComponent} Details of the deleted component.
          * @reject {AxiosError} Axios error.
+         * @memberof ApiClient#components
          */
         delete: (id: number) => Promise<IComponent>;
         /**
-         * Delete all existing components.
+         * Delete existing components.
          *
-         * @name ApiClient#components#deleteExistingAssetFolders
+         * @name ApiClient#components#deleteExisting
          * @returns {Promise}
          * @fulfil {IComponent[]} A list of deleted components details.
          * @reject {AxiosError} Axios error.
+         * @memberof ApiClient#components
          */
         deleteExisting: () => Promise<IComponent[]>;
         /**
@@ -250,23 +312,26 @@ export declare class ApiClient {
          * @returns {Promise}
          * @fulfil {IComponent} Details of the component definition.
          * @reject {AxiosError} Axios error.
+         * @memberof ApiClient#components
          */
         get: (id: number) => Promise<IComponent>;
         /**
-         * List all existing components.
+         * List existing components.
          *
          * @name ApiClient#components#getExisting
          * @returns {Promise}
          * @fulfil {IComponent[]} A list of component definitions.
          * @reject {AxiosError} Axios error.
+         * @memberof ApiClient#components
          */
         getExisting: () => Promise<IComponent[]>;
     };
     /**
-     * Provides API methods for the working space.
+     * Object that contains API methods for space operations
      *
      * @name ApiClient#spaces
-     * @returns {Object} Working space API methods.
+     * @readonly
+     * @memberof ApiClient
      */
     readonly spaces: {
         /**
@@ -276,14 +341,16 @@ export declare class ApiClient {
          * @returns {Promise}
          * @fulfil {ISpace} Working space information.
          * @reject {AxiosError} Axios error.
+         * @memberof ApiClient#spaces
          */
         get: () => Promise<ISpace>;
     };
     /**
-     * Provides API methods for stories.
+     * Object that contains API methods for story operations
      *
      * @name ApiClient#stories
-     * @returns {Object} Story API methods.
+     * @readonly
+     * @memberof ApiClient
      */
     readonly stories: {
         /**
@@ -293,6 +360,7 @@ export declare class ApiClient {
          * @returns {Promise}
          * @fulfil {number} A count of existing stories.
          * @reject {AxiosError} Axios error.
+         * @memberof ApiClient#stories
          */
         count: () => Promise<number>;
         /**
@@ -303,28 +371,31 @@ export declare class ApiClient {
          * @returns {Promise}
          * @fulfil {number} Total story pagination page count.
          * @reject {AxiosError} Axios error.
+         * @memberof ApiClient#stories
          */
-        countPages: (perPage?: number | undefined) => Promise<number>;
+        countPages: (perPage?: number) => Promise<number>;
         /**
          * Create a story.
          *
          * @name ApiClient#stories#create
-         * @param {IStory} story - Storyblok story data object.
+         * @param {IPendingStory} data - Storyblok story data object.
          * @returns {Promise}
          * @fulfil {IStory} Details of story that was created.
          * @reject {AxiosError} Axios error.
+         * @memberof ApiClient#stories
          */
-        create: (story: IStory) => Promise<IStory>;
+        create: (data: IPendingStory) => Promise<IStory>;
         /**
          * Delete a specific story.
          *
          * @name ApiClient#stories#delete
-         * @param {IStory} storyId - Id of the story to be deleted.
+         * @param {IStory} id - Id of the story to be deleted.
          * @returns {Promise}
          * @fulfil {IStory} Details of the story that was deleted.
          * @reject {AxiosError} Axios error.
+         * @memberof ApiClient#stories
          */
-        delete: (storyId: number) => Promise<IStory>;
+        delete: (id: number) => Promise<IStory>;
         /**
          * Delete all existing stories.
          *
@@ -332,48 +403,53 @@ export declare class ApiClient {
          * @returns {Promise}
          * @fulfil {IStory[]} A list of deleted stories details.
          * @reject {AxiosError} Axios error.
+         * @memberof ApiClient#stories
          */
         deleteExisting: () => Promise<IStory[]>;
         /**
          * Get a specific story.
          *
          * @name ApiClient#stories#get
-         * @param {number} storyId - Id of the content story.
+         * @param {number} id - Id of the content story.
          * @returns {Promise}
          * @fulfil {IStory} Details of content story.
          * @reject {AxiosError} Axios error.
+         * @memberof ApiClient#stories
          */
-        get: (storyId: number) => Promise<IStory>;
+        get: (id: number) => Promise<IStory>;
         /**
-         * Get paginated stories.
+         * Get stories on a pagination page.
          *
          * @name ApiClient#stories#getByPage
-         * @param {number} page - Pagination number.
+         * @param {number} page - Pagination page number.
          * @param {number} [perPage] - (optional) How many stories per page.  Defaults to 25.
          * @returns {Promise}
          * @fulfil {IStory[]} A page of stories.
          * @reject {AxiosError} Axios error.
+         * @memberof ApiClient#stories
          */
-        getByPage: (page: number, perPage?: number | undefined) => Promise<IStory[]>;
+        getByPage: (page?: number | undefined, perPage?: number | undefined) => Promise<IStory[]>;
         /**
          * List all existing stories.
          *
          * @name ApiClient#stories#getExisting
          * @returns {Promise}
-         * @fulfil {IStory[]} A full list of existing content stories.
+         * @fulfil {IStory[]} A list of existing content stories.
          * @reject {AxiosError} Axios error.
+         * @memberof ApiClient#stories
          */
         getExisting: () => Promise<IStory[]>;
         /**
          * Publish a specific story.
          *
          * @name ApiClient#stories#publish
-         * @param {number} storyId - Id of the story to publish
+         * @param {number} id - Id of the story to publish
          * @returns {Promise}
          * @fulfil {IStory} Details of the published story
          * @reject {AxiosError} Axios error.
+         * @memberof ApiClient#stories
          */
-        publish: (storyId: number) => Promise<IStory>;
+        publish: (id: number) => Promise<IStory>;
         /**
          * Publish all unpublished stories.
          *
@@ -381,29 +457,32 @@ export declare class ApiClient {
          * @returns {Promise}
          * @fulfil {IStory[]} List of published stories.
          * @reject {AxiosError} Axios error.
+         * @memberof ApiClient#stories
          */
         publishPendings: () => Promise<IStory[]>;
         /**
          * Update a story's sequential order.
          *
          * @name ApiClient#stories#reorder
-         * @param {number} storyId - Id of the story to be moved.
-         * @param {number} afterId - Reference story to position after.
+         * @param {number} id - Id of the story to be moved.
+         * @param {number} afterId - Id of reference story to position after.
          * @returns {Promise}
          * @fulfil {IStory} Details of the moved story.
          * @reject {AxiosError} Axios error.
+         * @memberof ApiClient#stories
          */
-        reorder: (storyId: number, afterId: number) => Promise<IStory>;
+        reorder: (id: number, afterId: number) => Promise<IStory>;
         /**
          * Update a story.
          *
          * @name ApiClient#stories#update
-         * @param {IStory} story - Storyblok story data object with modified info.
+         * @param {IStory} data - Modified story info.
          * @returns {Promise}
          * @fulfil {IStory} Details of story that was updated.
          * @reject {AxiosError} Axios error.
+         * @memberof ApiClient#stories
          */
-        update: (story: IStory) => Promise<IStory>;
+        update: (data: IStory) => Promise<IStory>;
     };
     /**
      * Get total number of existing assets.
@@ -412,257 +491,19 @@ export declare class ApiClient {
      * @returns {Promise}
      * @fulfil {number} A count of existing assets.
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
-    private countAssets;
+    countAssets(): Promise<number>;
     /**
-     * Get total number of existing stories (including folders).  Storyblok API's space info does not account 'folders' as stories, so this is manually counted.
+     * Get total number of existing stories (including folders).
      *
      * @name ApiClient#countStories
      * @returns {Promise}
      * @fulfil {number} A count of existing stories.
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
-    private countStories;
-    /**
-     * Create an asset folder.
-     *
-     * @name ApiClient#createAssetFolder
-     * @param {string} name - Name of asset folder to create.
-     * @returns {Promise}
-     * @fulfil {IAssetFolder} Details of the asset folder created.
-     * @reject {AxiosError} Axios error.
-     */
-    private createAssetFolder;
-    /**
-     * Create an image asset at root.
-     *
-     * This method calls the ApiClient.registerAsset(), resize/compress the image then finally upload the physical file with ApiClient.uploadAsset() at one go.
-     *
-     * @name ApiClient#createAssetFromImage
-     * @param {IAsset} asset - Information to create asset from.
-     * @param {string} asset.filename - File name to register with.
-     * @param {number} [asset.asset_folder_id] - (optional) Assign a asset folder.
-     * @param {number} [asset.id] - (optional) Id of existing asset to replace with this new asset.
-     * @param {string} filePath - Absolute file path to the image.
-     * @param {boolean} compress - Flag to compress image.
-     * @param {number} dimensionLimit - Resizing dimension limit value.
-     * @returns {Promise}
-     * @fulfil {IAsset} Information of the created asset.
-     * @reject {AxiosError} Axios error.
-     */
-    private createAssetFromImage;
-    /**
-     * Create a component.
-     *
-     * @name ApiClient#createComponent
-     * @param {IComponent} component - Info on component to be created.
-     * @returns {Promise}
-     * @fulfil {IComponent} Details of the component that was created.
-     * @reject {AxiosError} Axios error.
-     */
-    private createComponent;
-    /**
-     * Create a story.
-     *
-     * @name ApiClient#createStory
-     * @param {IStory} story - Storyblok story data object.
-     * @returns {Promise}
-     * @fulfil {IStory} Details of story that was created.
-     * @reject {AxiosError} Axios error.
-     */
-    private createStory;
-    /**
-     * Delete a specific asset.
-     *
-     * @name ApiClient#deleteAsset
-     * @param {number} id - Id of the asset to be deleted.
-     * @returns {Promise}
-     * @fulfil {IAsset} Information on the deleted asset.
-     * @reject {AxiosError} Axios error.
-     */
-    private deleteAsset;
-    /**
-     * Delete a specific asset folder.
-     *
-     * @name ApiClient#deleteAssetFolder
-     * @param {number} id - Id of asset folder to be deleted.
-     * @returns {Promise}
-     * @fulfil {void}
-     * @reject {AxiosError} Axios error.
-     */
-    private deleteAssetFolder;
-    /**
-     * Delete a specific component.
-     *
-     * @name ApiClient#deleteComponent
-     * @param {number} id - Id of component to be deleted.
-     * @returns {Promise}
-     * @fulfil {IComponent} Details of the deleted component.
-     * @reject {AxiosError} Axios error.
-     */
-    private deleteComponent;
-    /**
-     * Delete all existing asset folders.
-     *
-     * @name ApiClient#deleteExistingAssetFolders
-     * @returns {Promise}
-     * @fulfil {void[]}
-     * @reject {AxiosError} Axios error.
-     */
-    private deleteExistingAssetFolders;
-    /**
-     * Delete all existing assets.
-     *
-     * @name ApiClient#deleteExistingAssets
-     * @returns {Promise}
-     * @fulfil {IAsset[]} Details of the deleted assets.
-     * @reject {AxiosError} Axios error.
-     */
-    private deleteExistingAssets;
-    /**
-     * Delete all existing components.
-     *
-     * @name ApiClient#deleteExistingComponents
-     * @returns {Promise}
-     * @fulfil {IComponent[]} A list of deleted components details.
-     * @reject {AxiosError} Axios error.
-     */
-    private deleteExistingComponents;
-    /**
-     * Delete all existing stories.
-     *
-     * @name ApiClient#deleteExistingStories
-     * @returns {Promise}
-     * @fulfil {IStory[]} A list of deleted stories details.
-     * @reject {AxiosError} Axios error.
-     */
-    private deleteExistingStories;
-    /**
-     * Delete a specific story.
-     *
-     * @name ApiClient#deleteStory
-     * @param {number} storyId - Id of the story to be deleted.
-     * @returns {Promise}
-     * @fulfil {IStory} Details of the story that was deleted.
-     * @reject {AxiosError} Axios error.
-     */
-    private deleteStory;
-    /**
-     * Get a specific asset.
-     *
-     * @name ApiClient#getAsset
-     * @param {number} id - Id of asset to fetch.
-     * @returns {Promise}
-     * @fulfil {IAsset} Details of the asset.
-     * @reject {AxiosError} Axios error.
-     */
-    private getAsset;
-    /**
-     * Find a specific asset by its public url.
-     *
-     * @name ApiClient#getAssetByUrl
-     * @param {string} url - Url to match by.
-     * @returns {Promise}
-     * @fulfil {IAsset | undefined} Matched asset or undefined if not fund.
-     * @reject {AxiosError} Axios error.
-     */
-    private getAssetByUrl;
-    /**
-     * Get a specific asset folder.
-     *
-     * @name ApiClient#getAssetFolder
-     * @param {number} id - Id of the target asset folder.
-     * @returns {Promise}
-     * @fulfil {IAssetFolder} Asset folder information.
-     * @reject {AxiosError} Axios error.
-     */
-    private getAssetFolder;
-    /**
-     * Get a list of asset folders by matching asset folders names to the supplied string.
-     *
-     * @name ApiClient#getAssetFolderByName
-     * @param {string} searchString - String to search asset folders by.
-     * @returns {Promise}
-     * @fulfil {IAssetFolder[]} List of asset folders that matches the name string.
-     * @reject {AxiosError} Axios error.
-     */
-    private getAssetFolderByName;
-    /**
-     * Fetch for a specific component.
-     *
-     * @name ApiClient#getComponent
-     * @param {number} id - Component id to fetch by.
-     * @returns {Promise}
-     * @fulfil {IComponent} Details of the component definition.
-     * @reject {AxiosError} Axios error.
-     */
-    private getComponent;
-    /**
-     * Get existing asset folders.
-     *
-     * @name ApiClient#getExistingAssetFolders
-     * @returns {Promise}
-     * @fulfil {IAssetFolder[]} List of existing asset folders.
-     * @reject {AxiosError} Axios error.
-     */
-    private getExistingAssetFolders;
-    /**
-     * List all existing assets.
-     *
-     * @name ApiClient#getExistingAssets
-     * @returns {Promise}
-     * @fulfil {IAsset[]} A list of existing assets.
-     * @reject {AxiosError} Axios error.
-     */
-    private getExistingAssets;
-    /**
-     * List all existing components.  It is assumed that the working space has only 1,000 existing components at most.
-     *
-     * @name ApiClient#getExistingComponents
-     * @returns {Promise}
-     * @fulfil {IComponent[]} A list of component definitions.
-     * @reject {AxiosError} Axios error.
-     */
-    private getExistingComponents;
-    /**
-     * List all existing stories.
-     *
-     * @name ApiClient#getExistingStories
-     * @returns {Promise}
-     * @fulfil {IStory[]} A list of existing content stories.
-     * @reject {AxiosError} Axios error.
-     */
-    private getExistingStories;
-    /**
-     * Get information on the working Storyblok space.
-     *
-     * @name ApiClient#getSpace
-     * @returns {Promise}
-     * @fulfil {ISpace} Working space information.
-     * @reject {AxiosError} Axios error.
-     */
-    private getSpace;
-    /**
-     * Get paginated stories.
-     *
-     * @name ApiClient#getStoriesByPage
-     * @param {number} page - Pagination number.
-     * @param {number} [perPage] - (optional) How many stories per page.
-     * @returns {Promise}
-     * @fulfil {IStory[]} A page of stories.
-     * @reject {AxiosError} Axios error.
-     */
-    private getStoriesByPage;
-    /**
-     * Get a specific story.
-     *
-     * @name ApiClient#getStory
-     * @param {number} storyId - Id of the content story.
-     * @returns {Promise}
-     * @fulfil {IStory} Details of content story.
-     * @reject {AxiosError} Axios error.
-     */
-    private getStory;
+    countStories(): Promise<number>;
     /**
      * Get total pagination page count.
      *
@@ -671,71 +512,339 @@ export declare class ApiClient {
      * @returns {Promise}
      * @fulfil {number} Total story pagination page count.
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
-    private countStoryPages;
+    countStoryPages(perPage?: number): Promise<number>;
+    /**
+     * Create an asset folder.
+     *
+     * @name ApiClient#createAssetFolder
+     * @param {string} name - Name of asset folder to create.
+     * @returns {Promise}
+     * @fulfil {IAssetFolder} Details of the asset folder created.
+     * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
+     */
+    createAssetFolder(name: string): Promise<IAssetFolder>;
+    /**
+     * Create and asset and upload the physical file.
+     *
+     * @name ApiClient#createAssetFromImage
+     * @param {IPendingAsset} data - Asset information.
+     * @param {string} filePath - Absolute file path to the image.
+     * @param {boolean} compress - Flag to compress image.
+     * @param {number} sizeLimit - Resizing dimension limit value.
+     * @returns {Promise}
+     * @fulfil {IAsset} Information on the new asset.
+     * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
+     */
+    createAssetFromImage(data: IPendingAsset, filePath: string, compress?: boolean, sizeLimit?: number): Promise<IAsset>;
+    /**
+     * Create a component.
+     *
+     * @name ApiClient#components#create
+     * @param {IPendingComponent} data - Info on component to be created.
+     * @returns {Promise}
+     * @fulfil {IComponent} Details of the component that was created.
+     * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
+     */
+    createComponent(data: IPendingComponent): Promise<IComponent>;
+    /**
+     * Create a story.
+     *
+     * @name ApiClient#createStory
+     * @param {IPendingStory} data - Storyblok story data object.
+     * @returns {Promise}
+     * @fulfil {IStory} Details of story that was created.
+     * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
+     */
+    createStory(data: IPendingStory): Promise<IStory>;
+    /**
+     * Delete a specific asset.
+     *
+     * @name ApiClient#deleteAsset
+     * @param {number} id - Id of the asset to be deleted.
+     * @returns {Promise}
+     * @fulfil {IAsset} Information of the deleted asset.
+     * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
+     */
+    deleteAsset(id: number): Promise<IAsset>;
+    /**
+     * Delete a specific asset folder.
+     *
+     * @name ApiClient#deleteAssetFolder
+     * @param {number} id - Id of asset folder to be deleted.
+     * @returns {Promise}
+     * @fulfil {void}
+     * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
+     */
+    deleteAssetFolder(id: number): Promise<void>;
+    /**
+     * Delete a specific component.
+     *
+     * @name ApiClient#deleteComponent
+     * @param {number} id - Id of component to be deleted.
+     * @returns {Promise}
+     * @fulfil {IComponent} Details of the deleted component.
+     * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
+     */
+    deleteComponent(id: number): Promise<IComponent>;
+    /**
+     * Delete a specific story.
+     *
+     * @name ApiClient#deleteStory
+     * @param {IStory} id - Id of the story to be deleted.
+     * @returns {Promise}
+     * @fulfil {IStory} Details of the story that was deleted.
+     * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
+     */
+    deleteStory(id: number): Promise<IStory>;
+    /**
+     * Delete all existing asset folders.
+     *
+     * @name ApiClient#deleteExistingAssetFolders
+     * @returns {Promise}
+     * @fulfil {void[]}
+     * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
+     */
+    deleteExistingAssetFolders(): Promise<void[]>;
+    /**
+     * Delete all existing assets.
+     *
+     * @name ApiClient#deleteExistingAssets
+     * @returns {Promise}
+     * @fulfil {IAsset[]} Information on the deleted assets.
+     * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
+     */
+    deleteExistingAssets(): Promise<IAsset[]>;
+    /**
+     * Delete existing components.
+     *
+     * @name ApiClient#deleteExistingComponents
+     * @returns {Promise}
+     * @fulfil {IComponent[]} A list of deleted components details.
+     * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
+     */
+    deleteExistingComponents(): Promise<IComponent[]>;
+    /**
+     * Delete all existing stories.
+     *
+     * @name ApiClient#deleteExistingStories
+     * @returns {Promise}
+     * @fulfil {IStory[]} A list of deleted stories details.
+     * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
+     */
+    deleteExistingStories(): Promise<IStory[]>;
+    /**
+     * Get a specific asset.
+     *
+     * @name ApiClient#getAsset
+     * @param {number} id - Id of asset to fetch.
+     * @returns {Promise}
+     * @fulfil {IAsset} Details of the asset.
+     * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
+     */
+    getAsset(id: number): Promise<IAsset>;
+    /**
+     * Find a specific asset by its public url.
+     *
+     * @name ApiClient#getAssetByUrl
+     * @param {string} url - Url to match by.
+     * @returns {Promise}
+     * @fulfil {IAsset} Matched asset.
+     * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
+     */
+    getAssetByUrl(url: string): Promise<IAsset>;
+    /**
+     * Get a specific asset folder.
+     *
+     * @name ApiClient#getAssetFolder
+     * @param {number} id - Id of the target asset folder.
+     * @returns {Promise}
+     * @fulfil {IAssetFolder} Asset folder information.
+     * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
+     */
+    getAssetFolder(id: number): Promise<IAssetFolder>;
+    /**
+     * Get asset folders by matching asset folders names to the supplied string.
+     *
+     * @name ApiClient#assetFolders#getByName
+     * @param {string} searchString - String to search by.
+     * @returns {Promise}
+     * @fulfil {IAssetFolder[]} List of matched asset folders.
+     * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
+     */
+    getAssetFolderByName(searchString: string): Promise<IAssetFolder[]>;
+    /**
+     * Get asset on a specific pagination page number.
+     *
+     * @param {number} [page=1] - Pagination page.
+     * @param {number} [perPage=25] - Assets per page.
+     * @returns {Promise<IAsset[]>}
+     * @fulfil {IAsset[]} Assets on the pagination page.
+     * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
+     */
+    getAssetsByPage(page?: number, perPage?: number): Promise<IAsset[]>;
+    /**
+     * Fetch for a specific component.
+     *
+     * @name ApiClient#getComponent
+     * @param {number} id - Component id to fetch by.
+     * @returns {Promise}
+     * @fulfil {IComponent} Details of the component definition.
+     * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
+     */
+    getComponent(id: number): Promise<IComponent>;
+    /**
+     * List all existing assets.
+     *
+     * @name ApiClient#getExistingAssets
+     * @returns {Promise}
+     * @fulfil {IAsset[]} A list of existing assets.
+     * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
+     */
+    getExistingAssets(): Promise<IAsset[]>;
+    /**
+     * List existing components.
+     *
+     * @name ApiClient#getExistingComponents
+     * @returns {Promise}
+     * @fulfil {IComponent[]} A list of component definitions.
+     * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
+     */
+    getExistingComponents(): Promise<IComponent[]>;
+    /**
+     * Get existing asset folders.
+     *
+     * @name ApiClient#getExistingAssetFolders
+     * @returns {Promise}
+     * @fulfil {IAssetFolder[]} List of existing asset folders.
+     * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
+     */
+    getExistingAssetFolders(): Promise<IAssetFolder[]>;
+    /**
+     * List all existing stories.
+     *
+     * @name ApiClient#getExistingStories
+     * @returns {Promise}
+     * @fulfil {IStory[]} A list of existing content stories.
+     * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
+     */
+    getExistingStories(): Promise<IStory[]>;
+    /**
+     * Get information on the working Storyblok space.
+     *
+     * @name ApiClient#getSpace
+     * @returns {Promise}
+     * @fulfil {ISpace} Working space information.
+     * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
+     */
+    getSpace(): Promise<ISpace>;
+    /**
+     * Get stories on a pagination page.
+     *
+     * @name ApiClient#getStoriesByPage
+     * @param {number} page - Pagination page number.
+     * @param {number} [perPage] - (optional) How many stories per page.  Defaults to 25.
+     * @returns {Promise}
+     * @fulfil {IStory[]} A page of stories.
+     * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
+     */
+    getStoriesByPage(page?: number, perPage?: number): Promise<IStory[]>;
+    getStory(id: number): Promise<IStory>;
     /**
      * Publish all unpublished stories.
      *
-     * @name ApiClient#publishPendingStories
+     * @name ApiClient#stories#publishPendings
      * @returns {Promise}
      * @fulfil {IStory[]} List of published stories.
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
-    private publishPendingStories;
+    publishPendingStories(): Promise<IStory[]>;
     /**
      * Publish a specific story.
      *
      * @name ApiClient#publishStory
-     * @param storyId - Id of the story to publish
+     * @param {number} id - Id of the story to publish
      * @returns {Promise}
-     * @fulfil {IStory} Details of the published story.
+     * @fulfil {IStory} Details of the published story
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
-    private publishStory;
+    publishStory(id: number): Promise<IStory>;
     /**
-     * Register an image file as a Storyblok asset (the physical file still has to be uploaded).
+     * Register a Storyblok asset.
      *
      * @name ApiClient#registerAsset
-     * @param {IAsset} asset - Information to create asset from.
-     * @param {string} asset.filename - File name to register with.
+     * @param {IPendingAsset} asset - Information to create asset from.
+     * @param {string} asset.filename - File name to register for.
      * @param {number} [asset.asset_folder_id] - (optional) Assign a asset folder.
      * @param {number} [asset.id] - (optional) Id of existing asset to replace with this new asset.
      * @returns {Promise}
-     * @fulfil {IAssetSigningResponse} Asset registration info (used for uploading).
+     * @fulfil {IRegistration} Asset registration info (used for uploading).
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
-    private registerAsset;
+    registerAsset(data: IPendingAsset): Promise<IRegistration>;
     /**
      * Update a story's sequential order.
      *
      * @name ApiClient#reorderStory
-     * @param {number} storyId - Id of the story to be moved.
+     * @param {number} id - Id of the story to be moved.
      * @param {number} afterId - Reference story to position after.
      * @returns {Promise}
      * @fulfil {IStory} Details of the moved story.
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
-    private reorderStory;
+    reorderStory(id: number, afterId: number): Promise<IStory>;
     /**
      * Update a story.
      *
      * @name ApiClient#updateStory
-     * @param {IStory} story - Storyblok story data object with modified info.
+     * @param {IStory} data - Storyblok story data object with modified info.
      * @returns {Promise}
      * @fulfil {IStory} Details of story that was updated.
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
-    private updateStory;
+    updateStory(data: IStory): Promise<IStory>;
     /**
-     * Upload a newly registered asset.  The request is throttled and set to retry on failure.
+     * Upload a registered asset.
      *
      * @name ApiClient#uploadAsset
      * @param {Buffer} buffer - Buffered asset data.
-     * @param {IAssetSigningResponse} registration - Registration info.
+     * @param {IRegistration} registration - Registration info.
      * @returns {Promise}
-     * @fulfil {IAsset} Information of the uploaded asset.
+     * @fulfil {string} Access url of the uploaded asset.
      * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
      */
-    private uploadAsset;
+    uploadAsset(buffer: Buffer, registration: IRegistration): Promise<string>;
 }
+export {};
 //# sourceMappingURL=ApiClient.d.ts.map

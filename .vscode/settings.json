@@ -1,0 +1,21 @@
+{
+  "[handlebars]": { "editor.formatOnSave": false },
+  // prettier
+  "prettier.bracketSpacing": false,
+  "prettier.semi": false,
+  "prettier.singleQuote": true,
+  "prettier.trailingComma": "es5",
+  "prettier.requireConfig": true,
+  // tslint
+  "tslint.alwaysShowStatus": true,
+  "tslint.autoFixOnSave": true,
+  "tslint.configFile": "./tslint.json",
+  "tslint.enable": true,
+  "tslint.ignoreDefinitionFiles": false,
+  "tslint.nodePath": "node_modules\\tslint",
+  "tslint.run": "onSave",
+  // typescript
+  "typescript.preferences.quoteStyle": "single",
+  "typescript.tsdk": "node_modules\\typescript\\lib",
+  "typescript.validate.enable": true
+}

@@ -1,1 +1,0 @@
-{"version":3,"file":"ISpaceBillingAddress.d.ts","sourceRoot":"","sources":["../../src/interfaces/ISpaceBillingAddress.ts"],"names":[],"mappings":"AAAA;;;;GAIG;AACH,MAAM,WAAW,oBAAoB;IACnC,IAAI,EAAE,MAAM,CAAA;IACZ,WAAW,EAAE,MAAM,CAAA;IACnB,YAAY,EAAE,MAAM,CAAA;IACpB,aAAa,EAAE,MAAM,CAAA;IACrB,eAAe,EAAE,MAAM,CAAA;IACvB,mBAAmB,EAAE,MAAM,CAAA;CAC5B"}
