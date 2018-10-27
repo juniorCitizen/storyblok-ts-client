@@ -199,7 +199,7 @@ export class Storyblok implements IStoryblokClass {
    * const spaceId = 12345
    * const url = `/${spaceId}/stories`
    * const story = {name: 'test', slug: 'test'}
-   * storyblok.(url, {story}, {retries: 3, retryDelay: 1000})
+   * storyblok.post(url, {story}, {retries: 3, retryDelay: 1000})
    *   .then(res => {
    *     const newStoryId = res.story.id
    *     console.log('new story id:', newStoryId)
