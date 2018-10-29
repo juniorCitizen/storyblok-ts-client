@@ -1,5 +1,7 @@
 {
-  "[handlebars]": { "editor.formatOnSave": false },
+  "[handlebars]": {
+    "editor.formatOnSave": false
+  },
   // prettier
   "prettier.bracketSpacing": false,
   "prettier.semi": false,
@@ -17,5 +19,5 @@
   // typescript
   "typescript.preferences.quoteStyle": "single",
   "typescript.tsdk": "node_modules\\typescript\\lib",
-  "typescript.validate.enable": true
+  "typescript.validate.enable": true,
 }
