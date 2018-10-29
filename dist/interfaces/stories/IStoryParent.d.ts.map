@@ -1,0 +1,1 @@
+{"version":3,"file":"IStoryParent.d.ts","sourceRoot":"","sources":["../../../src/interfaces/stories/IStoryParent.ts"],"names":[],"mappings":"AAAA;;;;GAIG;AACH,MAAM,WAAW,YAAY;IAC3B,QAAQ,CAAC,EAAE,EAAE,MAAM,CAAA;IACnB,QAAQ,CAAC,IAAI,EAAE,MAAM,CAAA;IACrB,QAAQ,CAAC,IAAI,EAAE,MAAM,CAAA;IACrB,QAAQ,CAAC,iBAAiB,EAAE,OAAO,CAAA;CACpC"}

@@ -1,0 +1,1 @@
+{"version":3,"file":"IPendingAsset.d.ts","sourceRoot":"","sources":["../../../src/interfaces/assets/IPendingAsset.ts"],"names":[],"mappings":"AAAA;;;;;GAKG;AACH,MAAM,WAAW,aAAa;IAC5B,EAAE,CAAC,EAAE,MAAM,CAAA;IACX,QAAQ,EAAE,MAAM,CAAA;IAChB,eAAe,CAAC,EAAE,MAAM,GAAG,IAAI,CAAA;CAChC"}

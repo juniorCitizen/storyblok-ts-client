@@ -1,0 +1,1 @@
+{"version":3,"file":"ISpaceLimits.d.ts","sourceRoot":"","sources":["../../../src/interfaces/spaces/ISpaceLimits.ts"],"names":[],"mappings":"AAAA;;;;GAIG;AACH,MAAM,WAAW,YAAY;IAC3B,QAAQ,CAAC,UAAU,EAAE,MAAM,CAAA;IAC3B,QAAQ,CAAC,YAAY,EAAE,MAAM,CAAA;IAC7B,QAAQ,CAAC,cAAc,EAAE,OAAO,CAAA;IAChC,QAAQ,CAAC,iBAAiB,EAAE,MAAM,CAAA;CACnC"}

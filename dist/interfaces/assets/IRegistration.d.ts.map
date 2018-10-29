@@ -1,0 +1,1 @@
+{"version":3,"file":"IRegistration.d.ts","sourceRoot":"","sources":["../../../src/interfaces/assets/IRegistration.ts"],"names":[],"mappings":"AAAA,OAAO,EAAC,iBAAiB,EAAC,MAAM,qBAAqB,CAAA;AAErD;;;;GAIG;AACH,MAAM,WAAW,aAAa;IAC5B,QAAQ,CAAC,UAAU,EAAE,MAAM,CAAA;IAC3B,QAAQ,CAAC,UAAU,EAAE,MAAM,CAAA;IAC3B,QAAQ,CAAC,MAAM,EAAE,iBAAiB,CAAA;IAClC,QAAQ,CAAC,QAAQ,EAAE,MAAM,CAAA;CAC1B"}
