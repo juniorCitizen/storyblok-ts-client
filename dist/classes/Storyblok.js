@@ -200,7 +200,7 @@ var Storyblok = /** @class */ (function () {
             }
             var response = error.response;
             if (response) {
-                if (response.status !== 429) {
+                if (response.status !== 429 && response.status < 500) {
                     console.log('terminal failure, promise is rejected');
                     console.log('status:', response.status);
                     console.log('message:', response.data);
@@ -214,9 +214,7 @@ var Storyblok = /** @class */ (function () {
                         var delay = (config.retryDelay || 1250) - variance;
                         var factor = config.retryCount;
                         setTimeout(function () {
-                            console.log('status:', response.status);
-                            console.log('message:', response.data);
-                            console.log('retry attempt:', config.retryCount);
+                            console.log("retry attempt: " + config.retryCount + ", caused by " + response.status + " - " + response.data);
                             return resolve();
                         }, delay * factor);
                     }).then(function () { return _this.axiosInstance(config); });
