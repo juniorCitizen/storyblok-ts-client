@@ -1188,7 +1188,7 @@ export class ApiClient implements IApiClientClass {
    * @memberof ApiClient
    */
   public updateStory(data: IStory): Promise<IStory> {
-    const url = `/${this.spaceId}/stories`
+    const url = `/${this.spaceId}/stories/${data.id}`
     return this.storyblok
       .put(url, {story: data}, retrySettings.burst)
       .then(r => r.data.story)
