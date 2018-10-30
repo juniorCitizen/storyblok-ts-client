@@ -1219,8 +1219,9 @@ export class ApiClient implements IApiClientClass {
     }
     formData.append('file', buffer)
     return new Promise((resolve, reject) => {
+      const variance = () => Math.floor(Math.random() * 500) + 1
       const retries = 20
-      const retryDelay = 500
+      const retryDelay = 1250
       let retryCount = 0
       const callback = (e: any): any => {
         if (!e || retryCount > retries) {
@@ -1232,7 +1233,7 @@ export class ApiClient implements IApiClientClass {
               console.log(e)
               console.log('retry attempt:', retryCount)
               return r()
-            }, retryDelay * retryCount)
+            }, (retryDelay - variance()) * retryCount)
           }).then(() => formData.submit(registration.post_url, callback))
         }
       }
