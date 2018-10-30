@@ -47,7 +47,7 @@ interface IApiClientClass {
       f: string,
       c?: boolean,
       s?: number
-    ) => Promise<IAsset>
+    ) => Promise<string>
     delete: (i: number) => Promise<IAsset>
     deleteExisting: () => Promise<IAsset[]>
     get: (i: number) => Promise<IAsset>
@@ -210,7 +210,7 @@ export class ApiClient implements IApiClientClass {
        * @param {boolean} compress - Flag to compress image.
        * @param {number} sizeLimit - Resizing dimension limit value.
        * @returns {Promise}
-       * @fulfil {IAsset} Information on the new asset.
+       * @fulfil {string} public access url of the new asset.
        * @reject {AxiosError} Axios error.
        * @memberof ApiClient#assets
        */
@@ -219,7 +219,7 @@ export class ApiClient implements IApiClientClass {
         filePath: string,
         compress?: boolean,
         sizeLimit?: number
-      ): Promise<IAsset> =>
+      ): Promise<string> =>
         this.createAssetFromImage(data, filePath, compress, sizeLimit),
       /**
        * Delete a specific asset.
@@ -633,7 +633,7 @@ export class ApiClient implements IApiClientClass {
    * @param {boolean} compress - Flag to compress image.
    * @param {number} sizeLimit - Resizing dimension limit value.
    * @returns {Promise}
-   * @fulfil {IAsset} Information on the new asset.
+   * @fulfil {string} Public access url of the new asset.
    * @reject {AxiosError} Axios error.
    * @memberof ApiClient
    */
@@ -642,21 +642,13 @@ export class ApiClient implements IApiClientClass {
     filePath: string,
     compress: boolean = true,
     sizeLimit: number = 640
-  ): Promise<IAsset> {
+  ): Promise<string> {
     try {
       const [registration, buffer] = await Promise.all([
         this.registerAsset(data),
         imageToBuffer(filePath, compress, sizeLimit),
       ])
-      const [asset] = await Promise.all([
-        this.getAssetByUrl(registration.public_url),
-        this.uploadAsset(buffer, registration),
-      ])
-      if (!asset) {
-        throw new Error('asset was not created properly')
-      } else {
-        return asset
-      }
+      return await this.uploadAsset(buffer, registration)
     } catch (e) {
       throw e
     }
