@@ -834,7 +834,7 @@ export declare class ApiClient implements IApiClientClass {
      */
     updateStory(data: IStory): Promise<IStory>;
     /**
-     * Upload a registered asset.
+     * Upload a registered asset with failure-retry (3 retries and 500ms incremental delay period).
      *
      * @name ApiClient#uploadAsset
      * @param {Buffer} buffer - Buffered asset data.

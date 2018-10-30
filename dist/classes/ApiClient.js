@@ -1224,7 +1224,7 @@ var ApiClient = /** @class */ (function () {
             .catch(function (e) { return Promise.reject(e); });
     };
     /**
-     * Upload a registered asset.
+     * Upload a registered asset with failure-retry (3 retries and 500ms incremental delay period).
      *
      * @name ApiClient#uploadAsset
      * @param {Buffer} buffer - Buffered asset data.
@@ -1244,9 +1244,25 @@ var ApiClient = /** @class */ (function () {
         }
         formData.append('file', buffer);
         return new Promise(function (resolve, reject) {
-            formData.submit(registration.post_url, function (e) {
-                return e ? reject(e) : resolve(registration.pretty_url);
-            });
+            var retries = 3;
+            var retryDelay = 500;
+            var retryCount = 0;
+            var callback = function (e) {
+                if (!e || retryCount > retries) {
+                    return e ? reject(e) : resolve(registration.pretty_url);
+                }
+                else {
+                    retryCount += 1;
+                    return new Promise(function (r) {
+                        setTimeout(function () {
+                            console.log(e);
+                            console.log('retry attempt:', retryCount);
+                            return r();
+                        }, retryDelay * retryCount);
+                    }).then(function () { return formData.submit(registration.post_url, callback); });
+                }
+            };
+            formData.submit(registration.post_url, callback);
         });
     };
     return ApiClient;

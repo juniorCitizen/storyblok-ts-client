@@ -1204,7 +1204,7 @@ export class ApiClient implements IApiClientClass {
   }
 
   /**
-   * Upload a registered asset.
+   * Upload a registered asset with failure-retry (3 retries and 500ms incremental delay period).
    *
    * @name ApiClient#uploadAsset
    * @param {Buffer} buffer - Buffered asset data.
@@ -1227,9 +1227,24 @@ export class ApiClient implements IApiClientClass {
     }
     formData.append('file', buffer)
     return new Promise((resolve, reject) => {
-      formData.submit(registration.post_url, e => {
-        return e ? reject(e) : resolve(registration.pretty_url)
-      })
+      const retries = 3
+      const retryDelay = 500
+      let retryCount = 0
+      const callback = (e: any): any => {
+        if (!e || retryCount > retries) {
+          return e ? reject(e) : resolve(registration.pretty_url)
+        } else {
+          retryCount += 1
+          return new Promise(r => {
+            setTimeout(() => {
+              console.log(e)
+              console.log('retry attempt:', retryCount)
+              return r()
+            }, retryDelay * retryCount)
+          }).then(() => formData.submit(registration.post_url, callback))
+        }
+      }
+      formData.submit(registration.post_url, callback)
     })
   }
 }
