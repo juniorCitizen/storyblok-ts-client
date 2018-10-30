@@ -276,8 +276,10 @@ export class Storyblok implements IStoryblokClass {
               setTimeout(() => {
                 console.log(`retry no. ${config.retryCount}`)
                 console.log(config.method + ' - ' + config.url)
-                console.log(response.status + ' error')
-                console.dir(response.data || response.statusText)
+                console.log(
+                  response.status + ' error: ' + response.data.error ||
+                    response.statusText
+                )
                 return resolve()
               }, delay * factor)
             }).then(() => this.axiosInstance(config))
