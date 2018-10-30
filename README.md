@@ -330,7 +330,7 @@ const apiClient = new ApiClient('fake_api_token', 12345)
 <p>Create and asset and upload the physical file.</p>
 
 **Kind**: instance property of [<code>assets</code>](#ApiClient+assets)  
-**Fulfil**: <code>IAsset</code> Information on the new asset.  
+**Fulfil**: <code>string</code> public access url of the new asset.  
 **Reject**: <code>AxiosError</code> Axios error.  
 
 | Param | Type | Description |
@@ -755,7 +755,7 @@ const apiClient = new ApiClient('fake_api_token', 12345)
 <p>Create and asset and upload the physical file.</p>
 
 **Kind**: instance property of [<code>ApiClient</code>](#ApiClient)  
-**Fulfil**: <code>IAsset</code> Information on the new asset.  
+**Fulfil**: <code>string</code> Public access url of the new asset.  
 **Reject**: <code>AxiosError</code> Axios error.  
 
 | Param | Type | Description |

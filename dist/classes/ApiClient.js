@@ -181,7 +181,7 @@ var ApiClient = /** @class */ (function () {
                  * @param {boolean} compress - Flag to compress image.
                  * @param {number} sizeLimit - Resizing dimension limit value.
                  * @returns {Promise}
-                 * @fulfil {IAsset} Information on the new asset.
+                 * @fulfil {string} public access url of the new asset.
                  * @reject {AxiosError} Axios error.
                  * @memberof ApiClient#assets
                  */
@@ -619,7 +619,7 @@ var ApiClient = /** @class */ (function () {
      * @param {boolean} compress - Flag to compress image.
      * @param {number} sizeLimit - Resizing dimension limit value.
      * @returns {Promise}
-     * @fulfil {IAsset} Information on the new asset.
+     * @fulfil {string} Public access url of the new asset.
      * @reject {AxiosError} Axios error.
      * @memberof ApiClient
      */
@@ -627,7 +627,7 @@ var ApiClient = /** @class */ (function () {
         if (compress === void 0) { compress = true; }
         if (sizeLimit === void 0) { sizeLimit = 640; }
         return __awaiter(this, void 0, void 0, function () {
-            var _a, registration, buffer, asset, e_1;
+            var _a, registration, buffer, e_1;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -638,19 +638,8 @@ var ApiClient = /** @class */ (function () {
                             ])];
                     case 1:
                         _a = _b.sent(), registration = _a[0], buffer = _a[1];
-                        return [4 /*yield*/, Promise.all([
-                                this.getAssetByUrl(registration.public_url),
-                                this.uploadAsset(buffer, registration),
-                            ])];
-                    case 2:
-                        asset = (_b.sent())[0];
-                        if (!asset) {
-                            throw new Error('asset was not created properly');
-                        }
-                        else {
-                            return [2 /*return*/, asset];
-                        }
-                        return [3 /*break*/, 4];
+                        return [4 /*yield*/, this.uploadAsset(buffer, registration)];
+                    case 2: return [2 /*return*/, _b.sent()];
                     case 3:
                         e_1 = _b.sent();
                         throw e_1;

@@ -16,7 +16,7 @@ interface IApiClientClass {
     };
     assets: {
         count: () => Promise<number>;
-        createFromImage: (d: IPendingAsset, f: string, c?: boolean, s?: number) => Promise<IAsset>;
+        createFromImage: (d: IPendingAsset, f: string, c?: boolean, s?: number) => Promise<string>;
         delete: (i: number) => Promise<IAsset>;
         deleteExisting: () => Promise<IAsset[]>;
         get: (i: number) => Promise<IAsset>;
@@ -167,11 +167,11 @@ export declare class ApiClient implements IApiClientClass {
          * @param {boolean} compress - Flag to compress image.
          * @param {number} sizeLimit - Resizing dimension limit value.
          * @returns {Promise}
-         * @fulfil {IAsset} Information on the new asset.
+         * @fulfil {string} public access url of the new asset.
          * @reject {AxiosError} Axios error.
          * @memberof ApiClient#assets
          */
-        createFromImage: (data: IPendingAsset, filePath: string, compress?: boolean | undefined, sizeLimit?: number | undefined) => Promise<IAsset>;
+        createFromImage: (data: IPendingAsset, filePath: string, compress?: boolean | undefined, sizeLimit?: number | undefined) => Promise<string>;
         /**
          * Delete a specific asset.
          *
@@ -535,11 +535,11 @@ export declare class ApiClient implements IApiClientClass {
      * @param {boolean} compress - Flag to compress image.
      * @param {number} sizeLimit - Resizing dimension limit value.
      * @returns {Promise}
-     * @fulfil {IAsset} Information on the new asset.
+     * @fulfil {string} Public access url of the new asset.
      * @reject {AxiosError} Axios error.
      * @memberof ApiClient
      */
-    createAssetFromImage(data: IPendingAsset, filePath: string, compress?: boolean, sizeLimit?: number): Promise<IAsset>;
+    createAssetFromImage(data: IPendingAsset, filePath: string, compress?: boolean, sizeLimit?: number): Promise<string>;
     /**
      * Create a component.
      *

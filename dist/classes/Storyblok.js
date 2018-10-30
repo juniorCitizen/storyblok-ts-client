@@ -214,7 +214,10 @@ var Storyblok = /** @class */ (function () {
                         var delay = (config.retryDelay || 1250) - variance;
                         var factor = config.retryCount;
                         setTimeout(function () {
-                            console.log("retry attempt: " + config.retryCount + ", caused by " + response.status + " - " + response.data);
+                            console.log("retry no. " + config.retryCount);
+                            console.log(config.method + ' - ' + config.baseURL + config.url);
+                            console.log(response.status + 'error - ' + response.data ||
+                                response.statusText);
                             return resolve();
                         }, delay * factor);
                     }).then(function () { return _this.axiosInstance(config); });
