@@ -210,14 +210,14 @@ var Storyblok = /** @class */ (function () {
                 else {
                     config.retryCount += 1;
                     return new Promise(function (resolve) {
-                        var variance = Math.floor(Math.random() * 500) + 1;
-                        var delay = (config.retryDelay || 1250) - variance;
+                        var variance = function () { return Math.floor(Math.random() * 500) + 1; };
+                        var delay = (config.retryDelay || 1250) - variance();
                         var factor = config.retryCount;
                         setTimeout(function () {
                             console.log("retry no. " + config.retryCount);
                             console.log(config.method + ' - ' + config.url);
-                            console.log(response.status + ' error');
-                            console.dir(response.data || response.statusText);
+                            console.log(response.status + ' error: ' + response.data.error ||
+                                response.statusText);
                             return resolve();
                         }, delay * factor);
                     }).then(function () { return _this.axiosInstance(config); });

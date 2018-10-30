@@ -1233,8 +1233,9 @@ var ApiClient = /** @class */ (function () {
         }
         formData.append('file', buffer);
         return new Promise(function (resolve, reject) {
+            var variance = function () { return Math.floor(Math.random() * 500) + 1; };
             var retries = 20;
-            var retryDelay = 500;
+            var retryDelay = 1250;
             var retryCount = 0;
             var callback = function (e) {
                 if (!e || retryCount > retries) {
@@ -1247,7 +1248,7 @@ var ApiClient = /** @class */ (function () {
                             console.log(e);
                             console.log('retry attempt:', retryCount);
                             return r();
-                        }, retryDelay * retryCount);
+                        }, (retryDelay - variance()) * retryCount);
                     }).then(function () { return formData.submit(registration.post_url, callback); });
                 }
             };
