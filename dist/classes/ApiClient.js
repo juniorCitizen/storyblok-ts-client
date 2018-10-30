@@ -40,12 +40,12 @@ var imageProcessing_1 = require("../utilities/imageProcessing");
 var Storyblok_1 = require("./Storyblok");
 exports.retrySettings = {
     burst: {
-        retries: 3,
-        retryDelay: 1000,
+        retries: 20,
+        retryDelay: 1750,
     },
     extended: {
-        retries: 10,
-        retryDelay: 1000,
+        retries: 40,
+        retryDelay: 1250,
     },
 };
 /**
@@ -1244,7 +1244,7 @@ var ApiClient = /** @class */ (function () {
         }
         formData.append('file', buffer);
         return new Promise(function (resolve, reject) {
-            var retries = 3;
+            var retries = 20;
             var retryDelay = 500;
             var retryCount = 0;
             var callback = function (e) {

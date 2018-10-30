@@ -209,7 +209,8 @@ var Storyblok = /** @class */ (function () {
                 else {
                     config.retryCount += 1;
                     return new Promise(function (resolve) {
-                        var delay = config.retryDelay || 1000;
+                        var variance = Math.floor(Math.random() * 500) + 1;
+                        var delay = (config.retryDelay || 1250) - variance;
                         var factor = config.retryCount;
                         setTimeout(function () {
                             console.log('status:', response.status);
