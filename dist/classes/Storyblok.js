@@ -204,6 +204,7 @@ var Storyblok = /** @class */ (function () {
                     console.log('terminal failure, promise is rejected');
                     console.log('status:', response.status);
                     console.log('message:', response.data);
+                    console.dir(response.config);
                     return Promise.reject(error);
                 }
                 else {
