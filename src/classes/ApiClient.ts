@@ -22,12 +22,12 @@ export const retrySettings: {
   extended: ICustomAxiosRequestConfig
 } = {
   burst: {
-    retries: 3,
-    retryDelay: 1000,
+    retries: 20,
+    retryDelay: 1750,
   },
   extended: {
-    retries: 10,
-    retryDelay: 1000,
+    retries: 40,
+    retryDelay: 1250,
   },
 }
 
@@ -1227,7 +1227,7 @@ export class ApiClient implements IApiClientClass {
     }
     formData.append('file', buffer)
     return new Promise((resolve, reject) => {
-      const retries = 3
+      const retries = 20
       const retryDelay = 500
       let retryCount = 0
       const callback = (e: any): any => {
