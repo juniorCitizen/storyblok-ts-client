@@ -215,9 +215,9 @@ var Storyblok = /** @class */ (function () {
                         var factor = config.retryCount;
                         setTimeout(function () {
                             console.log("retry no. " + config.retryCount);
-                            console.log(config.method + ' - ' + config.baseURL + config.url);
-                            console.log(response.status + 'error - ' + response.data ||
-                                response.statusText);
+                            console.log(config.method + ' - ' + config.url);
+                            console.log(response.status + ' error');
+                            console.dir(response.data || response.statusText);
                             return resolve();
                         }, delay * factor);
                     }).then(function () { return _this.axiosInstance(config); });
