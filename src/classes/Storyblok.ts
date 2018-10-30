@@ -274,10 +274,11 @@ export class Storyblok implements IStoryblokClass {
               const delay: number = (config.retryDelay || 1250) - variance
               const factor: number = config.retryCount as number
               setTimeout(() => {
+                console.log(`retry no. ${config.retryCount}`)
+                console.log(config.method + ' - ' + config.baseURL + config.url)
                 console.log(
-                  `retry attempt: ${config.retryCount}, caused by ${
-                    response.status
-                  } - ${response.data}`
+                  response.status + 'error - ' + response.data ||
+                    response.statusText
                 )
                 return resolve()
               }, delay * factor)
