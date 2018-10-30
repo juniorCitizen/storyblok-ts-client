@@ -1206,7 +1206,7 @@ var ApiClient = /** @class */ (function () {
      * @memberof ApiClient
      */
     ApiClient.prototype.updateStory = function (data) {
-        var url = "/" + this.spaceId + "/stories";
+        var url = "/" + this.spaceId + "/stories/" + data.id;
         return this.storyblok
             .put(url, { story: data }, exports.retrySettings.burst)
             .then(function (r) { return r.data.story; })
