@@ -269,7 +269,8 @@ export class Storyblok implements IStoryblokClass {
           } else {
             config.retryCount += 1
             return new Promise(resolve => {
-              const delay: number = config.retryDelay || 1000
+              const variance = Math.floor(Math.random() * 500) + 1
+              const delay: number = (config.retryDelay || 1250) - variance
               const factor: number = config.retryCount as number
               setTimeout(() => {
                 console.log('status:', response.status)
