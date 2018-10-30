@@ -265,6 +265,7 @@ export class Storyblok implements IStoryblokClass {
             console.log('terminal failure, promise is rejected')
             console.log('status:', response.status)
             console.log('message:', response.data)
+            console.dir(response.config)
             return Promise.reject(error)
           } else {
             config.retryCount += 1
