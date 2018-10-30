@@ -261,7 +261,7 @@ export class Storyblok implements IStoryblokClass {
         }
         const response = error.response
         if (response) {
-          if (response.status !== 429) {
+          if (response.status !== 429 && response.status < 500) {
             console.log('terminal failure, promise is rejected')
             console.log('status:', response.status)
             console.log('message:', response.data)
@@ -274,9 +274,11 @@ export class Storyblok implements IStoryblokClass {
               const delay: number = (config.retryDelay || 1250) - variance
               const factor: number = config.retryCount as number
               setTimeout(() => {
-                console.log('status:', response.status)
-                console.log('message:', response.data)
-                console.log('retry attempt:', config.retryCount)
+                console.log(
+                  `retry attempt: ${config.retryCount}, caused by ${
+                    response.status
+                  } - ${response.data}`
+                )
                 return resolve()
               }, delay * factor)
             }).then(() => this.axiosInstance(config))
