@@ -202,7 +202,7 @@ export class ApiClient implements IApiClientClass {
        */
       count: (): Promise<number> => this.countAssets(),
       /**
-       * Create and asset and upload the physical file.
+       * Create an asset and upload the physical file.
        *
        * @name ApiClient#assets#createFromImage
        * @param {IPendingAsset} data - Asset information.
@@ -625,7 +625,7 @@ export class ApiClient implements IApiClientClass {
   }
 
   /**
-   * Create and asset and upload the physical file.
+   * Create an asset and upload the physical file.
    *
    * @name ApiClient#createAssetFromImage
    * @param {IPendingAsset} data - Asset information.
