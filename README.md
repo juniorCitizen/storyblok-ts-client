@@ -116,7 +116,6 @@ npm run format
         * [.get](#ApiClient+assetFolders+get) ⇒ <code>Promise</code>
         * [.getByName](#ApiClient+assetFolders+getByName) ⇒ <code>Promise</code>
         * [.getExisting](#ApiClient+assetFolders+getExisting) ⇒ <code>Promise</code>
-        * [.getByName](#ApiClient+assetFolders+getByName) ⇒ <code>Promise</code>
     * [.assets](#ApiClient+assets)
         * [.count](#ApiClient+assets+count) ⇒ <code>Promise</code>
         * [.createFromImage](#ApiClient+assets+createFromImage) ⇒ <code>Promise</code>
@@ -168,6 +167,7 @@ npm run format
     * [.getAsset](#ApiClient+getAsset) ⇒ <code>Promise</code>
     * [.getAssetByUrl](#ApiClient+getAssetByUrl) ⇒ <code>Promise</code>
     * [.getAssetFolder](#ApiClient+getAssetFolder) ⇒ <code>Promise</code>
+    * [.getAssetFolderByName](#ApiClient+getAssetFolderByName) ⇒ <code>Promise</code>
     * [.getComponent](#ApiClient+getComponent) ⇒ <code>Promise</code>
     * [.getExistingAssets](#ApiClient+getExistingAssets) ⇒ <code>Promise</code>
     * [.getExistingComponents](#ApiClient+getExistingComponents) ⇒ <code>Promise</code>
@@ -213,7 +213,6 @@ const apiClient = new ApiClient('fake_api_token', 12345)
     * [.get](#ApiClient+assetFolders+get) ⇒ <code>Promise</code>
     * [.getByName](#ApiClient+assetFolders+getByName) ⇒ <code>Promise</code>
     * [.getExisting](#ApiClient+assetFolders+getExisting) ⇒ <code>Promise</code>
-    * [.getByName](#ApiClient+assetFolders+getByName) ⇒ <code>Promise</code>
 
 <a name="ApiClient+assetFolders+create"></a>
 
@@ -283,19 +282,6 @@ const apiClient = new ApiClient('fake_api_token', 12345)
 **Kind**: instance property of [<code>assetFolders</code>](#ApiClient+assetFolders)  
 **Fulfil**: <code>IAssetFolder[]</code> List of existing asset folders.  
 **Reject**: <code>AxiosError</code> Axios error.  
-<a name="ApiClient+assetFolders+getByName"></a>
-
-#### assetFolders.getByName ⇒ <code>Promise</code>
-<p>Get asset folders by matching asset folders names to the supplied string.</p>
-
-**Kind**: instance property of [<code>assetFolders</code>](#ApiClient+assetFolders)  
-**Fulfil**: <code>IAssetFolder[]</code> List of matched asset folders.  
-**Reject**: <code>AxiosError</code> Axios error.  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| searchString | <code>string</code> | <p>String to search by.</p> |
-
 <a name="ApiClient+assets"></a>
 
 ### apiClient.assets
@@ -327,7 +313,7 @@ const apiClient = new ApiClient('fake_api_token', 12345)
 <a name="ApiClient+assets+createFromImage"></a>
 
 #### assets.createFromImage ⇒ <code>Promise</code>
-<p>Create and asset and upload the physical file.</p>
+<p>Create an asset and upload the physical file.</p>
 
 **Kind**: instance property of [<code>assets</code>](#ApiClient+assets)  
 **Fulfil**: <code>string</code> public access url of the new asset.  
@@ -752,7 +738,7 @@ const apiClient = new ApiClient('fake_api_token', 12345)
 <a name="ApiClient+createAssetFromImage"></a>
 
 ### apiClient.createAssetFromImage ⇒ <code>Promise</code>
-<p>Create and asset and upload the physical file.</p>
+<p>Create an asset and upload the physical file.</p>
 
 **Kind**: instance property of [<code>ApiClient</code>](#ApiClient)  
 **Fulfil**: <code>string</code> Public access url of the new asset.  
@@ -900,6 +886,19 @@ const apiClient = new ApiClient('fake_api_token', 12345)
 | Param | Type | Description |
 | --- | --- | --- |
 | id | <code>number</code> | <p>Id of the target asset folder.</p> |
+
+<a name="ApiClient+getAssetFolderByName"></a>
+
+### apiClient.getAssetFolderByName ⇒ <code>Promise</code>
+<p>Get asset folders by matching asset folders names to the supplied string.</p>
+
+**Kind**: instance property of [<code>ApiClient</code>](#ApiClient)  
+**Fulfil**: <code>IAssetFolder[]</code> List of matched asset folders.  
+**Reject**: <code>AxiosError</code> Axios error.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| searchString | <code>string</code> | <p>String to search by.</p> |
 
 <a name="ApiClient+getComponent"></a>
 

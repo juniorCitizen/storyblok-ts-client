@@ -173,7 +173,7 @@ var ApiClient = /** @class */ (function () {
                  */
                 count: function () { return _this.countAssets(); },
                 /**
-                 * Create and asset and upload the physical file.
+                 * Create an asset and upload the physical file.
                  *
                  * @name ApiClient#assets#createFromImage
                  * @param {IPendingAsset} data - Asset information.
@@ -611,7 +611,7 @@ var ApiClient = /** @class */ (function () {
             .catch(function (e) { return Promise.reject(e); });
     };
     /**
-     * Create and asset and upload the physical file.
+     * Create an asset and upload the physical file.
      *
      * @name ApiClient#createAssetFromImage
      * @param {IPendingAsset} data - Asset information.
@@ -900,7 +900,7 @@ var ApiClient = /** @class */ (function () {
     /**
      * Get asset folders by matching asset folders names to the supplied string.
      *
-     * @name ApiClient#assetFolders#getByName
+     * @name ApiClient#getAssetFolderByName
      * @param {string} searchString - String to search by.
      * @returns {Promise}
      * @fulfil {IAssetFolder[]} List of matched asset folders.

@@ -904,7 +904,7 @@ export class ApiClient implements IApiClientClass {
   /**
    * Get asset folders by matching asset folders names to the supplied string.
    *
-   * @name ApiClient#assetFolders#getByName
+   * @name ApiClient#getAssetFolderByName
    * @param {string} searchString - String to search by.
    * @returns {Promise}
    * @fulfil {IAssetFolder[]} List of matched asset folders.

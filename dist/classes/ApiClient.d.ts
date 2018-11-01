@@ -159,7 +159,7 @@ export declare class ApiClient implements IApiClientClass {
          */
         count: () => Promise<number>;
         /**
-         * Create and asset and upload the physical file.
+         * Create an asset and upload the physical file.
          *
          * @name ApiClient#assets#createFromImage
          * @param {IPendingAsset} data - Asset information.
@@ -527,7 +527,7 @@ export declare class ApiClient implements IApiClientClass {
      */
     createAssetFolder(name: string): Promise<IAssetFolder>;
     /**
-     * Create and asset and upload the physical file.
+     * Create an asset and upload the physical file.
      *
      * @name ApiClient#createAssetFromImage
      * @param {IPendingAsset} data - Asset information.
@@ -682,7 +682,7 @@ export declare class ApiClient implements IApiClientClass {
     /**
      * Get asset folders by matching asset folders names to the supplied string.
      *
-     * @name ApiClient#assetFolders#getByName
+     * @name ApiClient#getAssetFolderByName
      * @param {string} searchString - String to search by.
      * @returns {Promise}
      * @fulfil {IAssetFolder[]} List of matched asset folders.
