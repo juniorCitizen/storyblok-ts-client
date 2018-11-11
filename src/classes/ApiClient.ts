@@ -63,6 +63,7 @@ interface IApiClientClass {
     deleteExisting: () => Promise<IComponent[]>
     get: (i: number) => Promise<IComponent>
     getExisting: () => Promise<IComponent[]>
+    update: (d: IComponent) => Promise<IComponent>
   }
   spaces: {
     get: () => Promise<ISpace>
@@ -83,6 +84,8 @@ interface IApiClientClass {
   }
 }
 
+let storyblok: Storyblok | undefined
+
 /**
  * Management API wrapper around Storyblok class.
  *
@@ -100,7 +103,10 @@ export class ApiClient implements IApiClientClass {
   private storyblok: Storyblok
   constructor(apiToken: string, spaceId: number) {
     this.spaceId = spaceId
-    this.storyblok = new Storyblok(apiToken)
+    if (!storyblok) {
+      storyblok = new Storyblok(apiToken)
+    }
+    this.storyblok = storyblok
   }
 
   /**
@@ -382,6 +388,18 @@ export class ApiClient implements IApiClientClass {
        * @memberof ApiClient#components
        */
       getExisting: (): Promise<IComponent[]> => this.getExistingComponents(),
+      /**
+       * Update a component.
+       *
+       * @name ApiClient#components#update
+       * @param {IComponent} data - Storyblok component data object with modified info.
+       * @returns {Promise}
+       * @fulfil {IComponent} Details of component that was updated.
+       * @reject {AxiosError} Axios error.
+       * @memberof ApiClient
+       */
+      update: (data: IComponent): Promise<IComponent> =>
+        this.updateComponent(data),
     }
   }
 
@@ -1174,6 +1192,24 @@ export class ApiClient implements IApiClientClass {
     return this.storyblok
       .put(url + query, retrySettings.burst)
       .then(() => this.getStory(id))
+      .catch(e => Promise.reject(e))
+  }
+
+  /**
+   * Update a component.
+   *
+   * @name ApiClient#updateComponent
+   * @param {IComponent} data - Storyblok component data object with modified info.
+   * @returns {Promise}
+   * @fulfil {IComponent} Details of component that was updated.
+   * @reject {AxiosError} Axios error.
+   * @memberof ApiClient
+   */
+  public updateComponent(data: IComponent): Promise<IComponent> {
+    const url = `/${this.spaceId}/components/${data.id}`
+    return this.storyblok
+      .put(url, {component: data}, retrySettings.burst)
+      .then(r => r.data.component)
       .catch(e => Promise.reject(e))
   }
 
