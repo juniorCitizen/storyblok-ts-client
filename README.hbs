@@ -1,6 +1,6 @@
 # Storyblok Management API Typescript Client
 
-[typescript](https://github.com/Microsoft/TypeScript) library for working with [Storyblok management API](https://api.storyblok.com/docs). Uses [axios](https://github.com/axios/axios) to make Storyblok management API calls.
+[typescript](https://github.com/Microsoft/TypeScript) library for working with [Storyblok management API](https://api.storyblok.com/docs).
 
 [![npm](https://img.shields.io/npm/v/storyblok-ts-client.svg)](https://www.npmjs.com/package/storyblok-ts-client)
 
@@ -8,7 +8,21 @@
 
 <hr>
 
-* consists of a basic CRUD client "[`Storyblok`](#Storyblok)" and a wrapper library of axios management API requests "[`ApiClient`](#ApiClient)"
+* consists of:
+  * a basic CRUD client "[`Storyblok`](#Storyblok)" with throttling and failure-retry
+  * a wrapper library over the CRUD client "[`ApiClient`](#ApiClient)"
+  * typescript conversion of the original [storyblok-js-client](https://github.com/storyblok/storyblok-js-client) - "[`StoryblokTS`](#StoryblokTS)"
+  * abstraction classes with limited functionalities:
+    * Space
+    * Component
+    * Story
+      * FolderIndex
+      * Content
+      * Folder
+        * RootFolder
+        * Subfolder
+    * Asset
+    * AssetFolder
 
 * [ApiClient](#ApiClient) methods are categorized into the following:
 
@@ -52,6 +66,14 @@ const apiClient = ApiClient('fake_api_token', 12345)
 return apiClient.spaces.get()
   .then(space => console.log('space id:', space.id))
   // => space id: 12345
+
+// StoryblokTS
+const {StoryblokTS} = require('storyblok-ts-client')
+let storyblokTS = new StoryblokTS({oauthToken: 'YOUR_OAUTH_TOKEN'})
+const spaceId = 12345
+storyblokTS.post(`spaces/${spaceId}/stories`, {story: {name: 'xy', slug: 'xy'}})
+storyblokTS.put(`spaces/${spaceId}/stories/1`, {story: {name: 'xy', slug: 'xy'}})
+storyblokTS.delete(`spaces/${spaceId}/stories/1`, null)
 ```
 
 ## CLI Scripts
