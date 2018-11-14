@@ -5,6 +5,6 @@ import { IPendingAssetFolder } from './IPendingAssetFolder';
  * @interface IAssetFolder
  */
 export interface IAssetFolder extends IPendingAssetFolder {
-    readonly id: number;
+    readonly id?: number;
 }
 //# sourceMappingURL=IAssetFolder.d.ts.map

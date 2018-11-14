@@ -1,0 +1,1 @@
+{"version":3,"file":"Folder.d.ts","sourceRoot":"","sources":["../../../src/classes/abstract/Folder.ts"],"names":[],"mappings":"AAAA,OAAO,EAAC,YAAY,EAAE,aAAa,EAAC,MAAM,kBAAkB,CAAA;AAC5D,OAAO,EAAC,KAAK,EAAC,MAAM,SAAS,CAAA;AAE7B,qBAAa,MAAO,SAAQ,KAAK;gBACnB,WAAW,EAAE,YAAY,EAAE,IAAI,EAAE,aAAa;CAI3D"}

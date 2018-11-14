@@ -48,6 +48,7 @@ exports.retrySettings = {
         retryDelay: 1250,
     },
 };
+var storyblok;
 /**
  * Management API wrapper around Storyblok class.
  *
@@ -63,7 +64,10 @@ exports.retrySettings = {
 var ApiClient = /** @class */ (function () {
     function ApiClient(apiToken, spaceId) {
         this.spaceId = spaceId;
-        this.storyblok = new Storyblok_1.Storyblok(apiToken);
+        if (!storyblok) {
+            storyblok = new Storyblok_1.Storyblok(apiToken);
+        }
+        this.storyblok = storyblok;
     }
     Object.defineProperty(ApiClient.prototype, "assetFolders", {
         /**
@@ -358,6 +362,19 @@ var ApiClient = /** @class */ (function () {
                  * @memberof ApiClient#components
                  */
                 getExisting: function () { return _this.getExistingComponents(); },
+                /**
+                 * Update a component.
+                 *
+                 * @name ApiClient#components#update
+                 * @param {IComponent} data - Storyblok component data object with modified info.
+                 * @returns {Promise}
+                 * @fulfil {IComponent} Details of component that was updated.
+                 * @reject {AxiosError} Axios error.
+                 * @memberof ApiClient
+                 */
+                update: function (data) {
+                    return _this.updateComponent(data);
+                },
             };
         },
         enumerable: true,
@@ -1193,6 +1210,23 @@ var ApiClient = /** @class */ (function () {
         return this.storyblok
             .put(url + query, exports.retrySettings.burst)
             .then(function () { return _this.getStory(id); })
+            .catch(function (e) { return Promise.reject(e); });
+    };
+    /**
+     * Update a component.
+     *
+     * @name ApiClient#updateComponent
+     * @param {IComponent} data - Storyblok component data object with modified info.
+     * @returns {Promise}
+     * @fulfil {IComponent} Details of component that was updated.
+     * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
+     */
+    ApiClient.prototype.updateComponent = function (data) {
+        var url = "/" + this.spaceId + "/components/" + data.id;
+        return this.storyblok
+            .put(url, { component: data }, exports.retrySettings.burst)
+            .then(function (r) { return r.data.component; })
             .catch(function (e) { return Promise.reject(e); });
     };
     /**

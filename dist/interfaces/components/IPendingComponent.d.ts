@@ -7,12 +7,12 @@ import { IComponentSchema } from './IComponentSchema';
  */
 export interface IPendingComponent {
     name: string;
-    display_name: string;
-    schema: IComponentSchema | {};
+    display_name?: string;
+    schema?: IComponentSchema;
     image?: string | null;
-    preview_field: string | null;
-    is_root: boolean;
-    is_nestable: boolean;
+    preview_field?: string | null;
+    is_root?: boolean;
+    is_nestable?: boolean;
     all_presets?: any[];
     preset_id?: number | null;
 }

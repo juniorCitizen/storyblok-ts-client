@@ -1,0 +1,1 @@
+{"version":3,"file":"RootFolder.d.ts","sourceRoot":"","sources":["../../../src/classes/abstraction/RootFolder.ts"],"names":[],"mappings":"AAAA,OAAO,EAAC,aAAa,EAAC,MAAM,kBAAkB,CAAA;AAC9C,OAAO,EAAC,SAAS,EAAC,MAAM,cAAc,CAAA;AACtC,OAAO,EAAC,MAAM,EAAC,MAAM,UAAU,CAAA;AAE/B,qBAAa,UAAW,SAAQ,MAAM;gBACxB,SAAS,EAAE,SAAS,EAAE,IAAI,EAAE,aAAa;CAKtD"}

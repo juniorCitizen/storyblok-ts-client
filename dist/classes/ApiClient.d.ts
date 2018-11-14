@@ -32,6 +32,7 @@ interface IApiClientClass {
         deleteExisting: () => Promise<IComponent[]>;
         get: (i: number) => Promise<IComponent>;
         getExisting: () => Promise<IComponent[]>;
+        update: (d: IComponent) => Promise<IComponent>;
     };
     spaces: {
         get: () => Promise<ISpace>;
@@ -325,6 +326,17 @@ export declare class ApiClient implements IApiClientClass {
          * @memberof ApiClient#components
          */
         getExisting: () => Promise<IComponent[]>;
+        /**
+         * Update a component.
+         *
+         * @name ApiClient#components#update
+         * @param {IComponent} data - Storyblok component data object with modified info.
+         * @returns {Promise}
+         * @fulfil {IComponent} Details of component that was updated.
+         * @reject {AxiosError} Axios error.
+         * @memberof ApiClient
+         */
+        update: (data: IComponent) => Promise<IComponent>;
     };
     /**
      * Object that contains API methods for space operations
@@ -822,6 +834,17 @@ export declare class ApiClient implements IApiClientClass {
      * @memberof ApiClient
      */
     reorderStory(id: number, afterId: number): Promise<IStory>;
+    /**
+     * Update a component.
+     *
+     * @name ApiClient#updateComponent
+     * @param {IComponent} data - Storyblok component data object with modified info.
+     * @returns {Promise}
+     * @fulfil {IComponent} Details of component that was updated.
+     * @reject {AxiosError} Axios error.
+     * @memberof ApiClient
+     */
+    updateComponent(data: IComponent): Promise<IComponent>;
     /**
      * Update a story.
      *

@@ -89,6 +89,8 @@ npm run format
 <dd></dd>
 <dt><a href="#Storyblok">Storyblok</a></dt>
 <dd></dd>
+<dt><a href="#StoryblokTS">StoryblokTS</a></dt>
+<dd></dd>
 </dl>
 
 ## Functions
@@ -133,6 +135,7 @@ npm run format
         * [.deleteExisting](#ApiClient+components+deleteExisting) ⇒ <code>Promise</code>
         * [.get](#ApiClient+components+get) ⇒ <code>Promise</code>
         * [.getExisting](#ApiClient+components+getExisting) ⇒ <code>Promise</code>
+        * [.update](#ApiClient+components+update) ⇒ <code>Promise</code>
         * [.create](#ApiClient+components+create) ⇒ <code>Promise</code>
     * [.spaces](#ApiClient+spaces)
         * [.get](#ApiClient+spaces+get) ⇒ <code>Promise</code>
@@ -178,6 +181,7 @@ npm run format
     * [.publishStory](#ApiClient+publishStory) ⇒ <code>Promise</code>
     * [.registerAsset](#ApiClient+registerAsset) ⇒ <code>Promise</code>
     * [.reorderStory](#ApiClient+reorderStory) ⇒ <code>Promise</code>
+    * [.updateComponent](#ApiClient+updateComponent) ⇒ <code>Promise</code>
     * [.updateStory](#ApiClient+updateStory) ⇒ <code>Promise</code>
     * [.uploadAsset](#ApiClient+uploadAsset) ⇒ <code>Promise</code>
     * [.getAssetsByPage([page], [perPage])](#ApiClient+getAssetsByPage) ⇒ <code>Promise.&lt;Array.&lt;IAsset&gt;&gt;</code>
@@ -439,6 +443,7 @@ const apiClient = new ApiClient('fake_api_token', 12345)
     * [.deleteExisting](#ApiClient+components+deleteExisting) ⇒ <code>Promise</code>
     * [.get](#ApiClient+components+get) ⇒ <code>Promise</code>
     * [.getExisting](#ApiClient+components+getExisting) ⇒ <code>Promise</code>
+    * [.update](#ApiClient+components+update) ⇒ <code>Promise</code>
     * [.create](#ApiClient+components+create) ⇒ <code>Promise</code>
 
 <a name="ApiClient+components+create"></a>
@@ -496,6 +501,19 @@ const apiClient = new ApiClient('fake_api_token', 12345)
 **Kind**: instance property of [<code>components</code>](#ApiClient+components)  
 **Fulfil**: <code>IComponent[]</code> A list of component definitions.  
 **Reject**: <code>AxiosError</code> Axios error.  
+<a name="ApiClient+components+update"></a>
+
+#### components.update ⇒ <code>Promise</code>
+<p>Update a component.</p>
+
+**Kind**: instance property of [<code>components</code>](#ApiClient+components)  
+**Fulfil**: <code>IComponent</code> Details of component that was updated.  
+**Reject**: <code>AxiosError</code> Axios error.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| data | <code>IComponent</code> | <p>Storyblok component data object with modified info.</p> |
+
 <a name="ApiClient+components+create"></a>
 
 #### components.create ⇒ <code>Promise</code>
@@ -1010,6 +1028,19 @@ const apiClient = new ApiClient('fake_api_token', 12345)
 | id | <code>number</code> | <p>Id of the story to be moved.</p> |
 | afterId | <code>number</code> | <p>Reference story to position after.</p> |
 
+<a name="ApiClient+updateComponent"></a>
+
+### apiClient.updateComponent ⇒ <code>Promise</code>
+<p>Update a component.</p>
+
+**Kind**: instance property of [<code>ApiClient</code>](#ApiClient)  
+**Fulfil**: <code>IComponent</code> Details of component that was updated.  
+**Reject**: <code>AxiosError</code> Axios error.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| data | <code>IComponent</code> | <p>Storyblok component data object with modified info.</p> |
+
 <a name="ApiClient+updateStory"></a>
 
 ### apiClient.updateStory ⇒ <code>Promise</code>
@@ -1189,6 +1220,57 @@ storyblok.post(url, {story}, {retries: 3, retryDelay: 1000})
 // => new story id: 123456
 // => new story name: test
 // => updated story name: new test
+```
+<a name="StoryblokTS"></a>
+
+## StoryblokTS
+**Kind**: global class  
+**Export**:   
+<a name="new_StoryblokTS_new"></a>
+
+### new StoryblokTS(config, [rateLimit], [endpoint])
+<p>This is a thin wrapper for the Storyblok API's to use in Node.js and the browser.  It is a typescript conversion of the Universal Javascript SDK library (https://<a href="http://www.npmjs.com/package/storyblok-js-client)">www.npmjs.com/package/storyblok-js-client)</a>.</p>
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| config | <code>any</code> | <p>Configurations.</p> |
+| config.accessToken | <code>string</code> | <p>The preview token you can find in your space dashboard at https://app.storyblok.com.</p> |
+| [config.cache] | <code>any</code> | <p>Cache types.</p> |
+| config.cache.type | <code>string</code> | <p>'none' or 'memory'.</p> |
+| config.cache.clear | <code>string</code> | <p>'auto' or 'manual'.</p> |
+| [config.headers] | <code>any</code> | <p>Request headers.</p> |
+| [config.region] | <code>string</code> | <p>Region.</p> |
+| [config.https] | <code>boolean</code> | <p>Switch for https.</p> |
+| [config.oauthToken] | <code>string</code> | <p>Management API key.</p> |
+| [rateLimit] | <code>number</code> | <p>Throttle value (defaults to 3 for management api and 5 for cdn api).</p> |
+| [endpoint] | <code>string</code> | <p>API endpoint.</p> |
+
+**Example**  
+```js
+// Example for using the content delivery api
+// 1. Require the Storyblok client
+const {StoryblokTS} = require('storyblok-ts-client')
+// 2. Initialize the client with the preview
+//    token from your space dashboard at
+//    https://app.storyblok.com
+let Storyblok = new StoryblokClient({
+  accessToken: 'your_access_token'
+})
+
+// Example for using the content management api
+// 1. Require the Storyblok client
+const {StoryblokTS} = require('storyblok-ts-client')
+const spaceId = 12345
+// 2. Initialize the client with the oauth token
+//    from the my account area at
+//    https://app.storyblok.com
+let Storyblok = new StoryblokClient({
+  oauthToken: 'YOUR_OAUTH_TOKEN'
+})
+Storyblok.post(`spaces/${spaceId}/stories`, {story: {name: 'xy', slug: 'xy'}})
+Storyblok.put(`spaces/${spaceId}/stories/1`, {story: {name: 'xy', slug: 'xy'}})
+Storyblok.delete(`spaces/${spaceId}/stories/1`, null)
 ```
 <a name="imageToBuffer"></a>
 

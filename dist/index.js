@@ -1,8 +1,7 @@
 "use strict";
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
 Object.defineProperty(exports, "__esModule", { value: true });
-var ApiClient_1 = require("./classes/ApiClient");
-exports.ApiClient = ApiClient_1.ApiClient;
-exports.retrySettings = ApiClient_1.retrySettings;
-var Storyblok_1 = require("./classes/Storyblok");
-exports.Storyblok = Storyblok_1.Storyblok;
+__export(require("./classes"));
 //# sourceMappingURL=index.js.map
