@@ -7,6 +7,6 @@ import {IPendingAssetFolder} from './IPendingAssetFolder'
  */
 export interface IAssetFolder extends IPendingAssetFolder {
   // name: string
-  readonly id: number
+  readonly id?: number
   // parent_id?: number | null
 }

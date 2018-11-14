@@ -54,7 +54,6 @@ describe('POST method', () => {
   test('creating a story to work', () => {
     const url = `/${spaceId}/stories`
     const newStory: IPendingStory = {
-      content: {},
       default_root: null,
       is_folder: false,
       is_startpage: false,

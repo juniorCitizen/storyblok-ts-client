@@ -4,7 +4,7 @@
  * @interface IStoryContent
  */
 export interface IStoryContent {
-  _uid: string
-  component: string
+  readonly _uid?: string
+  readonly component: string
   [fields: string]: any | IStoryContent[]
 }
