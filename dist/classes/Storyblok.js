@@ -180,7 +180,7 @@ var Storyblok = /** @class */ (function () {
         });
     };
     /**
-     * Uses axios's interceptors to faciliate failure-retry's.  Based on: "http://www.itomtan.com/2017/10/17/vue-axios-timeout-retry-callback"
+     * Uses axios's interceptors to faciliate failure-retry's with incremental delay period and a +/- 500ms variance.  Based on: "http://www.itomtan.com/2017/10/17/vue-axios-timeout-retry-callback"
      *
      * @private
      * @returns {number} - Id for the interceptor, so failure-retry action can be removed after the API request is completed.

@@ -440,7 +440,7 @@ const apiClient = new ApiClient('fake_api_token', 12345)
 <a name="ApiClient+assets+upload"></a>
 
 #### assets.upload ⇒ <code>Promise</code>
-<p>Upload a registered asset.</p>
+<p>Upload a registered asset with failure-retry (20 retries and incremental delay period of 1250ms with +/- 500ms variance).</p>
 
 **Kind**: instance property of [<code>assets</code>](#ApiClient+assets)  
 **Fulfil**: <code>string</code> Access url of the uploaded asset.  
@@ -1079,7 +1079,7 @@ const apiClient = new ApiClient('fake_api_token', 12345)
 <a name="ApiClient+uploadAsset"></a>
 
 ### apiClient.uploadAsset ⇒ <code>Promise</code>
-<p>Upload a registered asset with failure-retry (3 retries and 500ms incremental delay period).</p>
+<p>Upload a registered asset with failure-retry (20 retries and incremental delay period of 1250ms with +/- 500ms variance).</p>
 
 **Kind**: instance property of [<code>ApiClient</code>](#ApiClient)  
 **Fulfil**: <code>string</code> Access url of the uploaded asset.  
