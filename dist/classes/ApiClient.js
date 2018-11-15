@@ -276,7 +276,7 @@ var ApiClient = /** @class */ (function () {
                     return _this.registerAsset(data);
                 },
                 /**
-                 * Upload a registered asset.
+                 * Upload a registered asset with failure-retry (20 retries and incremental delay period of 1250ms with +/- 500ms variance).
                  *
                  * @name ApiClient#assets#upload
                  * @param {Buffer} buffer - Buffered asset data.
@@ -1247,7 +1247,7 @@ var ApiClient = /** @class */ (function () {
             .catch(function (e) { return Promise.reject(e); });
     };
     /**
-     * Upload a registered asset with failure-retry (3 retries and 500ms incremental delay period).
+     * Upload a registered asset with failure-retry (20 retries and incremental delay period of 1250ms with +/- 500ms variance).
      *
      * @name ApiClient#uploadAsset
      * @param {Buffer} buffer - Buffered asset data.
