@@ -9,5 +9,5 @@
  * @fulfil {Buffer} Buffered image data.
  * @reject {Error} Error value.
  */
-export declare function imageToBuffer(filePath: string, compress?: boolean, sizeLimit?: number): Promise<Buffer>;
+export declare function imageToBuffer(filePath: string, compress?: boolean, sizeLimit?: number, forceFormat?: string): Promise<Buffer>;
 //# sourceMappingURL=imageProcessing.d.ts.map

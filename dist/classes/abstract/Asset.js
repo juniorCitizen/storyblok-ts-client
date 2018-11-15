@@ -48,6 +48,42 @@ var Asset = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(Asset.prototype, "generate", {
+        get: function () {
+            var _this = this;
+            return {
+                logo: function () {
+                    _this.setAssetFolder();
+                    var methods = _this.apiClient.assets;
+                    return methods
+                        .register(_this.data)
+                        .then(function (registration) {
+                        return imageProcessing_1.imageToBuffer(_this.filePath, false, 128, 'png')
+                            .then(function (buffer) { return methods.upload(buffer, registration); })
+                            .catch(function (e) { return Promise.reject(e); });
+                    })
+                        .then(function (prettyUrl) {
+                        _this.data.filename = prettyUrl;
+                        return console.log("'" + _this.prettyUrl + "' is created");
+                    })
+                        .catch(function (e) { return Promise.reject(e); });
+                },
+                photo: function () {
+                    _this.setAssetFolder();
+                    return _this.apiClient.assets
+                        .createFromImage(_this.data, _this.filePath, true, 640)
+                        .then(function (prettyUrl) {
+                        _this.data.filename = prettyUrl;
+                        return console.log("'" + _this.prettyUrl + "' is created");
+                    })
+                        .catch(function (e) { return Promise.reject(e); });
+                },
+            };
+        },
+        enumerable: true,
+        configurable: true
+    });
+    // to be deprecated in preference to this.generate.photo()
     Asset.prototype.generatePhoto = function () {
         var _this = this;
         this.setAssetFolder();
@@ -59,6 +95,7 @@ var Asset = /** @class */ (function () {
         })
             .catch(function (e) { return Promise.reject(e); });
     };
+    // to be deprecated in preference to this.generate.logo()
     Asset.prototype.generateImage = function () {
         var _this = this;
         this.setAssetFolder();

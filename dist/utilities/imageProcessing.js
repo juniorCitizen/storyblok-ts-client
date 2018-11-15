@@ -84,7 +84,7 @@ function compressImage(image) {
  * @fulfil {Buffer} Buffered image data.
  * @reject {Error} Error value.
  */
-function imageToBuffer(filePath, compress, sizeLimit) {
+function imageToBuffer(filePath, compress, sizeLimit, forceFormat) {
     if (compress === void 0) { compress = false; }
     if (sizeLimit === void 0) { sizeLimit = 640; }
     return __awaiter(this, void 0, void 0, function () {
@@ -107,7 +107,11 @@ function imageToBuffer(filePath, compress, sizeLimit) {
                 case 4:
                     image = _a.sent();
                     _a.label = 5;
-                case 5: return [4 /*yield*/, image.toBuffer()];
+                case 5:
+                    if (forceFormat) {
+                        image = image.toFormat(forceFormat);
+                    }
+                    return [4 /*yield*/, image.toBuffer()];
                 case 6: return [2 /*return*/, _a.sent()];
                 case 7:
                     error_2 = _a.sent();

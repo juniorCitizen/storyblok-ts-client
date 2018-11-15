@@ -10,6 +10,10 @@ export declare class Asset {
     readonly prettyUrl: string;
     readonly publicUrl: string;
     readonly folder: string | undefined;
+    readonly generate: {
+        logo: () => Promise<void>;
+        photo: () => Promise<void>;
+    };
     generatePhoto(): Promise<void>;
     generateImage(): Promise<void>;
     private setAssetFolder;
