@@ -39,7 +39,8 @@ async function compressImage(image: sharp.Sharp): Promise<sharp.Sharp> {
 export async function imageToBuffer(
   filePath: string,
   compress: boolean = false,
-  sizeLimit: number = 640
+  sizeLimit: number = 640,
+  forceFormat?: string
 ): Promise<Buffer> {
   let image: sharp.Sharp = sharp(filePath).rotate()
   try {
@@ -48,6 +49,9 @@ export async function imageToBuffer(
     }
     if (sizeLimit) {
       image = await resizeImage(image, sizeLimit)
+    }
+    if (forceFormat) {
+      image = image.toFormat(forceFormat)
     }
     return await image.toBuffer()
   } catch (error) {
