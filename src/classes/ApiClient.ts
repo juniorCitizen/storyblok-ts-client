@@ -1266,8 +1266,10 @@ export class ApiClient implements IApiClientClass {
           retryCount += 1
           return new Promise(r => {
             setTimeout(() => {
+              console.log(`retry no. ${retryCount}`)
+              console.log(`asset: ${registration.public_url}`)
+              console.log(`post - ${registration.post_url}`)
               console.log(e)
-              console.log('retry attempt:', retryCount)
               return r()
             }, (retryDelay - variance()) * retryCount)
           }).then(() => formData.submit(registration.post_url, callback))
