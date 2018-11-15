@@ -62,7 +62,7 @@
   "scripts": {
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "prelint": "npm run format",
-    "lint": "tslint -p tsconfig.json",
+    "lint": "tslint -p tsconfig.json --fix",
     "pretest": "npm run lint",
     "test": "jest --bail",
     "prebuild": "npm test",
