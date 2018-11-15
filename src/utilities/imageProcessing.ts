@@ -32,6 +32,7 @@ async function compressImage(image: sharp.Sharp): Promise<sharp.Sharp> {
  * @param {string} filePath - Absolute path to image file.
  * @param {boolean} compress - Flag to compress image.
  * @param {number} sizeLimit - Resizing dimension limit value.
+ * @param {string} [forceFormat] - Force convert to a particular format.
  * @returns {Promise}
  * @fulfil {Buffer} Buffered image data.
  * @reject {Error} Error value.
