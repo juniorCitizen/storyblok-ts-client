@@ -81,8 +81,8 @@ async function resizeImage(
     return metadata.height === metadata.width
       ? image.resize(sizeLimit, sizeLimit) // square image
       : metadata.height < metadata.width
-      ? image.resize(sizeLimit, undefined) // wider image
-      : image.resize(undefined, sizeLimit) // taller image
+        ? image.resize(sizeLimit, undefined) // wider image
+        : image.resize(undefined, sizeLimit) // taller image
   } catch (error) {
     throw error
   }
