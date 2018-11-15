@@ -118,7 +118,7 @@ npm run format
 ## Functions
 
 <dl>
-<dt><a href="#imageToBuffer">imageToBuffer(filePath, compress, sizeLimit)</a> ⇒ <code>Promise</code></dt>
+<dt><a href="#imageToBuffer">imageToBuffer(filePath, compress, sizeLimit, [forceFormat])</a> ⇒ <code>Promise</code></dt>
 <dd><p>Generate buffered image (image compression and resize is applied accordingly).</p></dd>
 <dt><a href="#resizeImage">resizeImage(image, sizeLimit)</a> ⇒ <code>Promise</code></dt>
 <dd><p>Resize a sharp object</p></dd>
@@ -1296,7 +1296,7 @@ Storyblok.delete(`spaces/${spaceId}/stories/1`, null)
 ```
 <a name="imageToBuffer"></a>
 
-## imageToBuffer(filePath, compress, sizeLimit) ⇒ <code>Promise</code>
+## imageToBuffer(filePath, compress, sizeLimit, [forceFormat]) ⇒ <code>Promise</code>
 <p>Generate buffered image (image compression and resize is applied accordingly).</p>
 
 **Kind**: global function  
@@ -1308,6 +1308,7 @@ Storyblok.delete(`spaces/${spaceId}/stories/1`, null)
 | filePath | <code>string</code> |  | <p>Absolute path to image file.</p> |
 | compress | <code>boolean</code> | <code>false</code> | <p>Flag to compress image.</p> |
 | sizeLimit | <code>number</code> | <code>640</code> | <p>Resizing dimension limit value.</p> |
+| [forceFormat] | <code>string</code> |  | <p>Force convert to a particular format.</p> |
 
 <a name="resizeImage"></a>
 
