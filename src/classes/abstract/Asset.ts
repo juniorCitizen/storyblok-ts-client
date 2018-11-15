@@ -54,9 +54,7 @@ export class Asset {
   }
 
   public generatePhoto(): Promise<void> {
-    if (this.assetFolder && this.assetFolder.id) {
-      this.data.asset_folder_id = this.assetFolder.id
-    }
+    this.setAssetFolder()
     return this.apiClient.assets
       .createFromImage(this.data, this.filePath, true, 640)
       .then(prettyUrl => {
@@ -67,9 +65,7 @@ export class Asset {
   }
 
   public generateImage(): Promise<void> {
-    if (this.assetFolder && this.assetFolder.id) {
-      this.data.asset_folder_id = this.assetFolder.id
-    }
+    this.setAssetFolder()
     const methods = this.apiClient.assets
     return methods
       .register(this.data)
@@ -83,5 +79,11 @@ export class Asset {
         return console.log(`'${this.prettyUrl}' is created`)
       })
       .catch(e => Promise.reject(e))
+  }
+
+  private setAssetFolder() {
+    if (this.assetFolder && this.assetFolder.id) {
+      this.data.asset_folder_id = this.assetFolder.id
+    }
   }
 }
