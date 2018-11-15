@@ -53,6 +53,38 @@ export class Asset {
     return this.assetFolder ? this.assetFolder.name : undefined
   }
 
+  public get generate() {
+    return {
+      logo: () => {
+        this.setAssetFolder()
+        const methods = this.apiClient.assets
+        return methods
+          .register(this.data)
+          .then(registration => {
+            return imageToBuffer(this.filePath, false, 128, 'png')
+              .then(buffer => methods.upload(buffer, registration))
+              .catch(e => Promise.reject(e))
+          })
+          .then(prettyUrl => {
+            this.data.filename = prettyUrl
+            return console.log(`'${this.prettyUrl}' is created`)
+          })
+          .catch(e => Promise.reject(e))
+      },
+      photo: () => {
+        this.setAssetFolder()
+        return this.apiClient.assets
+          .createFromImage(this.data, this.filePath, true, 640)
+          .then(prettyUrl => {
+            this.data.filename = prettyUrl
+            return console.log(`'${this.prettyUrl}' is created`)
+          })
+          .catch(e => Promise.reject(e))
+      },
+    }
+  }
+
+  // to be deprecated in preference to this.generate.photo()
   public generatePhoto(): Promise<void> {
     this.setAssetFolder()
     return this.apiClient.assets
@@ -64,6 +96,7 @@ export class Asset {
       .catch(e => Promise.reject(e))
   }
 
+  // to be deprecated in preference to this.generate.logo()
   public generateImage(): Promise<void> {
     this.setAssetFolder()
     const methods = this.apiClient.assets
