@@ -50,9 +50,7 @@ var Asset = /** @class */ (function () {
     });
     Asset.prototype.generatePhoto = function () {
         var _this = this;
-        if (this.assetFolder && this.assetFolder.id) {
-            this.data.asset_folder_id = this.assetFolder.id;
-        }
+        this.setAssetFolder();
         return this.apiClient.assets
             .createFromImage(this.data, this.filePath, true, 640)
             .then(function (prettyUrl) {
@@ -63,9 +61,7 @@ var Asset = /** @class */ (function () {
     };
     Asset.prototype.generateImage = function () {
         var _this = this;
-        if (this.assetFolder && this.assetFolder.id) {
-            this.data.asset_folder_id = this.assetFolder.id;
-        }
+        this.setAssetFolder();
         var methods = this.apiClient.assets;
         return methods
             .register(this.data)
@@ -79,6 +75,11 @@ var Asset = /** @class */ (function () {
             return console.log("'" + _this.prettyUrl + "' is created");
         })
             .catch(function (e) { return Promise.reject(e); });
+    };
+    Asset.prototype.setAssetFolder = function () {
+        if (this.assetFolder && this.assetFolder.id) {
+            this.data.asset_folder_id = this.assetFolder.id;
+        }
     };
     return Asset;
 }());

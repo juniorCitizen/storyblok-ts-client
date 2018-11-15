@@ -12,5 +12,6 @@ export declare class Asset {
     readonly folder: string | undefined;
     generatePhoto(): Promise<void>;
     generateImage(): Promise<void>;
+    private setAssetFolder;
 }
 //# sourceMappingURL=Asset.d.ts.map
