@@ -1,3 +1,4 @@
+import * as fs from 'fs'
 import * as path from 'path'
 
 import {IAsset, IAssetFolder, ICredentials} from '../../interfaces'
@@ -55,13 +56,37 @@ export class Asset {
 
   public get generate() {
     return {
+      direct: () => {
+        this.setAssetFolder()
+        const methods = this.apiClient.assets
+        return methods
+          .register(this.data)
+          .then(registration => {
+            return new Promise((resolve, reject) => {
+              fs.readFile(this.filePath, (error, buffer) => {
+                if (error) {
+                  reject(error)
+                }
+                resolve(buffer)
+              })
+            })
+              .then(buffer => buffer as Buffer)
+              .then(buffer => methods.upload(buffer, registration))
+              .catch(e => Promise.reject(e))
+          })
+          .then(prettyUrl => {
+            this.data.filename = prettyUrl
+            return console.log(`'${this.prettyUrl}' is created`)
+          })
+          .catch(e => Promise.reject(e))
+      },
       logo: () => {
         this.setAssetFolder()
         const methods = this.apiClient.assets
         return methods
           .register(this.data)
           .then(registration => {
-            return imageToBuffer(this.filePath, false, 128, 'png')
+            return imageToBuffer(this.filePath, false, 128)
               .then(buffer => methods.upload(buffer, registration))
               .catch(e => Promise.reject(e))
           })
