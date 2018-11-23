@@ -30,8 +30,8 @@ async function compressImage(image: sharp.Sharp): Promise<sharp.Sharp> {
  * Generate buffered image (image compression and resize is applied accordingly).
  *
  * @param {string} filePath - Absolute path to image file.
- * @param {boolean} compress - Flag to compress image.
- * @param {number} sizeLimit - Resizing dimension limit value.
+ * @param {boolean} [compress] - Flag to compress image.
+ * @param {number} [sizeLimit] - Resizing dimension limit value.
  * @param {string} [forceFormat] - Force convert to a particular format.
  * @returns {Promise}
  * @fulfil {Buffer} Buffered image data.
@@ -39,8 +39,8 @@ async function compressImage(image: sharp.Sharp): Promise<sharp.Sharp> {
  */
 export async function imageToBuffer(
   filePath: string,
-  compress: boolean = false,
-  sizeLimit: number = 640,
+  compress?: boolean,
+  sizeLimit?: number,
   forceFormat?: string
 ): Promise<Buffer> {
   let image: sharp.Sharp = sharp(filePath).rotate()
@@ -81,8 +81,8 @@ async function resizeImage(
     return metadata.height === metadata.width
       ? image.resize(sizeLimit, sizeLimit) // square image
       : metadata.height < metadata.width
-        ? image.resize(sizeLimit, undefined) // wider image
-        : image.resize(undefined, sizeLimit) // taller image
+      ? image.resize(sizeLimit, undefined) // wider image
+      : image.resize(undefined, sizeLimit) // taller image
   } catch (error) {
     throw error
   }
