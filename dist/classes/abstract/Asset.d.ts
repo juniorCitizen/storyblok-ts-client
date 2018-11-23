@@ -11,6 +11,7 @@ export declare class Asset {
     readonly publicUrl: string;
     readonly folder: string | undefined;
     readonly generate: {
+        direct: () => Promise<void>;
         logo: () => Promise<void>;
         photo: () => Promise<void>;
     };

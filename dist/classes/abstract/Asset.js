@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var fs = require("fs");
 var path = require("path");
 var imageProcessing_1 = require("../../utilities/imageProcessing");
 var ApiClient_1 = require("../ApiClient");
@@ -52,13 +53,37 @@ var Asset = /** @class */ (function () {
         get: function () {
             var _this = this;
             return {
+                direct: function () {
+                    _this.setAssetFolder();
+                    var methods = _this.apiClient.assets;
+                    return methods
+                        .register(_this.data)
+                        .then(function (registration) {
+                        return new Promise(function (resolve, reject) {
+                            fs.readFile(_this.filePath, function (error, buffer) {
+                                if (error) {
+                                    reject(error);
+                                }
+                                resolve(buffer);
+                            });
+                        })
+                            .then(function (buffer) { return buffer; })
+                            .then(function (buffer) { return methods.upload(buffer, registration); })
+                            .catch(function (e) { return Promise.reject(e); });
+                    })
+                        .then(function (prettyUrl) {
+                        _this.data.filename = prettyUrl;
+                        return console.log("'" + _this.prettyUrl + "' is created");
+                    })
+                        .catch(function (e) { return Promise.reject(e); });
+                },
                 logo: function () {
                     _this.setAssetFolder();
                     var methods = _this.apiClient.assets;
                     return methods
                         .register(_this.data)
                         .then(function (registration) {
-                        return imageProcessing_1.imageToBuffer(_this.filePath, false, 128, 'png')
+                        return imageProcessing_1.imageToBuffer(_this.filePath, false, 128)
                             .then(function (buffer) { return methods.upload(buffer, registration); })
                             .catch(function (e) { return Promise.reject(e); });
                     })

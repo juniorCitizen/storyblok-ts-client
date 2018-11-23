@@ -55,14 +55,14 @@ npm install --save storyblok-ts-client
 ```js
 // Basic CRUD client
 const {Storyblok} = require('storyblok-ts-client')
-const storyblok = storyblok('fake_api_token')
+const storyblok = new Storyblok('fake_api_token')
 return storyblok.get('/12345')
   .then(res => console.log('space id:', res.data.id))
   // => space id: 12345
 
 // Management API wrapper
 const {ApiClient} = require('storyblok-ts-client')
-const apiClient = ApiClient('fake_api_token', 12345)
+const apiClient = new ApiClient('fake_api_token', 12345)
 return apiClient.spaces.get()
   .then(space => console.log('space id:', space.id))
   // => space id: 12345
@@ -118,7 +118,7 @@ npm run format
 ## Functions
 
 <dl>
-<dt><a href="#imageToBuffer">imageToBuffer(filePath, compress, sizeLimit, [forceFormat])</a> ⇒ <code>Promise</code></dt>
+<dt><a href="#imageToBuffer">imageToBuffer(filePath, [compress], [sizeLimit], [forceFormat])</a> ⇒ <code>Promise</code></dt>
 <dd><p>Generate buffered image (image compression and resize is applied accordingly).</p></dd>
 <dt><a href="#resizeImage">resizeImage(image, sizeLimit)</a> ⇒ <code>Promise</code></dt>
 <dd><p>Resize a sharp object</p></dd>
@@ -1296,19 +1296,19 @@ Storyblok.delete(`spaces/${spaceId}/stories/1`, null)
 ```
 <a name="imageToBuffer"></a>
 
-## imageToBuffer(filePath, compress, sizeLimit, [forceFormat]) ⇒ <code>Promise</code>
+## imageToBuffer(filePath, [compress], [sizeLimit], [forceFormat]) ⇒ <code>Promise</code>
 <p>Generate buffered image (image compression and resize is applied accordingly).</p>
 
 **Kind**: global function  
 **Fulfil**: <code>Buffer</code> Buffered image data.  
 **Reject**: <code>Error</code> Error value.  
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| filePath | <code>string</code> |  | <p>Absolute path to image file.</p> |
-| compress | <code>boolean</code> | <code>false</code> | <p>Flag to compress image.</p> |
-| sizeLimit | <code>number</code> | <code>640</code> | <p>Resizing dimension limit value.</p> |
-| [forceFormat] | <code>string</code> |  | <p>Force convert to a particular format.</p> |
+| Param | Type | Description |
+| --- | --- | --- |
+| filePath | <code>string</code> | <p>Absolute path to image file.</p> |
+| [compress] | <code>boolean</code> | <p>Flag to compress image.</p> |
+| [sizeLimit] | <code>number</code> | <p>Resizing dimension limit value.</p> |
+| [forceFormat] | <code>string</code> | <p>Force convert to a particular format.</p> |
 
 <a name="resizeImage"></a>
 

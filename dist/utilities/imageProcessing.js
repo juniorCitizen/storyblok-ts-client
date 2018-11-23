@@ -78,16 +78,14 @@ function compressImage(image) {
  * Generate buffered image (image compression and resize is applied accordingly).
  *
  * @param {string} filePath - Absolute path to image file.
- * @param {boolean} compress - Flag to compress image.
- * @param {number} sizeLimit - Resizing dimension limit value.
+ * @param {boolean} [compress] - Flag to compress image.
+ * @param {number} [sizeLimit] - Resizing dimension limit value.
  * @param {string} [forceFormat] - Force convert to a particular format.
  * @returns {Promise}
  * @fulfil {Buffer} Buffered image data.
  * @reject {Error} Error value.
  */
 function imageToBuffer(filePath, compress, sizeLimit, forceFormat) {
-    if (compress === void 0) { compress = false; }
-    if (sizeLimit === void 0) { sizeLimit = 640; }
     return __awaiter(this, void 0, void 0, function () {
         var image, error_2;
         return __generator(this, function (_a) {
