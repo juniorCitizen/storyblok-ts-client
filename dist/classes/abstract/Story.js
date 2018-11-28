@@ -133,9 +133,33 @@ var Story = /** @class */ (function () {
             });
         });
     };
+    Story.prototype.updatePath = function (path) {
+        return __awaiter(this, void 0, void 0, function () {
+            var updatedData, _a, error_2;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        updatedData = JSON.parse(JSON.stringify(this.data));
+                        updatedData.path = path;
+                        _b.label = 1;
+                    case 1:
+                        _b.trys.push([1, 3, , 4]);
+                        _a = this;
+                        return [4 /*yield*/, this.apiClient.stories.update(updatedData)];
+                    case 2:
+                        _a.data = _b.sent();
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_2 = _b.sent();
+                        throw error_2;
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    };
     Story.prototype.sync = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var request, _a, error_2;
+            var request, _a, error_3;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -151,8 +175,8 @@ var Story = /** @class */ (function () {
                         _a.data = _b.sent();
                         return [3 /*break*/, 4];
                     case 3:
-                        error_2 = _b.sent();
-                        throw error_2;
+                        error_3 = _b.sent();
+                        throw error_3;
                     case 4: return [2 /*return*/];
                 }
             });

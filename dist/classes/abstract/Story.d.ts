@@ -13,6 +13,7 @@ export declare class Story {
     readonly uuid: string;
     generate(): Promise<void>;
     updateContent(content: IStoryContent): Promise<void>;
+    updatePath(path: string): Promise<void>;
     protected sync(): Promise<void>;
 }
 //# sourceMappingURL=Story.d.ts.map

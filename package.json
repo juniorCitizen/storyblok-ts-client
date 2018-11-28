@@ -31,7 +31,7 @@
     "axios": "^0.18.0",
     "form-data": "^2.3.3",
     "p-throttle": "^2.0.0",
-    "qs": "^6.5.2",
+    "qs": "^6.6.0",
     "sharp": "^0.21.0"
   },
   "devDependencies": {
@@ -44,7 +44,7 @@
     "@types/dotenv-safe": "^5.0.2",
     "@types/form-data": "^2.2.1",
     "@types/jest": "^23.3.9",
-    "@types/node": "^10.12.8",
+    "@types/node": "^10.12.10",
     "@types/p-throttle": "^1.1.0",
     "@types/qs": "^6.5.1",
     "@types/sharp": "^0.21.0",
@@ -53,9 +53,9 @@
     "jsdoc-babel": "^0.5.0",
     "jsdoc-to-markdown": "^4.0.1",
     "prettier": "^1.15.2",
-    "ts-jest": "^23.10.4",
+    "ts-jest": "^23.10.5",
     "tslint": "^5.11.0",
-    "tslint-config-prettier": "^1.16.0",
+    "tslint-config-prettier": "^1.17.0",
     "tslint-plugin-prettier": "^2.0.1",
     "typescript": "^3.1.6"
   },

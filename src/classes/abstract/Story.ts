@@ -75,6 +75,16 @@ export class Story {
     }
   }
 
+  public async updatePath(path: string): Promise<void> {
+    const updatedData = JSON.parse(JSON.stringify(this.data))
+    updatedData.path = path
+    try {
+      this.data = await this.apiClient.stories.update(updatedData)
+    } catch (error) {
+      throw error
+    }
+  }
+
   protected async sync(): Promise<void> {
     const request = !this.data.id
       ? this.apiClient.stories.create(this.data)
